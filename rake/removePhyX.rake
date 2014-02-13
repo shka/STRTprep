@@ -8,11 +8,9 @@ LIBIDS.each { |libid|
 task 'removePhyX' => tmp
 
 rule '.phyX.bam' => proc { |target|
-  libid = target.pathmap("%n").pathmap("%n")
-  tmp = [File.expand_path(CONF['LIBS'][libid]['PHYX']+".1.ebwt")]
-  CONF['LIBS'][libid]['FASTQS'].each { |fastq|
-    tmp.push(File.expand_path(fastq))
-  }
+  conf = CONF[target.pathmap("%n").pathmap("%n")]
+  tmp = [File.expand_path(conf['PHYX']+".1.ebwt")]
+  conf['FASTQS'].each { |fastq| tmp.push(File.expand_path(fastq)) }
   tmp
 } do |t|
   sh 'mkdir -p out/ali log'

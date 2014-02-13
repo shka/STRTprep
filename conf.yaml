@@ -2,6 +2,7 @@ DEFAULTS: &defaults
  UMI: 4
  BARCODE: 6
  GAP: 3
+ CDNA: 37
  LAYOUT: src/barcodes.txt
  PHYX: ~/opt/ebwt/phyX/phyX
  GENOMESPIKERIBO: ~/opt/ebwt/hg19_ercc92_u13369/ref
