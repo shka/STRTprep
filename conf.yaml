@@ -1,0 +1,7 @@
+INPUTS:
+ FASTQS:
+  - src/test1.fq.gz 
+  - src/test2.fq.gz 
+ EBWTS:
+  PHYX: ~/opt/ebwt/phyX/phyX
+  GENOMESPIKERIBO: ~/opt/ebwt/hg19_ercc92_u13369/ref

@@ -2,13 +2,21 @@ require 'levenshtein'
 require 'mkfifo'
 require 'parallel'
 require 'tempfile'
+require 'yaml'
 
-RAWFQS = FileList.new("src/*.fq.gz")
+##
 
 tmplibid = /STRTprep.([^\/.]+)/.match(Dir.pwd).to_a[1]
 LIBID = ENV.key?('LIBID') ? ENV['LIBID'] : (tmplibid.nil? ? 'TMP' : tmplibid)
 
+CONF = YAML.load_file('conf.yaml')
+EBWT_PHYX = File.expand_path(CONF['INPUTS']['EBWTS']['PHYX'])
+FASTQS = Array.new
+CONF['INPUTS']['FASTQS'].each { |fastq| FASTQS.push(File.expand_path(fastq)) }
+
 PROCS = ENV.key?('PROCS') ? ENV['PROCS'] : Parallel.processor_count
+
+##
 
 def read_barcodes
   wells = Array.new
@@ -251,8 +259,9 @@ end
 
 task :removePhyX => "out/ali/#{LIBID}.phyX.bam"
 
-file "out/ali/#{LIBID}.phyX.bam" => ['src/ebwt/phyX.1.ebwt'] + RAWFQS do |t|
-  sh 'mkdir -p out/ali'
+file "out/ali/#{LIBID}.phyX.bam" => [EBWT_PHYX+".1.ebwt"] + FASTQS do |t|
+  sh 'mkdir -p out/ali log'
+  tmp = Array.new
   sh "(gunzip -c #{t.prerequisites[1..-1].join(' ')} | bowtie -S -p #{PROCS} -t #{t.prerequisites[0].sub('.1.ebwt', '')} - | samtools view -@ #{PROCS} -S -b -o #{t.name} -) 2> log/removePhyX.log "
 end
 
