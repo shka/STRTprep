@@ -1,7 +1,18 @@
-INPUTS:
- FASTQS:
-  - src/test1.fq.gz 
-  - src/test2.fq.gz 
- EBWTS:
-  PHYX: ~/opt/ebwt/phyX/phyX
-  GENOMESPIKERIBO: ~/opt/ebwt/hg19_ercc92_u13369/ref
+DEFAULTS: &defaults
+ UMI: 4
+ BARCODE: 6
+ GAP: 3
+ LAYOUT: src/barcodes.txt
+ PHYX: ~/opt/ebwt/phyX/phyX
+ GENOMESPIKERIBO: ~/opt/ebwt/hg19_ercc92_u13369/ref
+LIBS:
+ TEST1:
+  <<: *defaults
+  FASTQS:
+   - src/test1-1.fq.gz 
+   - src/test1-2.fq.gz
+ TEST2:
+  <<: *defaults
+  FASTQS:
+   - src/test2-1.fq.gz 
+   - src/test2-2.fq.gz 
