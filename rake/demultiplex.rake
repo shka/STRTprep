@@ -143,11 +143,13 @@ DEDUPandFORMAT
   ucnts = Hash.new
   Parallel.each(cnts.keys, :in_threads => PROCS) { |well|
     ucnts[well] = 0
-    pre = well == 'nonbc' ? 'xzcat out' : 'zcat tmp'
-    post = well == 'nonbc' ? 'xz' : 'gz'
-    open("| #{pre}/seq/#{libid}.#{well}.fq.#{post} | grep ^@ | wc -l").each { |line|
-      ucnts[well] = line.rstrip.to_i unless line.nil?
-    }
+    if well == 'nonbc'
+      ucnts[well] = cnts[well]
+    else
+      open("| zcat tmp/seq/#{libid}.#{well}.fq.gz | wc -l").each { |line|
+        ucnts[well] = line.rstrip.to_i/4 unless line.nil?
+      }
+    end
   }
 
   open("out/stat/#{libid}.demultiplex.txt", 'w') { |fp|
