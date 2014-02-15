@@ -1,16 +1,15 @@
 require 'levenshtein'
-require 'mkfifo'
 require 'parallel'
-require 'tempfile'
 
 tmp = Array.new
 LIBIDS.each { |libid|
   taskid = "demultiplex_#{libid}"
   tmp.push(taskid)
   task taskid => "out/stat/#{libid}.demultiplex.txt"
-  # WELLS.each { |well|
-  #   file "out/seq/#{libid}.#{well}.fq.xz" => 'out/stat/demultiplex.txt'
-  # }
+  open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
+    well, barcodegap = line.rstrip.split(/\t/)
+    file "tmp/seq/#{libid}.#{well}.fq.gz" => "out/stat/#{libid}.demultiplex.txt"
+  }
 }
 
 task 'demultiplex' => tmp
@@ -163,26 +162,4 @@ DEDUPandFORMAT
     }
     fp.puts ['TOTAL', '', '', total, utotal].join("\t")
   }
-end
-
-#
-
-@mytemppaths = Array.new
-
-def mytemppath(basename, tmpdir = Dir::tmpdir)
-  fp = Tempfile.open(basename, tmpdir)
-  path = fp.path
-  @mytemppaths.push(path)
-  fp.close!
-  path
-end
-
-END { @mytemppaths.each { |path| File.unlink(path) if File.exist?(path) } }
-
-##
-
-def mymkfifo(basename, tmpdir = Dir::tmpdir)
-  path = mytemppath(basename, tmpdir)
-  File.mkfifo(path)
-  path
 end
