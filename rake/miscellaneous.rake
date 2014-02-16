@@ -11,7 +11,7 @@ def mytemppath(basename, tmpdir = Dir::tmpdir)
   path
 end
 
-END { @mytemppaths.each { |path| File.unlink(path) if File.exist?(path) } }
+END { @mytemppaths.each { |path| sh "rm -rf #{path}" if File.exist?(path) } }
 
 def mymkfifo(basename, tmpdir = Dir::tmpdir)
   path = mytemppath(basename, tmpdir)
