@@ -8,7 +8,7 @@ LIBIDS.each { |libid|
   task taskid => "out/stat/#{libid}.demultiplex.txt"
   open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
     well, barcodegap = line.rstrip.split(/\t/)
-    file "tmp/seq/#{libid}.#{well}.fq.gz" => "out/stat/#{libid}.demultiplex.txt"
+    file "out/stat/#{libid}.demultiplex.txt" => "tmp/seq/#{libid}.#{well}.fq.gz"
   }
 }
 
