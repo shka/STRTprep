@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+gem 'bio-faster'
 gem 'levenshtein'
 gem 'mkfifo'
 gem 'parallel'
