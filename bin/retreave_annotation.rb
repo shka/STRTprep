@@ -47,7 +47,7 @@ def retreave_annotation_class6(acc2sym, tbl, ofs=1)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
         left = lefts[0].to_i
-        out.puts [cols[1], left-500, left, "#{acc2sym[cols[0]]}|#{cols[0]}", 0, '+'].join("\t")
+        out.puts [cols[1], left-500 < 0 ? 0 : left-500, left, "#{acc2sym[cols[0]]}|#{cols[0]}", 0, '+'].join("\t")
       else
         right = rights[-1].to_i
         out.puts [cols[1], right, right+500, "#{acc2sym[cols[0]]}|#{cols[0]}", 0, '-'].join("\t")
