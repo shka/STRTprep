@@ -6,6 +6,7 @@ LIBIDS.each { |libid|
   align = "out/stat/#{libid}.alignment.txt"
   spike_raw = "out/stat/#{libid}.spike.raw.txt.xz"
   spike = "out/stat/#{libid}.spike.txt"
+  demultiplex = "out/stat/#{libid}.demultiplex.txt"
   task taskid => [align, spike]
   tmp.push(taskid)
   #
@@ -24,32 +25,25 @@ LIBIDS.each { |libid|
     sh "cp -r #{t.prerequisites[0].sub('.1.ebwt', '')}* #{newdir}"
   end
   #
-  seqs = Array.new
+  bams = Array.new
   open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
     well, barcodegap = line.rstrip.split(/\t/)
     bam = "out/ali/#{libid}.#{well}/accepted_hits.bam"
-    seq = "tmp/seq/#{libid}.#{well}.fq.gz"
-    file bam => [seq, gidx, tidx] do |t|
+    file bam => [demultiplex, gidx, tidx] do |t|
       alignment(t)
     end
-    seqs.push(seq)
+    bams.push(bam)
   }
   #
-  file align => seqs do |t|
-    bams = Parallel.map(t.prerequisites, :in_threads => PROCS/2) { |seq|
-      bam = seq.sub('tmp/seq', 'out/ali').sub('.fq.gz', '/accepted_hits.bam')
+  file align do |t|
+    Parallel.map(bams, :in_threads => PROCS/2) { |bam|
       Rake::Task[bam].invoke unless File.exist?(bam)
-      bam
     }
     stat_alignment(t.name, bams)
   end
   #
-  file spike_raw => [align] + seqs do |t|
-    bams = Array.new
-    t.prerequitsites[1..-1].each { |seq|
-      bams.push(seq.sub('tmp/seq', 'out/ali').sub('.fq.gz', '/accepted_hits.bam'))
-    }
-    stat_spike_raw(t.name, bams)
+  file spike => align do |t|
+    stat_spike(t.name, bams)
   end
 }
 
@@ -62,7 +56,8 @@ def alignment(t)
 tophat --transcriptome-index #{t.prerequisites[2].sub('.1.ebwt', '')} \\
        --library-type fr-secondstrand --min-anchor 5 --coverage-search \\
        --output-dir #{outdir} --num-threads 2 --bowtie1 \\
-       #{t.prerequisites[1].sub('.1.ebwt', '')} #{t.prerequisites[0]}
+       #{t.prerequisites[1].sub('.1.ebwt', '')} \\
+       #{t.name.sub('out/ali', 'tmp/seq').sub('/accepted_hits.bam', '.fq.gz')}
 PROCESS
 end
 
@@ -94,20 +89,19 @@ def stat_alignment(name, bams)
   fp.close
 end
 
-def stat_spike_raw(name, bams)
+def stat_spike(name, bams)
   libid = name.pathmap("%n").pathmap("%n").pathmap("%n")
-  fp = open("| xz -c --extreme > #{name}", 'w')
-  bams.each { |bam|
+  raw = name.sub(/\.txt$/, '.raw.txt.xz')
+  fp = open("| xz -c --extreme > #{raw}", 'w')
+  Parallel.map(bams, :in_threads => PROCS/2) { |bam|
     head = [libid, /#{libid}\.([^\/]+)/.match(bam).to_a[1], ''].join("\t")
     open("| samtools view #{bam} | cut -f 1,3,4,12- | grep '\tRNA_SPIKE_' | grep XS:A:+ | cut -f 2,3").each { |line| fp.puts head + line }
   }
   fp.close
-end
-
-rule '.spike.txt' => proc { |t| t.sub(/\.txt$/, '.raw.txt.xz') } do |t|
+  #
   lwsr2cnt = Hash.new
   s2cnt = Hash.new
-  open("| xzcat #{t.prerequisites[0]}").each { |line|
+  open("| xzcat #{raw}").each { |line|
     lib, well, spike, pos = line.rstrip.split(/\t/)
     libwell = "#{lib}\t#{well}"
     lwsr2cnt[libwell] = Hash.new unless lwsr2cnt.key?(libwell)
@@ -121,7 +115,7 @@ rule '.spike.txt' => proc { |t| t.sub(/\.txt$/, '.raw.txt.xz') } do |t|
     end
   }
   spike_ordered = s2cnt.keys.sort
-  fp = open(t.name, 'w')
+  fp = open(name, 'w')
   tmp = ['LIB', 'WELL', 'ORDER']
   spike_ordered.each { |spike|
     tmp.push("#{spike}, pos<=10", "#{spike}, pos<=100", "#{spike}, 100<pos", "#{spike}, pos<=10 rate")
