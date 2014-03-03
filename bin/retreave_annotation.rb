@@ -18,7 +18,7 @@ def retreave_annotation_class7(acc2sym, tbl, ofs=1)
   out = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class7.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] == cols[5] && cols[3] == cols[6]
+    if cols[2+ofs] == cols[5] && cols[2+ofs] == cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       len = lefts.length
@@ -42,7 +42,7 @@ def retreave_annotation_class6(acc2sym, tbl, ofs=1)
   out = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class6.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] == cols[5] && cols[3] == cols[6]
+    if cols[2+ofs] == cols[5] && cols[2+ofs] == cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
@@ -61,7 +61,7 @@ def retreave_annotation_class5(acc2sym, tbl, ofs=1)
   out = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class5.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] == cols[5] && cols[3] == cols[6]
+    if cols[2+ofs] == cols[5] && cols[2+ofs] == cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
@@ -78,7 +78,7 @@ def retreave_annotation_class4(acc2sym, tbl, ofs=1)
   out = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class4.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] != cols[5] && cols[3] != cols[6]
+    if cols[2+ofs] != cols[5] && cols[2+ofs] != cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
@@ -113,7 +113,7 @@ def retreave_annotation_class3(acc2sym, tbl, ofs=1)
   out = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class3.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] != cols[5] && cols[3] != cols[6]
+    if cols[2+ofs] != cols[5] && cols[2+ofs] != cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       cdsleft = cols[5].to_i
@@ -140,7 +140,7 @@ def retreave_annotation_class2(acc2sym, tbl, ofs=1)
   fp = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class2.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] != cols[5] && cols[3] != cols[6]
+    if cols[2+ofs] != cols[5] && cols[2+ofs] != cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
@@ -159,7 +159,7 @@ def retreave_annotation_class1(acc2sym, tbl, ofs=1)
   out = open("| gzip -c --best > #{tbl.sub('.txt.gz', '.class1.bed.gz')}", 'w')
   open("| gunzip -c #{tbl} | cut -f #{ofs}-").each { |line|
     cols = line.rstrip.split(/\t/)
-    if cols[3] != cols[5] && cols[3] != cols[6]
+    if cols[2+ofs] != cols[5] && cols[2+ofs] != cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
