@@ -64,10 +64,11 @@ PROCESS
       0.upto(8) { |i| cnts.push(`gunzip -c #{beds[i]} | wc -l`.strip.to_i) }
       ret = [bam.pathmap('%3d').pathmap('%f').sub('.', "\t"), cnts[0]]
       1.upto(8) { |i| ret.push(cnts[i-1]-cnts[i]) }
+      ret.push(ret[-9]-ret[-1]-ret[-2]-ret[-3]-ret[-4]-ret[-5]-ret[-6]-ret[-7]-ret[-8])
       ret
     }
     fp = open(t.name, 'w')
-    fp.puts ['LIB', 'WELL', 'MAPPED.UNIQ', "5'-UTR", 'CODING.UPSTREAM', 'CDS', "3'-UTR", 'NONCODING.1ST', 'NONCODING.UPSTREAM', 'NONCODING.OTHER', 'INTRON'].join("\t")
+    fp.puts ['LIB', 'WELL', 'MAPPED.UNIQ.NONSPIKE.NONRIBO', "5'-UTR", 'CODING.UPSTREAM', 'CDS', "3'-UTR", 'NONCODING.1ST', 'NONCODING.UPSTREAM', 'NONCODING.OTHER', 'INTRON', 'UNANNOTATED'].join("\t")
     tmp.each { |row| fp.puts row.join("\t") }
     fp.close
   end
@@ -171,7 +172,7 @@ rule /tmp\/ali\/.*\/nonclass0\.bed\.gz/ => proc { |t|
   out = open("| gzip -c --best > #{t.name}", 'w')
   open("| bamToBed -i #{bam}").each { |line|
     cols = line.rstrip.split(/\t/)
-    next if acc2dups.key?(cols[3]) || cols[0] =~ /^RNA_SPIKE_/ || cols[0] =~ /^RIBO_/
+    next if acc2dups.key?(cols[3]) || (cols[0] =~ /^RNA_SPIKE_/ && cols[5] == '+') || cols[0] =~ /^RIBO_/
     if cols[5] == '+'
       out.puts([cols[0], cols[1], cols[1].to_i+1, cols[3], 1, '+'].join("\t"))
     else
