@@ -108,7 +108,7 @@ def stat_spike(name, bams)
   libid = name.pathmap("%n").pathmap("%n").pathmap("%n")
   raw = name.sub(/\.txt$/, '.raw.txt.xz')
   fp = open("| xz -c --extreme > #{raw}", 'w')
-  Parallel.map(bams, :in_threads => PROCS/2) { |bam|
+  Parallel.map(bams, :in_threads => PROCS) { |bam|
     head = [libid, /#{libid}\.([^\/]+)/.match(bam).to_a[1], ''].join("\t")
     open("| samtools view #{bam} | cut -f 1,3,4,12- | grep '\tRNA_SPIKE_' | grep XS:A:+ | cut -f 2,3").each { |line| fp.puts head + line }
   }
@@ -161,25 +161,7 @@ rule /tmp\/ali\/.*\/nonclass0\.bed\.gz/ => proc { |t|
   t.sub('tmp/', 'out/').sub('/nonclass0.bed.gz', '/accepted_hits.bam')
 } do |t|
   sh "mkdir -p #{t.name.pathmap('%d')}"
-  bam = t.prerequisites[0]
-  #
-  acc2dups = Hash.new
-  open("| samtools view #{bam} | cut -f 1 | sort | uniq -c").each { |line|
-    dups, acc = line.strip.split(/\s/)
-    acc2dups[acc] = '' if dups != '1'
-  }
-  #
-  out = open("| gzip -c --best > #{t.name}", 'w')
-  open("| bamToBed -i #{bam}").each { |line|
-    cols = line.rstrip.split(/\t/)
-    next if acc2dups.key?(cols[3]) || (cols[0] =~ /^RNA_SPIKE_/ && cols[5] == '+') || cols[0] =~ /^RIBO_/
-    if cols[5] == '+'
-      out.puts([cols[0], cols[1], cols[1].to_i+1, cols[3], 1, '+'].join("\t"))
-    else
-      out.puts([cols[0], cols[2].to_i-1, cols[2], cols[3], 1, '-'].join("\t"))
-    end
-  }
-  out.close
+  sh "bin/_process_nonclass0.rb #{t.prerequisites[0]} | gzip -c > #{t.name}"
 end
 
 rule /tmp\/ali\/.*\/nonclass[1-8]\.bed\.gz/ => proc { |t|
