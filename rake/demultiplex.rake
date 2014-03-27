@@ -61,7 +61,7 @@ rule '.demultiplex.txt' => proc { |target|
     fifo2path = mymkfifo('fifo2-')
     fifo2paths.push(fifo2path)
     pid = Kernel.fork {
-      qvcheck = Regexp.new("[!-1]") # QV17 = "2"
+      qvcheck = Regexp.new("[!-#]") # QV2 == "#",  QV17 == "2"
       open(fifo2path, 'w') { |fifo2|
         open(fifo1paths[i], 'r').each { |line|
           seqid, seq, qvs = line.rstrip.split(/\t/)
@@ -153,11 +153,15 @@ DEDUPandFORMAT
   }
 
   open("out/stat/#{libid}.demultiplex.txt", 'w') { |fp|
-    fp.puts ['LIB', 'WELL', 'BARCODE', 'TOTAL', 'UTOTAL'].join("\t")
+    fp.puts ['LIB', 'WELL', 'BARCODE', 'TOTAL', 'UTOTAL', 'REDUNDANCY'].join("\t")
     total = 0
     utotal = 0
     cnts.keys.sort.each { |well|
-      fp.puts [libid, well, ((well != 'nonbc' && well != 'lowqv') ? barcodegaps[wells.index(well)] : ''), cnts[well], ucnts[well]].join("\t")
+      if well != 'nonbc' && well != 'lowqv'
+        fp.puts [libid, well, barcodegaps[wells.index(well)], cnts[well], ucnts[well], cnts[well].to_f/ucnts[well].to_f].join("\t")
+      else
+        fp.puts [libid, well, '', cnts[well], ucnts[well]].join("\t")
+      end
       total += cnts[well]
       utotal += ucnts[well]
     }
