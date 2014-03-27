@@ -61,19 +61,24 @@ rule '.demultiplex.txt' => proc { |target|
     fifo2path = mymkfifo('fifo2-')
     fifo2paths.push(fifo2path)
     pid = Kernel.fork {
+      qvcheck = Regexp.new("[!-1]") # QV17 = "2"
       open(fifo2path, 'w') { |fifo2|
         open(fifo1paths[i], 'r').each { |line|
           seqid, seq, qvs = line.rstrip.split(/\t/)
-          tmpdists = Hash.new
-          barcodegaps.each_index { |bcidx|
-            tmpdist = Levenshtein.distance(barcodegaps[bcidx], seq[umi, barcode+gap], threshold=2)
-            dist = tmpdist.nil? ? 2 : tmpdist
-            tmpdists[bcidx] = dist
-            break if dist < 2
-          }
-          dists = tmpdists.sort { |a, b| a[1] <=> b[1] }
-          bc = dists[0][1] < 2 ? dists[0][0] : -1
-          fifo2.puts([bc, seqid, seq, qvs].join("\t"))
+          if qvcheck.match(qvs).nil?
+            tmpdists = Hash.new
+            barcodegaps.each_index { |bcidx|
+              tmpdist = Levenshtein.distance(barcodegaps[bcidx], seq[umi, barcode+gap], threshold=2)
+              dist = tmpdist.nil? ? 2 : tmpdist
+              tmpdists[bcidx] = dist
+              break if dist < 2
+            }
+            dists = tmpdists.sort { |a, b| a[1] <=> b[1] }
+            bc = dists[0][1] < 2 ? dists[0][0] : -1
+            fifo2.puts([bc, seqid, seq, qvs].join("\t"))
+          else
+            fifo2.puts([-2, seqid, seq, qvs].join("\t"))
+          end
         }
       }
       Kernel.exit!
@@ -82,7 +87,7 @@ rule '.demultiplex.txt' => proc { |target|
 
   # [join] and write into files by barcode
 
-  tmpwells = wells + ['nonbc']
+  tmpwells = wells + ['lowqv', 'nonbc']
 
   fifo2s = Array.new
   fifo2paths.each { |fifo2path| fifo2s.push(open(fifo2path, 'r')) }
@@ -93,12 +98,12 @@ rule '.demultiplex.txt' => proc { |target|
   outs = Array.new
   tmpwells.each_index { |i|
     well = tmpwells[i]
-    if well == 'nonbc'
-      outs[i] = open("| xz -z -c -e > out/seq/#{libid}.#{well}.fq.xz", 'w')
+    if well == 'nonbc' || well == 'lowqv'
+      outs[i] = open("| gzip --best -c > out/seq/#{libid}.#{well}.fq.gz", 'w')
     else
       tmp = <<"DEDUPandFORMAT"
-| sort -k 1 -r | cut -f 2- | uniq -f 2 \\
-| ruby -F'\\t' -anle 'puts(["@"+$F[0], $F[1][#{left}..-1], "+", $F[2][#{left}..-1]].join("\\n"))' \\
+| sort -d -k 2,3 -r -S #{sprintf("%d%%", 100/PROCS)} \\
+| ruby -F'\\t' -anle 'BEGIN { pre = ""}; if pre != $F[1] then puts(["@"+$F[0], $F[1][#{left}..-1], "+", $F[2][#{left}..-1]].join("\\n")); pre = $F[1] end' \\
 | gzip -c > tmp/seq/#{libid}.#{well}.fq.gz
 DEDUPandFORMAT
       outs[i] = open(tmp, 'w')
@@ -117,12 +122,12 @@ DEDUPandFORMAT
         well = tmpwells[bc]
         cnts[well] = 0 unless cnts.key?(well)
         cnts[well] += 1
-        if bc == -1
-          outs[-1].puts(['@'+seqid, seq, '+', qvs].join("\n"))
+        if bc == -1 || bc == -2
+          outs[bc].puts(['@'+seqid, seq, '+', qvs].join("\n"))
         else
           f1 = seq[0..right]
           f2 = qvs[0..right]
-          outs[bc].puts([f1+f2, seqid, f1, f2].join("\t"))
+          outs[bc].puts([seqid, f1, f2].join("\t"))
         end
       end
     end
@@ -138,7 +143,7 @@ DEDUPandFORMAT
   ucnts = Hash.new
   Parallel.each(cnts.keys, :in_threads => PROCS) { |well|
     ucnts[well] = 0
-    if well == 'nonbc'
+    if well == 'nonbc' || well == 'lowqv'
       ucnts[well] = cnts[well]
     else
       open("| zcat tmp/seq/#{libid}.#{well}.fq.gz | wc -l").each { |line|
@@ -152,7 +157,7 @@ DEDUPandFORMAT
     total = 0
     utotal = 0
     cnts.keys.sort.each { |well|
-      fp.puts [libid, well, (well != 'nonbc' ? barcodegaps[wells.index(well)] : ''), cnts[well], ucnts[well]].join("\t")
+      fp.puts [libid, well, ((well != 'nonbc' && well != 'lowqv') ? barcodegaps[wells.index(well)] : ''), cnts[well], ucnts[well]].join("\t")
       total += cnts[well]
       utotal += ucnts[well]
     }
