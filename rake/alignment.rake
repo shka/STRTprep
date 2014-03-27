@@ -68,8 +68,8 @@ PROCESS
       ret
     }
     fp = open(t.name, 'w')
-    fp.puts ['LIB', 'WELL', 'MAPPED.UNIQ.NONSPIKE.NONRIBO', "5'-UTR", 'CODING.UPSTREAM', 'CDS', "3'-UTR", 'NONCODING.1ST', 'NONCODING.UPSTREAM', 'NONCODING.OTHER', 'INTRON', 'UNANNOTATED'].join("\t")
-    tmp.each { |row| fp.puts row.join("\t") }
+    fp.puts ['LIB', 'WELL', 'MAPPED.UNIQ.NONSPIKE.NONRIBO', "5'-UTR", 'CODING.UPSTREAM', 'CDS', "3'-UTR", 'NONCODING.1ST', 'NONCODING.UPSTREAM', 'NONCODING.OTHER', 'INTRON', 'UNANNOTATED', "5'-END.RATE"].join("\t")
+    tmp.each { |row| fp.puts (row + [(row[-9]+row[-8]+row[-5]+row[-4]).to_f/row[-10].to_f]).join("\t") }
     fp.close
   end
 }
@@ -87,6 +87,7 @@ def stat_alignment(name, bams)
     mapped = /Mapped\s*\:\s+(\d+)/.match(fp.gets).to_a[1]
     multi = /these\s*\:\s+(\d+)/.match(fp.gets).to_a[1]
     tmp.push(mapped.to_i-multi.to_i)
+    tmp.push(tmp[-1].to_f/tmp[-2].to_f)
     tmp.push(mapped)
     fp.close
     open("| samtools view #{mbam} | cut -f 1,3,12- | grep '\tRNA_SPIKE_' | grep XS:A:+ | cut -f 1 | sort -u | wc -l").each { |line|
@@ -95,11 +96,12 @@ def stat_alignment(name, bams)
     open("| samtools view #{mbam} | cut -f 1,3 | grep -E '\tRIBO_' | cut -f 1 | sort -u | wc -l").each { |line|
       tmp.push(line.rstrip) if line != "\n"
     }
+    tmp.push((tmp[-3].to_f-tmp[-2].to_f-tmp[-1].to_f)/tmp[-2].to_i)
     well = /#{libid}\.([^\/]+)/.match(mbam).to_a[1]
     well2cnts[well] = [libid, well] + tmp
   }
   fp = open(name, 'w')
-  fp.puts ['LIB', 'WELL', 'TOTAL', 'MAPPED.UNIQUE', 'MAPPED.ALL', 'SPIKE', 'RIBOSOMAL'].join("\t")
+  fp.puts ['LIB', 'WELL', 'TOTAL', 'MAPPED.UNIQUE', 'MAPPED.UNIQUE/TOTAL', 'MAPPED.ALL', 'SPIKE', 'RIBOSOMAL', '(MAPPED.ALL-SPIKE-RIBOSOMAL)/SPIKE'].join("\t")
   well2cnts.keys.sort.each { |well| fp.puts well2cnts[well].join("\t") }
   fp.close
 end
@@ -176,6 +178,6 @@ end
 
 task 'clean_alignment' do
   LIBIDS.each { |libid|
-    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt"
+    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.*"
   }
 end
