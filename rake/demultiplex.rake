@@ -164,3 +164,9 @@ DEDUPandFORMAT
     fp.puts ['TOTAL', '', '', total, utotal].join("\t")
   }
 end
+
+task 'clean_demultiplex' do
+  LIBIDS.each { |libid|
+    sh "rm -rf tmp/seq/#{libid}.*.fq.gz out/seq/#{libid}.*.fq.gz out/stat/#{libid}.demultiplex.txt"
+  }
+end

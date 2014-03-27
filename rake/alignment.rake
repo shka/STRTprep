@@ -173,3 +173,9 @@ rule /tmp\/ali\/.*\/nonclass[1-8]\.bed\.gz/ => proc { |t|
 } do |t|
   sh "bedtools intersect -s -a #{t.prerequisites[0]} -b #{t.prerequisites[1]} -v | gzip -c > #{t.name}"
 end
+
+task 'clean_alignment' do
+  LIBIDS.each { |libid|
+    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt"
+  }
+end

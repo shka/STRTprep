@@ -13,7 +13,13 @@ rule '.phyX.bam' => proc { |target|
   conf['FASTQS'].each { |fastq| tmp.push(File.expand_path(fastq)) }
   tmp
 } do |t|
-  sh 'mkdir -p out/ali log'
+  sh 'mkdir -p out/ali out/stat'
   libid = t.name.pathmap("%n").pathmap("%n")
-  sh "(gunzip -c #{t.prerequisites[1..-1].join(' ')} | bowtie -S -p #{PROCS} -t #{t.prerequisites[0].sub('.1.ebwt', '')} - | samtools view -@ #{PROCS} -S -b -o #{t.name} -) 2> log/#{libid}.removePhyX.log "
+  sh "(gunzip -c #{t.prerequisites[1..-1].join(' ')} | bowtie -S -p #{PROCS} -t #{t.prerequisites[0].sub('.1.ebwt', '')} - | samtools view -@ #{PROCS} -S -b -o #{t.name} -) 2> out/stat/#{libid}.removePhyX.log"
+end
+
+task 'clean_removePhyX' do
+  LIBIDS.each { |libid|
+    sh "rm -rf out/ali/#{libid}.PhyX.bam out/stat/#{libid}.removePhyX.log"
+  }
 end
