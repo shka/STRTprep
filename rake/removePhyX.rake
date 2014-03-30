@@ -1,12 +1,15 @@
+####
+#
+# dummy paths
+#
 tmp = Array.new
-LIBIDS.each { |libid|
-  taskid = "removePhyX_#{libid}"
-  tmp.push(taskid)
-  task taskid => "out/ali/#{libid}.phyX.bam"
-}
+LIBIDS.each { |libid| tmp.push("out/ali/#{libid}.phyX.bam") }
+task :removePhyX => tmp
 
-task 'removePhyX' => tmp
-
+####
+#
+# file (out/ali/#{libid}).phyX.bam => [#{libid.PHYX}.1.ebwt]+#{libid.FASTQS}
+#
 rule '.phyX.bam' => proc { |target|
   conf = CONF[target.pathmap("%n").pathmap("%n")]
   tmp = [File.expand_path(conf['PHYX']+".1.ebwt")]
@@ -18,6 +21,10 @@ rule '.phyX.bam' => proc { |target|
   sh "(gunzip -c #{t.prerequisites[1..-1].join(' ')} | bowtie -S -p #{PROCS} -t #{t.prerequisites[0].sub('.1.ebwt', '')} - | samtools view -@ #{PROCS} -S -b -o #{t.name} -) 2> out/stat/#{libid}.removePhyX.log"
 end
 
+####
+#
+# cleaning
+#
 task 'clean_removePhyX' do
   LIBIDS.each { |libid|
     sh "rm -rf out/ali/#{libid}.PhyX.bam out/stat/#{libid}.removePhyX.log"

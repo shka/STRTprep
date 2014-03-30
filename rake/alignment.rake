@@ -1,82 +1,102 @@
-require 'parallel'
-
+####
+#
+# dummy paths
+#
 tmp = Array.new
+gidxmap = Hash.new
+tidxmap = Hash.new
 LIBIDS.each { |libid|
-  taskid = "alignment_#{libid}"
-  align = "out/stat/#{libid}.alignment.txt"
-  annotation = "out/stat/#{libid}.annotation.txt"
-  spike_raw = "out/stat/#{libid}.spike.raw.txt.xz"
-  spike = "out/stat/#{libid}.spike.txt"
-  demultiplex = "out/stat/#{libid}.demultiplex.txt"
-  task taskid => [align, spike, annotation]
-  tmp.push(taskid)
+  palign = "parallel_alignment_#{libid}"
+  bams = Array.new
+  beds4annotation = Array.new
+  open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
+    cols = line.rstrip.split
+    wellid = cols[0]
+    bams.push("out/ali/#{libid}.#{wellid}/accepted_hits.bam")
+    beds4annotation.push("tmp/ali/#{libid}.#{wellid}/nonclass8.bed.gz")
+  }
+  multitask palign => beds4annotation
+  #
+  gidxorg = File.expand_path(CONF[libid]['GENOMESPIKERIBO']+'.1.ebwt')
+  gidxdir = mytemppath('gidx')
+  gidx = gidxdir+'/'+gidxorg.pathmap('%f')
+  sh "mkdir -p #{gidxdir}; cp -rp #{gidxorg.sub('.1.ebwt', '')}* #{gidxdir}"
+  gidxmap[gidxorg] = gidx
   #
   tidxorg = File.expand_path(CONF[libid]['TRANSCRIPT']+'.1.ebwt')
-  tidx = mytemppath('tidx')+'/'+tidxorg.pathmap('%f')
-  file tidx => tidxorg do |t|
-    newdir = t.name.pathmap('%d')
-    sh "mkdir -p #{newdir}"
-    sh "cp -r #{t.prerequisites[0].sub('.1.ebwt', '')}* #{newdir}"
-  end
-  gidxorg = File.expand_path(CONF[libid]['GENOMESPIKERIBO']+'.1.ebwt')
-  gidx = mytemppath('gidx')+'/'+gidxorg.pathmap('%f')
-  file gidx => gidxorg do |t|
-    newdir = t.name.pathmap('%d')
-    sh "mkdir -p #{newdir}"
-    sh "cp -r #{t.prerequisites[0].sub('.1.ebwt', '')}* #{newdir}"
-  end
+  tidxdir = mytemppath('tidx')
+  tidx = tidxdir+'/'+tidxorg.pathmap('%f')
+  sh "mkdir -p #{tidxdir}; cp -rp #{tidxorg.sub('.1.ebwt', '')}* #{tidxdir}"
+  tidxmap[tidxorg] = tidx
   #
-  bams = Array.new
-  open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
-    well, barcodegap = line.rstrip.split(/\t/)
-    bams.push("out/ali/#{libid}.#{well}/accepted_hits.bam")
-  }
-  #
-  file align => [demultiplex, gidx, tidx] do |t|
-    Parallel.map(bams, :in_threads => PROCS/2) { |bam|
-      if !File.exist?(bam) || File.mtime(bam) < File.mtime(demultiplex)
-        outdir = bam.sub('/accepted_hits.bam', '')
-        sh "mkdir -p #{outdir}"
-        sh <<"PROCESS"
-tophat --transcriptome-index #{t.prerequisites[2].sub('.1.ebwt', '')} \\
-       --library-type fr-secondstrand --min-anchor 5 --coverage-search \\
-       --output-dir #{outdir} --num-threads 2 --bowtie1 \\
-       #{t.prerequisites[1].sub('.1.ebwt', '')} \\
-       #{bam.sub('out/ali', 'tmp/seq').sub('/accepted_hits.bam', '.fq.gz')}
-PROCESS
-      end
-    }
-    stat_alignment(t.name, bams)
+  stat_alignment = "out/stat/#{libid}.alignment.txt"
+  file stat_alignment => [palign] + bams do |t|
+    report_alignment(t.name, t.prerequisites[1..-1])
   end
+  tmp.push(stat_alignment)
   #
-  file spike => align do |t|
-    stat_spike(t.name, bams)
+  stat_spike = "out/stat/#{libid}.spike.txt"
+  file stat_spike => [palign] + bams do |t|
+    report_spike(t.name, t.prerequisites[1..-1])
   end
+  tmp.push(stat_spike)
   #
-  file annotation => align do |t|
-    tmp = Parallel.map(bams, :in_threads => PROCS) { |bam|
-      beds = Array.new
-      0.upto(8) { |i|
-        beds.push(bam.sub('out/', 'tmp/').sub('/accepted_hits.bam', "/nonclass#{i}.bed.gz"))
-      }
-      Rake::Task[beds[-1]].invoke
-      cnts = Array.new
-      0.upto(8) { |i| cnts.push(`gunzip -c #{beds[i]} | wc -l`.strip.to_i) }
-      ret = [bam.pathmap('%3d').pathmap('%f').sub('.', "\t"), cnts[0]]
-      1.upto(8) { |i| ret.push(cnts[i-1]-cnts[i]) }
-      ret.push(ret[-9]-ret[-1]-ret[-2]-ret[-3]-ret[-4]-ret[-5]-ret[-6]-ret[-7]-ret[-8])
-      ret
-    }
-    fp = open(t.name, 'w')
-    fp.puts ['LIB', 'WELL', 'MAPPED.UNIQ.NONSPIKE.NONRIBO', "5'-UTR", 'CODING.UPSTREAM', 'CDS', "3'-UTR", 'NONCODING.1ST', 'NONCODING.UPSTREAM', 'NONCODING.OTHER', 'INTRON', 'UNANNOTATED', "5'-END.RATE"].join("\t")
-    tmp.each { |row| fp.puts (row + [(row[-9]+row[-8]+row[-5]+row[-4]).to_f/row[-10].to_f]).join("\t") }
-    fp.close
+  stat_annotation = "out/stat/#{libid}.annotation.txt"
+  file stat_annotation => [palign] + bams do |t|
+    report_annotation(t.name, t.prerequisites[1..-1])
   end
+  tmp.push(stat_annotation)
 }
-
 task :alignment => tmp
 
-def stat_alignment(name, bams)
+####
+#
+# file out/ali/#{libid}.#{wellid}/accepted_hits.bam
+#      => [tmp/seq/#{libid}.#{wellid}.fq.gz,
+#          #{libid.GENOMESPIKERIBO}.1.ebwt,
+#          #{libid.TRANSCRIPT}.1.ebwt]
+#
+rule /out\/ali\/[^\/]+\/accepted_hits\.bam/ => proc { |target|
+  libid, wellid = /\/([^.\/]+)\.([^.\/]+)\//.match(target)[1..2]
+  [ "tmp/seq/#{libid}.#{wellid}.fq.gz",
+    File.expand_path(CONF[libid]['GENOMESPIKERIBO']+'.1.ebwt'),
+    File.expand_path(CONF[libid]['TRANSCRIPT']+'.1.ebwt')]
+} do |t|
+  outdir = t.name.sub('/accepted_hits.bam', '')
+  sh "mkdir -p #{outdir}"
+  sh <<"PROCESS"
+tophat \\
+  --transcriptome-index #{tidxmap[t.prerequisites[2]].sub('.1.ebwt', '')} \\
+  --library-type fr-secondstrand --min-anchor 5 --coverage-search \\
+  --output-dir #{outdir} --num-threads 2 --bowtie1 \\
+    #{gidxmap[t.prerequisites[1]].sub('.1.ebwt', '')} #{t.prerequisites[0]}
+PROCESS
+end
+
+####
+#
+def report_annotation(name, bams)
+  tmp = Parallel.map(bams, :in_threads => PROCS) { |bam|
+    beds = Array.new
+    0.upto(8) { |i|
+      beds.push(bam.sub('out/', 'tmp/').sub('/accepted_hits.bam', "/nonclass#{i}.bed.gz"))
+    }
+    cnts = Array.new
+    0.upto(8) { |i| cnts.push(`gunzip -c #{beds[i]} | wc -l`.strip.to_i) }
+    ret = [bam.pathmap('%3d').pathmap('%f').sub('.', "\t"), cnts[0]]
+    1.upto(8) { |i| ret.push(cnts[i-1]-cnts[i]) }
+    ret.push(ret[-9]-ret[-1]-ret[-2]-ret[-3]-ret[-4]-ret[-5]-ret[-6]-ret[-7]-ret[-8])
+    ret
+  }
+  fp = open(name, 'w')
+  fp.puts ['LIB', 'WELL', 'MAPPED.UNIQ.NONSPIKE.NONRIBO', "5'-UTR", 'CODING.UPSTREAM', 'CDS', "3'-UTR", 'NONCODING.1ST', 'NONCODING.UPSTREAM', 'NONCODING.OTHER', 'INTRON', 'UNANNOTATED', "5'-END.RATE"].join("\t")
+  tmp.each { |row| fp.puts (row + [(row[-9]+row[-8]+row[-5]+row[-4]).to_f/row[-10].to_f]).join("\t") }
+  fp.close
+end
+
+####
+#
+def report_alignment(name, bams)
   libid = name.pathmap("%n").pathmap("%n")
   well2cnts = Hash.new
   Parallel.each(bams, :in_threads => PROCS) { |mbam|
@@ -106,7 +126,9 @@ def stat_alignment(name, bams)
   fp.close
 end
 
-def stat_spike(name, bams)
+####
+#
+def report_spike(name, bams)
   libid = name.pathmap("%n").pathmap("%n").pathmap("%n")
   raw = name.sub(/\.txt$/, '.raw.txt.xz')
   fp = open("| xz -c --extreme > #{raw}", 'w')
@@ -159,6 +181,8 @@ def stat_spike(name, bams)
   fp.close
 end
 
+####
+#
 rule /tmp\/ali\/.*\/nonclass0\.bed\.gz/ => proc { |t|
   t.sub('tmp/', 'out/').sub('/nonclass0.bed.gz', '/accepted_hits.bam')
 } do |t|
@@ -166,6 +190,8 @@ rule /tmp\/ali\/.*\/nonclass0\.bed\.gz/ => proc { |t|
   sh "bin/_process_nonclass0.rb #{t.prerequisites[0]} | gzip -c > #{t.name}"
 end
 
+####
+#
 rule /tmp\/ali\/.*\/nonclass[1-8]\.bed\.gz/ => proc { |t|
   libid = t.pathmap('%3d').pathmap('%n')
   clsid = /nonclass(\d)/.match(t).to_a[1].to_i
@@ -176,6 +202,10 @@ rule /tmp\/ali\/.*\/nonclass[1-8]\.bed\.gz/ => proc { |t|
   sh "bedtools intersect -s -a #{t.prerequisites[0]} -b #{t.prerequisites[1]} -v | gzip -c > #{t.name}"
 end
 
+####
+#
+# cleaning
+#
 task 'clean_alignment' do
   LIBIDS.each { |libid|
     sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.*"
