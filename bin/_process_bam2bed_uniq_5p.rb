@@ -13,7 +13,7 @@ open("| samtools view #{orgbam} | cut -f 1 | sort -S #{sprintf('%d', 100/Paralle
 
 open("| bamToBed -i #{strbam}").each { |line|
   cols = line.rstrip.split(/\t/)
-  puts [cols[0],
-        str == 'fwd' ? cols[1] : cols[2].to_i-1,
-        str == 'fwd' ? cols[1].to_i+1 : cols[2], cols[3], cols[4] ].join("\t") unless acc2dups.key?(cols[3])
+  puts [ cols[0],
+         str == 'fwd' ? cols[1] : cols[2].to_i-1,
+         str == 'fwd' ? cols[1].to_i+1 : cols[2], cols[3], cols[4], cols[5] ].join("\t") unless acc2dups.key?(cols[3])
 }

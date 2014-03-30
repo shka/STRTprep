@@ -2,8 +2,8 @@
 
 require 'parallel'
 
-libwellid = ARGV[1]
-str = ARGV[0]
+libwellid = ARGV[0]
+str = ARGV[1]
 bed = ARGV[2]
 
 offset = str == 'fwd' ? 1 : 0
