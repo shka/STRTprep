@@ -1,3 +1,5 @@
+require 'parallel'
+
 ####
 #
 # dummy paths
@@ -6,7 +8,6 @@ tmp = Array.new
 gidxmap = Hash.new
 tidxmap = Hash.new
 LIBIDS.each { |libid|
-  palign = "parallel_alignment_#{libid}"
   bams = Array.new
   beds4annotation = Array.new
   open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
@@ -15,7 +16,18 @@ LIBIDS.each { |libid|
     bams.push("out/ali/#{libid}.#{wellid}/accepted_hits.bam")
     beds4annotation.push("tmp/ali/#{libid}.#{wellid}/nonclass8.bed.gz")
   }
-  multitask palign => beds4annotation
+  #
+  timestamp = "tmp/#{libid}.alignment.timestamp"
+  file timestamp => beds4annotation do |t|
+    sh "touch #{t.name}"
+    begin
+      Parallel.each(t.prerequisites, :in_threads => PROCS) { |target|
+        Rake::Task[target].invoke
+      }
+    rescue
+      sh "rm -rf #{timestamp}"
+    end
+  end
   #
   gidxorg = File.expand_path(CONF[libid]['GENOMESPIKERIBO']+'.1.ebwt')
   gidxdir = mytemppath('gidx')
@@ -30,19 +42,19 @@ LIBIDS.each { |libid|
   tidxmap[tidxorg] = tidx
   #
   stat_alignment = "out/stat/#{libid}.alignment.txt"
-  file stat_alignment => [palign] + bams do |t|
+  file stat_alignment => [timestamp] + bams do |t|
     report_alignment(t.name, t.prerequisites[1..-1])
   end
   tmp.push(stat_alignment)
   #
   stat_spike = "out/stat/#{libid}.spike.txt"
-  file stat_spike => [palign] + bams do |t|
+  file stat_spike => [timestamp] + bams do |t|
     report_spike(t.name, t.prerequisites[1..-1])
   end
   tmp.push(stat_spike)
   #
   stat_annotation = "out/stat/#{libid}.annotation.txt"
-  file stat_annotation => [palign] + bams do |t|
+  file stat_annotation => [timestamp] + bams do |t|
     report_annotation(t.name, t.prerequisites[1..-1])
   end
   tmp.push(stat_annotation)
@@ -160,7 +172,8 @@ def report_spike(name, bams)
     tmp.push("#{spike}, pos<=10", "#{spike}, pos<=100", "#{spike}, 100<pos", "#{spike}, pos<=10 rate")
   }
   fp.puts tmp.join("\t")
-  lwsr2cnt.each { |libwell, sr2cnt|
+  lwsr2cnt.keys.sort.each { |libwell|
+    sr2cnt = lwsr2cnt[libwell]
     tmp = [libwell]
     tmp2 = sr2cnt.keys.sort { |a, b|
       r2cnt_a = sr2cnt[a]
@@ -208,6 +221,6 @@ end
 #
 task 'clean_alignment' do
   LIBIDS.each { |libid|
-    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.*"
+    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.* tmp/#{libid}.alignment.timestamp"
   }
 end

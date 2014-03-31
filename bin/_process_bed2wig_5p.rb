@@ -23,7 +23,7 @@ open("| gunzip -c #{bed} | cut -f 1,#{str == 'fwd' ? 2 : 3},4").each { |line|
   end
 }
 
-puts "track type=wiggle_0 name=\"#{libwellid}\" description=\"\" alwayzZero=on visivility=dense maxHeightPixex=64:32:16 color=#{str != 'fwd' ? '255,128,0' : '0,128,255'}"
+puts "track type=wiggle_0 name=\"#{libwellid}\" description=\"\" alwayzZero=on visivility=dense maxHeightPixel=64:32:16 color=#{str != 'fwd' ? '255,128,0' : '0,128,255'}"
 chr2pos2cnt.each { |chr, pos2cnt|
   puts "variableStep chrom=#{chr}"
   pos2cnt.keys.sort.each { |pos|

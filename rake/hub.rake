@@ -6,15 +6,29 @@ require 'parallel'
 #
 tmp = Array.new
 LIBIDS.each { |libid|
+  tmp2 = Array.new
   open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
     cols = line.rstrip.split
     wellid = cols[0]
     ['fwd', 'rev'].each { |str|
-      tmp.push("out/hub/#{libid}.#{wellid}.#{str}.uniq.5p.bw")
+      tmp2.push("out/hub/#{libid}.#{wellid}.#{str}.uniq.5p.bw")
     }
   }
+  #
+  timestamp = "tmp/#{libid}.hub.timestamp"
+  file timestamp => tmp2 do |t|
+    sh "touch #{t.name}"
+    begin
+      Parallel.each(t.prerequisites, :in_threads => PROCS) { |target|
+        Rake::Task[target].invoke
+      }
+    rescue
+      sh "rm -rf #{timestamp}"
+    end
+  end
+  tmp.push(timestamp)
 }
-multitask :hub => tmp
+task :hub => tmp
 
 ####
 #
@@ -85,5 +99,5 @@ rule /^out\/hub\/[^.]+\.[^.]+\.(fwd|rev)\.uniq\.5p\.bw/ => proc { |target|
 # cleaning
 #
 task 'clean_hub' do
-  LIBIDS.each { |libid| sh "rm -rf tmp/hub/#{libid}.* out/hub/#{libid}.*" }
+  LIBIDS.each { |libid| sh "rm -rf tmp/hub/#{libid}.* out/hub/#{libid}.* tmp/#{libid}.hub.timestamp" }
 end
