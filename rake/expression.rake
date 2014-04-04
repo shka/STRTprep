@@ -31,7 +31,7 @@ LIBIDS.each { |libid|
   #
   target = "out/exp/#{libid}.reads.uniq.txt.gz"
   file target => [timestamp]+tmp2 do |t|
-    sh "mkdir -p #{t.name.pathmap('%d')}"
+    sh "mkdir -p out/exp"
     join_counts(t.name, t.prerequisites[1..-1])
   end
   tmp.push(target)
@@ -94,6 +94,7 @@ rule /tmp\/exp\/[^.]+\.[^.]+\.txt/ => proc { |target|
   [ target.sub('exp', 'hub').sub('.txt.gz', '.fwd.uniq.5p.bed.gz'),
     target.sub('exp', 'hub').sub('.txt.gz', '.rev.uniq.5p.bed.gz') ]
 } do |t|
+  sh "mkdir -p tmp/exp"
   sh "bin/_process_overlapping_fixedstep_count.rb #{t.prerequisites.join(' ')} | gzip -c > #{t.name}"
 end
 
