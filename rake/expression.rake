@@ -27,14 +27,14 @@ LIBIDS.each { |libid|
   ####
   #
   # file out/exp/#{libid}.reads.uniq.txt.gz
-  #      => [ expression_#{libid}, tmp2 ]
+  #      => [ tmp/#{libid}.expression.timestamp, tmp2 ]
   #
-  target = "out/exp/#{libid}.reads.uniq.txt.gz"
-  file target => [timestamp]+tmp2 do |t|
+  file "out/exp/#{libid}.reads.uniq.txt.gz" => [timestamp]+tmp2 do |t|
     sh "mkdir -p out/exp"
     join_counts(t.name, t.prerequisites[1..-1])
   end
-  tmp.push(target)
+  #
+  tmp.push("out/exp/#{libid}.reads.uniq.detected.RData.gz")
 }
 task :expression => tmp
 
@@ -100,8 +100,19 @@ end
 
 ####
 #
+# file out/exp/#{libid}.reads.uniq.detected.RData.gz
+#      => out/exp/#{libid}.reads.uniq.txt.gz
+#
+rule /[^.]+\.reads\.uniq\.detected\.RData\.gz/ => proc { |target|
+  target.sub('.detected.RData', '.txt')
+} do |t|
+  sh "R --vanilla --quiet --args #{t.prerequisites[0]} < bin/_process_expression.R"
+end
+
+####
+#
 # cleaning
 #
 task 'clean_expression' do
-  LIBIDS.each { |libid| sh "rm -rf tmp/exp/#{libid}.* tmp/#{libid}.expression.timestamp out/exp/#{libid}.*" }
+  LIBIDS.each { |libid| sh "rm -rf tmp/exp/#{libid}.* tmp/#{libid}.expression.timestamp out/exp/#{libid}.* out/stat/#{libid}.fig.*" }
 end
