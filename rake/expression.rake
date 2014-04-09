@@ -29,12 +29,13 @@ LIBIDS.each { |libid|
   # file out/exp/#{libid}.reads.uniq.txt.gz
   #      => [ tmp/#{libid}.expression.timestamp, tmp2 ]
   #
-  file "out/exp/#{libid}.reads.uniq.txt.gz" => [timestamp]+tmp2 do |t|
+  table = "out/exp/#{libid}.reads.uniq.txt.gz"
+  file table => [timestamp]+tmp2 do |t|
     sh "mkdir -p out/exp"
     join_counts(t.name, t.prerequisites[1..-1])
   end
   #
-  tmp.push("out/exp/#{libid}.reads.uniq.detected.RData.gz")
+  tmp.push("out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.annotated.txt.gz")
 }
 task :expression => tmp
 
@@ -107,6 +108,88 @@ rule /[^.]+\.reads\.uniq\.detected\.RData\.gz/ => proc { |target|
   target.sub('.detected.RData', '.txt')
 } do |t|
   sh "R --vanilla --quiet --args #{t.prerequisites[0]} < bin/_process_expression.R"
+end
+
+####
+#
+# file tmp/exp/#{libid}.reads.uniq.bed.gz
+#      => out/exp/#{libid}.reads.uniq.txt.gz
+#
+rule /[^.]+\.reads\.uniq\.bed\.gz/ => proc { |target|
+  target.sub('.bed', '.txt').sub('tmp/', 'out/')
+} do |t|
+  sh "gunzip -c #{t.prerequisites[0]} | cut -f 1 | grep -v -P '^$' | ruby -nle 't=/([^:]+):(\\d+)\-(\\d+),([-+])/.match($_).to_a; puts [t[1], t[2].to_i-1, t[3], t[0], 0, t[4]].join(\"\\t\")' | sort -k1,1 -k2,2n | gzip -c > #{t.name}"
+end
+
+####
+#
+# file tmp/exp/#{libid}.reads.uniq.class\d.txt.gz
+#      => [ tmp/exp/#{libid}.reads.uniq.bed.gz, tmp/*.class\d.bed.gz ]
+#
+rule /[^.]+\.reads\.uniq\.class\d\.txt\.gz/ => proc { |target|
+  libid = /\/([^\/.]+)\.reads/.match(target).to_a[1]
+  classid = /\.class(\d)/.match(target).to_a[1]
+  [ target.sub("\.class#{classid}.txt", '.bed'),
+    File.expand_path(CONF[libid]['TRANSCRIPT'] + ".class#{classid}.bed.gz") ]
+} do |t|
+  sh "bedtools intersect -wa -wb -s -a #{t.prerequisites[0]} -b #{t.prerequisites[1]} | cut -f 4,10 | cut -d '|' -f 1 | sort -u | gzip -c > #{t.name}"
+end
+
+###
+#
+# file out/exp/#{libid}.annotation.uniq.txt.gz
+#      => [ out/exp/#{libid}.reads.uniq.txt.gz,
+#           tmp/exp/#{libid}.reads.uniq.class\d.txt.gz ]
+#
+rule /[^.]+\.annotation\.uniq\.txt\.gz/ => proc {  |target|
+  tmp = [ target.sub('.annotation', '.reads') ]
+  1.upto(8) { |i| tmp.push(target.sub('out/', 'tmp/').sub('.annotation.uniq', ".reads.uniq.class#{i}")) }
+  tmp
+} do |t|
+  anncls = ['Unannotated', "Coding 5'-UTR", "Coding upstream", 'Coding CDS', "Coding 3'-UTR", 'Noncoding 1st-exon', 'Noncoding upstream', 'Noncoding other exon', 'Intron']
+  reg2cls = Hash.new
+  reg2sym = Hash.new
+  1.upto(8) { |i|
+    open("| gunzip -c #{t.prerequisites[i]} ").each { |line|
+      reg, sym = line.rstrip.split(/\t/)
+      reg2cls[reg] = anncls[i] unless reg2cls.key?(reg)
+      if reg2cls[reg] == anncls[i]
+        reg2sym[reg] = Hash.new unless reg2sym.key?(reg)
+        reg2sym[reg][sym] = ''
+      end
+    }
+  }
+  fp = open("| gzip -c > #{t.name}", 'w')
+  open("| gunzip -c #{t.prerequisites[0]} | cut -f 1").each { |line|
+    reg = line.rstrip
+    if reg == ''
+      fp.puts ['', 'Symbol', 'Location'].join("\t")
+    else
+      cls = reg2cls.key?(reg) ? reg2cls[reg] : 'Unannotated'
+      sym = reg2cls.key?(reg) ? reg2sym[reg].keys.join(',') : reg
+      fp.puts [reg, sym, cls].join("\t")
+    end
+  }
+  fp.close
+end
+
+####
+#
+# file out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.RData.gz
+#      => out/exp/#{libid}.reads.uniq.detected.RData.gz
+#
+rule /\.reads\.uniq\.detected\.normalized\.fluctuated\.RData\.gz/ => proc { |target| target.sub('.normalized.fluctuated', '') }
+
+####
+#
+# file out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.annotated.txt.gz
+#      => [ out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.RData.gz,
+#           out/exp/#{libid}.annotation.uniq.txt.gz ]
+#
+rule /\.reads\.uniq\.detected\.normalized\.fluctuated\.annotated\.txt\.gz$/ => proc { |target|
+  [ target.sub('.annotated.txt', '.RData'),
+    target.sub('.reads', '.annotation').sub('.detected.normalized.fluctuated.annotated', '')] } do |t|
+  sh "R --vanilla --quiet --args #{t.prerequisites.join("\t")} #{t.name} < bin/_process_annotation.R"
 end
 
 ####
