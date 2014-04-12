@@ -7,6 +7,9 @@ DEFAULTS: &defaults
  PHYX: ~/opt/ebwt/phyX/phyX
  GENOMESPIKERIBO: ~/opt/ebwt/hg19_ercc92_u13369/ref
  TRANSCRIPT: ~/opt/ebwt/hg19_ercc92_u13369/knownGene-140214
+ WELLS:
+  FAILURE:
+  EXCEPTION:
 LIBS:
  TEST1:
   <<: *defaults

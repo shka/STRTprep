@@ -35,7 +35,8 @@ LIBIDS.each { |libid|
     join_counts(t.name, t.prerequisites[1..-1])
   end
   #
-  tmp.push("out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.annotated.txt.gz")
+  tmp.push("out/exp/#{libid}.reads.uniq.success.RData.gz",
+           "out/exp/#{libid}.annotation.uniq.txt.gz")
 }
 task :expression => tmp
 
@@ -101,13 +102,14 @@ end
 
 ####
 #
-# file out/exp/#{libid}.reads.uniq.detected.RData.gz
+# file out/exp/#{libid}.reads.uniq.success.RData.gz
 #      => out/exp/#{libid}.reads.uniq.txt.gz
 #
-rule /[^.]+\.reads\.uniq\.detected\.RData\.gz/ => proc { |target|
-  target.sub('.detected.RData', '.txt')
+rule /\.reads\.uniq\.success\.RData\.gz/ => proc { |target|
+  target.sub('.success.RData', '.txt')
 } do |t|
-  sh "R --vanilla --quiet --args #{t.prerequisites[0]} < bin/_process_expression.R"
+  libid = /\/([^\/.]+)\.reads/.match(t.name).to_a[1]
+  sh "R --vanilla --quiet --args #{t.prerequisites[0]} '#{CONF[libid]['WELLS']['FAILURE']}' '#{CONF[libid]['WELLS']['EXCEPTION']}' < bin/_process_expression.R"
 end
 
 ####
@@ -175,13 +177,6 @@ end
 
 ####
 #
-# file out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.RData.gz
-#      => out/exp/#{libid}.reads.uniq.detected.RData.gz
-#
-rule /\.reads\.uniq\.detected\.normalized\.fluctuated\.RData\.gz/ => proc { |target| target.sub('.normalized.fluctuated', '') }
-
-####
-#
 # file out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.annotated.txt.gz
 #      => [ out/exp/#{libid}.reads.uniq.detected.normalized.fluctuated.RData.gz,
 #           out/exp/#{libid}.annotation.uniq.txt.gz ]
@@ -197,5 +192,5 @@ end
 # cleaning
 #
 task 'clean_expression' do
-  LIBIDS.each { |libid| sh "rm -rf tmp/exp/#{libid}.* tmp/#{libid}.expression.timestamp out/exp/#{libid}.* out/stat/#{libid}.fig.*" }
+  LIBIDS.each { |libid| sh "rm -rf tmp/exp/#{libid}.* tmp/#{libid}.expression.timestamp out/exp/#{libid}.*" }
 end
