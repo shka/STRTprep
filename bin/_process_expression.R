@@ -9,12 +9,15 @@ exclude_wells <- function(reads, wells) {
         reads
 }
 
-extract_spike <- function(reads) { reads[which(substr(rownames(reads), 1, 10) == 'RNA_SPIKE_'), ] }
+extract_spike <- function(reads) {
+    reads[which(substr(rownames(reads), 1, 10) == 'RNA_SPIKE_'), ]
+}
 
-normalize <- function(reads) {
+normalize <- function(reads, wells.exclude) {
     reads.spike <- extract_spike(reads)
     reads.spike.colSums <- colSums(reads.spike)
-    reads.scale <- min(reads.spike.colSums)/reads.spike.colSums
+    reads.spike.wells <- sapply(colnames(reads.spike), function(n) { strsplit(n, '\\.')[[1]][2] })
+    reads.scale <- min(reads.spike.colSums[which(!is.element(reads.spike.wells, strsplit(wells.exclude, ',')[[1]]))])/reads.spike.colSums
     reads*rep(reads.scale, each=nrow(reads))
 }
 
@@ -35,14 +38,14 @@ gz <- gzfile(reads.uniq.success.file, 'wb')
 save(reads.uniq.success, file=gz)
 close(gz)
 
-nreads.uniq.success <- normalize(reads.uniq.success)
+nreads.uniq.success <- normalize(reads.uniq.success, wells.exception)
 nreads.uniq.success.file <- sub('.reads', '.nreads', reads.uniq.success.file)
 gz <- gzfile(nreads.uniq.success.file, 'wb')
 save(nreads.uniq.success, file=gz)
 close(gz)
 rm(reads.uniq.success)
 
-nreads.uniq.success.spike <- extract_spike(nreads.uniq.success)
+nreads.uniq.success.spike <- exclude_wells(extract_spike(nreads.uniq.success), wells.exception)
 nreads.uniq.success.spike.rowMeans <- rowMeans(nreads.uniq.success.spike)
 nreads.uniq.success.spike.rowCV2s <-
     rowCV2s(nreads.uniq.success.spike, nreads.uniq.success.spike.rowMeans)
@@ -98,8 +101,7 @@ tryCatch ({
                        errormodel.uniq.success$coefficients[2],
                        errormodel.uniq.success$aic),
                'Gamma fit; 99% confidence',
-               sprintf('%d detected regions, %d samples',
-                       length(nreads.rowMeans), ncol(nreads)),
+               sprintf('%d detected regions', length(nreads.rowMeans)),
                sprintf('%d fluctuated regions; FDR<0.01',
                        length(nreads.isFluctuated))),
            lty=c(NA, 1, 2, NA, NA), pch=c(1, NA, NA, 1, 1),

@@ -59,7 +59,7 @@ LIBIDS.each { |libid|
   end
   tmp.push(stat_annotation)
 }
-task :alignment => tmp
+task :alignment => tmp + [:demultiplex]
 
 ####
 #
@@ -221,6 +221,6 @@ end
 #
 task 'clean_alignment' do
   LIBIDS.each { |libid|
-    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.* tmp/#{libid}.alignment.timestamp"
+    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.*/* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.* tmp/#{libid}.alignment.timestamp"
   }
 end

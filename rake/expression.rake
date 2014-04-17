@@ -38,7 +38,7 @@ LIBIDS.each { |libid|
   tmp.push("out/exp/#{libid}.reads.uniq.success.RData.gz",
            "out/exp/#{libid}.annotation.uniq.txt.gz")
 }
-task :expression => tmp
+task :expression => tmp + [:hub]
 
 def join_counts(out, ins)
   reg2cnts = Hash.new

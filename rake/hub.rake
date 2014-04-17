@@ -28,7 +28,7 @@ LIBIDS.each { |libid|
   end
   tmp.push(timestamp)
 }
-task :hub => tmp
+task :hub => tmp + [:alignment]
 
 ####
 #
