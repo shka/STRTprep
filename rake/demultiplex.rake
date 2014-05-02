@@ -185,7 +185,7 @@ DEDUPandFORMAT
         total += cnts[well]
         utotal += ucnts[well]
       }
-      fp.puts ['TOTAL', '', '', total, utotal].join("\t")
+      fp.puts [libid, 'TOTAL', '', total, utotal].join("\t")
     }
 
   rescue
