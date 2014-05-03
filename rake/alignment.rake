@@ -147,9 +147,8 @@ end
 ####
 #
 def report_spike_raw(name, bams)
-  libid = name.pathmap("%n").pathmap("%n").pathmap("%n")
-  raw = name.sub(/\.txt$/, '.raw.txt.xz')
-  fp = open("| xz -c --extreme > #{raw}", 'w')
+  libid = name.pathmap("%n").pathmap("%n").pathmap("%n").pathmap("%n")
+  fp = open("| xz -c --extreme > #{name}", 'w')
   Parallel.map(bams, :in_threads => PROCS) { |bam|
     head = [libid, /#{libid}\.([^\/]+)/.match(bam).to_a[1], ''].join("\t")
     open("| samtools view #{bam} | cut -f 1,3,4,12- | grep '\tRNA_SPIKE_' | grep XS:A:+ | cut -f 2,3").each { |line| fp.puts head + line }
