@@ -35,7 +35,8 @@ LIBIDS.each { |libid|
     join_counts(t.name, t.prerequisites[1..-1])
   end
   #
-  tmp.push("out/exp/#{libid}.reads.uniq.success.RData.gz",
+  tmp.push("out/exp/#{libid}.pvclust.uniq.success.fluctuated.RData.gz",
+           "out/exp/#{libid}.pca.uniq.success.fluctuated.RData.gz",
            "out/exp/#{libid}.annotation.uniq.txt.gz")
 }
 task :expression => tmp + [:hub]
@@ -99,6 +100,37 @@ rule /tmp\/exp\/[^.]+\.[^.]+\.txt/ => proc { |target|
   sh "mkdir -p tmp/exp"
   sh "bin/_process_overlapping_fixedstep_count.rb #{t.prerequisites.join(' ')} | gzip -c > #{t.name}"
 end
+
+####
+#
+# file out/exp/#{libid}.pvclust.uniq.success.fluctuated.RData.gz
+#      => out/exp/#{libid}.nreads.uniq.success.fluctuated.RData.gz
+#
+rule /\.pvclust\.uniq\.success\.fluctuated\.RData\.gz/ => proc { |target|
+  target.sub('.pvclust.', '.nreads.')
+} do |t|
+  sh "R --vanilla --quiet --args #{t.prerequisites[0]} #{PROCS} < bin/_process_expression_pvclust.R"
+end
+
+####
+#
+# file out/exp/#{libid}.pca.uniq.success.fluctuated.RData.gz
+#      => out/exp/#{libid}.nreads.uniq.success.fluctuated.RData.gz
+#
+rule /\.pca\.uniq\.success\.fluctuated\.RData\.gz/ => proc { |target|
+  target.sub('.pca.', '.nreads.')
+} do |t|
+  sh "R --vanilla --quiet --args #{t.prerequisites[0]} < bin/_process_expression_pca.R"
+end
+
+####
+#
+# file out/exp/#{libid}.nreads.uniq.success.fluctuated.RData.gz
+#      => out/exp/#{libid}.reads.uniq.success.RData.gz
+#
+rule /\.nreads\.uniq\.success\.fluctuated\.RData\.gz/ => proc { |target|
+  target.sub('.nreads.', '.reads.').sub('.fluctuated', '')
+}
 
 ####
 #

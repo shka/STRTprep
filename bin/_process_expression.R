@@ -108,25 +108,3 @@ tryCatch ({
            col=c('black', 'blue', 'blue', 'gray', 'red'), cex=6/8)
 }, finally={ dev.off() })
 options(scipen=0)
-
-##
-
-process_prcomp <- function(dat) {
-    n <- nrow(dat)
-    r <- prcomp(dat)
-    pcs <- sum(r$sdev^2 >= 1)
-    r$loadings <- t(r$sdev*t(r$rotation))[, 1:pcs, drop=F]
-    r$contributions <- rowSums(r$loadings^2)
-    r$eigen_values <- r$sdev[1:pcs]^2
-    r$denominator <- sum(r$sdev^2)
-    r$proportions <- r$eigen_values/r$denominator*100
-    r$cumulative_proportions <- cumsum(r$proportions)
-    r$scores <- r$x * sqrt(n/(n-1))
-    invisible(r)
-}
-
-nreads.uniq.success.fluctuated.colOffsets <- apply(nreads.uniq.success.fluctuated, 2, function(cols) { min(cols[which(cols > 0)])*sqrt(errormodel.uniq.success$coefficients[1]) })
-pca.uniq.success.fluctuated <- process_prcomp(t(log10(nreads.uniq.success.fluctuated+runif(length(nreads.uniq.success.fluctuated), min=0, max=rep(nreads.uniq.success.fluctuated.colOffsets, each=nrow(nreads.uniq.success.fluctuated))))))
-gz <- gzfile(sub('nreads.', 'pca.', nreads.uniq.success.fluctuated.file), 'wb')
-save(pca.uniq.success.fluctuated, file=gz)
-close(gz)
