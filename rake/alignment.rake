@@ -7,9 +7,9 @@ require 'parallel'
 tmp = Array.new
 gidxmap = Hash.new
 tidxmap = Hash.new
+beds4annotation = Array.new
 LIBIDS.each { |libid|
   bams = Array.new
-  beds4annotation = Array.new
   open(File.expand_path(CONF[libid]['LAYOUT'])).each { |line|
     cols = line.rstrip.split
     wellid = cols[0]
@@ -65,7 +65,7 @@ LIBIDS.each { |libid|
   end
   tmp.push(stat_annotation)
 }
-task :alignment => tmp + [:demultiplex]
+task :alignment => [:demultiplex] + beds4annotation + tmp
 
 ####
 #
