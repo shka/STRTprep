@@ -2,11 +2,8 @@ library(maptools)
 
 args <- commandArgs(trailingOnly=T)
 nreads.uniq.success.fluctuated.file <- args[1]
-  nreads.uniq.success.fluctuated.file <- '/proj/b2014022/private/STRTprep.SARM/out/exp/SARM4a1.nreads.uniq.success.fluctuated.RData.gz'
 lib <- sub('out/exp/', '', strsplit(nreads.uniq.success.fluctuated.file, '\\.')[[1]][1])
-  lib <- sub('SARM/out/exp/', '', strsplit(nreads.uniq.success.fluctuated.file, '\\.')[[1]][2])
 nreads.uniq.success.file <- sub('.fluctuated', '', nreads.uniq.success.fluctuated.file)
-## errormodel.uniq.success.file <- sub('.fluctuated', '', sub('nreads.', 'errormodel.', nreads.uniq.success.fluctuated.file))
 pca.uniq.success.fluctuated.file <- sub('nreads.', 'pca.', nreads.uniq.success.fluctuated.file)
 
 process_prcomp <- function(dat) {
@@ -25,16 +22,12 @@ process_prcomp <- function(dat) {
 
 load(nreads.uniq.success.fluctuated.file)
 load(nreads.uniq.success.file)
-## load(errormodel.uniq.success.file)
-## nreads.uniq.success.fluctuated.colOffsets <- apply(nreads.uniq.success.fluctuated, 2, function(cols) { min(cols[which(cols > 0)])*sqrt(errormodel.uniq.success$coefficients[1]) })
 nreads.uniq.success.colOffsets <- apply(nreads.uniq.success[, colnames(nreads.uniq.success.fluctuated)], 2, function(cols) { min(cols[which(cols > 0)])/2 })
 pca.uniq.success.fluctuated <- process_prcomp(t(log10(nreads.uniq.success.fluctuated+runif(length(nreads.uniq.success.fluctuated), min=0, max=rep(nreads.uniq.success.colOffsets, each=nrow(nreads.uniq.success.fluctuated))))))
 
 gz <- gzfile(pca.uniq.success.fluctuated.file, 'wb')
 save(pca.uniq.success.fluctuated, file=gz)
 close(gz)
-
-## load(pca.uniq.success.fluctuated.file)
 
 plot_pca <- function(pcx, pcy) {
     x <- pca.uniq.success.fluctuated$scores[, pcx]
