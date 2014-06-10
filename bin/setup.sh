@@ -7,8 +7,8 @@ module load tophat/2.0.10
 module load R/3.0.1
 module load openmpi/1.7
 module load ruby/2.1.0
-module load bedtools/2.17.0
-module load ucsc
+module load BEDTools/2.17.0
+module load ucsc/140527
 
 export GEM_HOME=$PWD/var/lib/gems
 export RUBYLIB=$GEM_HOME
