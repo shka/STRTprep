@@ -126,21 +126,24 @@ end
 ####
 #
 # file out/exp/#{libid}.nreads.uniq.success.fluctuated.RData.gz
-#      => out/exp/#{libid}.reads.uniq.success.RData.gz
+#      => out/exp/#{libid}.nreads.uniq.success.RData.gz
 #
 rule /\.nreads\.uniq\.success\.fluctuated\.RData\.gz/ => proc { |target|
-  target.sub('.nreads.', '.reads.').sub('.fluctuated', '')
-}
+  target.sub('.fluctuated', '')
+} do |t|
+  libid = /\/([^\/.]+)\.nreads/.match(t.name).to_a[1]
+  sh "R --vanilla --quiet --args #{t.prerequisites[0]} '#{CONF[libid]['WELLS']['EXCEPTION']}' #{CONF[libid]['FDR']} < bin/_process_expression_fluctuation.R"
+end
 
 ####
 #
-# file out/exp/#{libid}.reads.uniq.success.RData.gz
+# file out/exp/#{libid}.nreads.uniq.success.RData.gz
 #      => out/exp/#{libid}.reads.uniq.txt.gz
 #
 rule /\.reads\.uniq\.success\.RData\.gz/ => proc { |target|
-  target.sub('.success.RData', '.txt')
+  target.sub('.success.RData', '.txt').sub('.nreads', '.reads')
 } do |t|
-  libid = /\/([^\/.]+)\.reads/.match(t.name).to_a[1]
+  libid = /\/([^\/.]+)\.nreads/.match(t.name).to_a[1]
   sh "R --vanilla --quiet --args #{t.prerequisites[0]} '#{CONF[libid]['WELLS']['FAILURE']}' '#{CONF[libid]['WELLS']['EXCEPTION']}' < bin/_process_expression.R"
 end
 

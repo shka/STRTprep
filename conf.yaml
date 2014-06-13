@@ -10,6 +10,7 @@ DEFAULTS: &defaults
  WELLS:
   FAILURE:
   EXCEPTION:
+ FDR: 0.01
 LIBS:
  TEST1:
   <<: *defaults
