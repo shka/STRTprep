@@ -140,7 +140,7 @@ end
 # file out/exp/#{libid}.nreads.uniq.success.RData.gz
 #      => out/exp/#{libid}.reads.uniq.txt.gz
 #
-rule /\.reads\.uniq\.success\.RData\.gz/ => proc { |target|
+rule /\.nreads\.uniq\.success\.RData\.gz/ => proc { |target|
   target.sub('.success.RData', '.txt').sub('.nreads', '.reads')
 } do |t|
   libid = /\/([^\/.]+)\.nreads/.match(t.name).to_a[1]

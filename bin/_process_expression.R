@@ -1,4 +1,4 @@
-source('bin/_libary_expression.R')
+source('bin/_library_expression.R')
 
 normalize <- function(reads, wells.exclude) {
     reads.spike <- extract_spike(reads)
