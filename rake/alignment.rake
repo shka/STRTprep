@@ -64,6 +64,15 @@ LIBIDS.each { |libid|
     report_annotation(t.name, t.prerequisites[1..-1])
   end
   tmp.push(stat_annotation)
+  #
+  stat_summary = "out/stat/STRTQC-#{libid}.xlsx"
+  file stat_summary => [ stat_spike,
+                         "out/stat/#{libid}.demultiplex.txt",
+                         stat_alignment,
+                         stat_annotation ] do |t|
+    sh "R --vanilla --quiet --args src/STRTQC-template.xlsx #{t.name} #{t.prerequisites.join(' ')} \"#{CONF[libid]['FASTQS'].join('; ')}\" < bin/_process_alignment_summary.R"
+  end
+  tmp.push(stat_summary)
 }
 task :alignment => [:demultiplex] + beds4annotation + tmp
 
@@ -201,6 +210,6 @@ end
 #
 task 'clean_alignment' do
   LIBIDS.each { |libid|
-    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.*/* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.* tmp/#{libid}.alignment.timestamp"
+    sh "rm -rf tmp/ali/#{libid}.* out/ali/#{libid}.*/* out/stat/#{libid}.alignment.txt out/stat/#{libid}.annotation.txt out/stat/#{libid}.spike.* out/stat/STRTQC-#{libid}.xlsx tmp/#{libid}.alignment.timestamp"
   }
 end

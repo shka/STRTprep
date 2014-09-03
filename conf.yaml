@@ -3,7 +3,7 @@ DEFAULTS: &defaults
  BARCODE: 6
  GAP: 3
  CDNA: 37
- LAYOUT: src/barcodes.txt
+ LAYOUT: src/barcodes.old.txt
  PHYX: ~/opt/ebwt/phyX/phyX
  GENOMESPIKERIBO: ~/opt/ebwt/hg19_ercc92_u13369/ref
  TRANSCRIPT: ~/opt/ebwt/hg19_ercc92_u13369/knownGene-140214
