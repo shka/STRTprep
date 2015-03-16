@@ -1,18 +1,24 @@
 #!/usr/bin/env bash
+
 . bin/setup.sh
+
+mkdir -p .homebrew
+curl -L https://github.com/Homebrew/homebrew/tarball/master | tar xz --strip 1 -C .homebrew
+
+brew tap homebrew/science
+
+brew install ruby samtools bowtie bedtools openmpi edirect
+brew install https://raw.githubusercontent.com/Homebrew/homebrew-science/fbf8b1f20c27baa29c24431a03cf30868d6cc933/kent-tools.rb
+brew install tophat --without-bowtie2
+brew install R --with-openblas --without-tcltk --without-x11
+
+R CMD javareconf
+
 gem install bundler
 bundle
-mkdir -p var/lib/R
-## R CMD javareconf -e
-export JAVA_HOME=/sw/comp/java/x86_64/sun_jdk1.7.0_25
-export JAVA=$JAVA_HOME/jre/bin/java
-export JAVAC=$JAVA_HOME/bin/javac
-export JAVAH=$JAVA_HOME/bin/javah
-export JAR=$JAVA_HOME/bin/jar
-export JAVA_LIBS="-L$JAVA_HOME/jre/lib/amd64/server -ljvm"
-export JAVA_CPPFLAGS="-I$JAVA_HOME/include -I$JAVA_HOME/include/linux"
-export JAVA_LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server
+
 R --vanilla --quiet <<EOF
-install.packages(c('maptools', 'pvclust', 'Rmpi', 'snow', 'xlsx'), repos='http://cran.us.r-project.org')
+install.packages('Rmpi', repos='http://cran.r-project.org', configure.args=sprintf("--with-mpi=%s/.homebrew --with-Rmpi-type=MPICH2", getwd()))
+install.packages(c('maptools', 'pvclust', 'xlsx', 'snow'), repos='http://cran.r-project.org')
 EOF
 
