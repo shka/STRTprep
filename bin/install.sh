@@ -5,6 +5,7 @@ set -e
 if [ `uname` = 'Linux' ]; then
     git clone https://github.com/Homebrew/linuxbrew.git .homebrew
 else
+    mkdir .homebrew
     curl -L https://github.com/Homebrew/homebrew/tarball/master | tar xz --strip 1 -C .homebrew
 fi
 
