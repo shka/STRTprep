@@ -27,6 +27,6 @@ end
 #
 task 'clean_removePhyX' do
   LIBIDS.each { |libid|
-    sh "rm -rf out/ali/#{libid}.PhyX.bam out/stat/#{libid}.removePhyX.log"
+    sh "rm -rf out/ali/#{libid}.phyX.bam out/stat/#{libid}.removePhyX.log"
   }
 end
