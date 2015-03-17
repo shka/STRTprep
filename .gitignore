@@ -5,3 +5,4 @@ slurm-*
 Gemfile.lock
 .#*
 .fuse*
+.homebrew

@@ -166,7 +166,7 @@ DEDUPandFORMAT
       if well == 'nonbc' || well == 'lowqv'
         ucnts[well] = cnts[well]
       else
-        open("| zcat tmp/seq/#{libid}.#{well}.fq.gz | wc -l").each { |line|
+        open("| gunzip -c tmp/seq/#{libid}.#{well}.fq.gz | wc -l").each { |line|
           ucnts[well] = line.rstrip.to_i/4 unless line.nil?
         }
       end
