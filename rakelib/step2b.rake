@@ -25,6 +25,8 @@ file 'tmp/step2b' => 'tmp/step2a' do |t|
   outfp.close
 end
 
+file 'tmp/step2b.trace' => 'tmp/step2b'
+
 task :clean_step2b do
   rm_rf "tmp/step2b"
   rm_rf "tmp/step2b.trace"
