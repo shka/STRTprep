@@ -4,7 +4,7 @@ DEFAULTS: &defaults
  GAP: 3
  CDNA: 37
  LAYOUT: src/barcodes.old.txt
- PHYX: src/ebwt/phyX
+ PHYX: src/ebwt/phyX/phyX
  GENOMESPIKERIBO: src/ebwt/hg19_ercc92_u13369/ref
  TRANSCRIPT: src/ebwt/hg19_ercc92_u13369/knownGene-140214
  WELLS:
@@ -15,10 +15,10 @@ LIBS:
  TEST1:
   <<: *defaults
   FASTQS:
-   - src/test1-1.fq.gz 
+   - src/test1-1.fq.gz
    - src/test1-2.fq.gz
  TEST2:
   <<: *defaults
   FASTQS:
-   - src/test2-1.fq.gz 
-   - src/test2-2.fq.gz 
+   - src/test2-1.fq.gz
+   - src/test2-2.fq.gz

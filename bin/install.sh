@@ -16,6 +16,11 @@ brew update
 brew tap homebrew/science
 
 brew install ruby
+brew install coreutils
+brew install fastq-tools
+brew install parallel
+brew install pigz
+brew install gawk
 brew install samtools
 brew install bowtie
 brew install tophat --without-bowtie2

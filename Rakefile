@@ -1,11 +1,23 @@
-load 'rake/miscellaneous.rake'
-load 'rake/configuration.rake'
-load 'rake/removePhyX.rake'
-load 'rake/demultiplex.rake'
-load 'rake/alignment.rake'
-load 'rake/hub.rake'
-load 'rake/expression.rake'
+require 'yaml'
 
-task :default => :expression
+PROCS = `gnproc`.to_i
 
-task 'clean' => ['clean_removePhyX', 'clean_demultiplex', 'clean_alignment', 'clean_hub', 'clean_expression']
+tmp = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'conf.yaml')
+CONF = tmp['LIBS']
+
+LIBIDS = ENV.key?('LIBS') ? ENV['LIBS'].split(',') : CONF.keys
+
+##
+
+targets = Array.new
+LIBIDS.each do |libid|
+  ['A', 'B', 'C', 'D', 'E', 'F'].each do |col|
+    1.upto(8).each do |row|
+      targets.push("out/bam/#{libid}.#{col}#{row}.bam")
+    end
+  end
+end
+
+task :v2 => targets
+
+task :default => :v2
