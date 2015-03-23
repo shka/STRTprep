@@ -26,9 +26,10 @@ file 'tmp/step2c/accepted_hits.bam' =>
 EOF
 end
 
-rule '.samSortedByAcc' => '.bam' do |t|
+rule '.samUniqSortedByAcc' => '.bam' do |t|
   sh <<EOF
 samtools view #{t.source}\
+| grep -E 'NH:i:1(\\s|$)'\
 | gsort --parallel=#{PROCS} -S #{3*PROCS} -k 1,1 \
 | pigz -c > #{t.name} 2> #{t.name}.log
 EOF

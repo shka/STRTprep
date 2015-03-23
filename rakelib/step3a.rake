@@ -30,7 +30,7 @@ end
 
 def step3a_bam_sources(path)
   return ['tmp/step2c/accepted_hits.header',
-          'tmp/step2c/accepted_hits.samSortedByAcc',
+          'tmp/step2c/accepted_hits.samUniqSortedByAcc',
           path.sub(/^out\/bam/, 'tmp').sub(/\.bam$/, '.step3a')]
 end
 
@@ -77,6 +77,7 @@ end
 
 task :clean_step3a do
   LIBIDS.each do |libid|
-    rm_rf "#{libid}.*.step3a"
+    rm_rf "tmp/#{libid}.*.step3a"
+    rm_rf "out/bam/#{libid}.*.bam"
   end
 end
