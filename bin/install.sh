@@ -17,6 +17,11 @@ brew update
 
 brew tap homebrew/science
 
+# bedtools, not later than 2.22.0
+rm .homebrew/Library/Taps/homebrew/homebrew-science/bedtools.rb
+git --work-tree .homebrew/Library/Taps/homebrew/homebrew-science --git-dir .homebrew/Library/Taps/homebrew/homebrew-science/.git checkout 5392a9e bedtools.rb
+brew install bedtools
+
 brew install ruby
 brew install coreutils
 brew install fastq-tools
@@ -26,7 +31,6 @@ brew install gawk
 brew install samtools
 brew install bowtie
 brew install tophat --without-bowtie2
-brew install bedtools
 # brew install edirect
 brew install https://raw.githubusercontent.com/Homebrew/homebrew-science/fbf8b1f20c27baa29c24431a03cf30868d6cc933/kent-tools.rb
 brew install mpich2

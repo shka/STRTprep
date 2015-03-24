@@ -13,7 +13,7 @@ targets = Array.new
 LIBIDS.each do |libid|
   ['A', 'B', 'C', 'D', 'E', 'F'].each do |col|
     1.upto(8).each do |row|
-      targets.push("out/bam/#{libid}.#{col}#{row}.bam")
+      targets.push("tmp/cg/#{libid}.#{col}#{row}.step3c")
     end
   end
 end
