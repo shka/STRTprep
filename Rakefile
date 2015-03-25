@@ -30,6 +30,6 @@ end
 #   end
 # end
 
-task :v2 => ['out/cg/reads_all.txt.gz', 'out/cg/samples.txt']
+task :v2 => ['out/cg/nreads.txt.gz']
 
 task :default => :v2

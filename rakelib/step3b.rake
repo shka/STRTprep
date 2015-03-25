@@ -35,18 +35,21 @@ end
 #
 
 def step3b_cnt_job(t)
-  cnt_all = 0
+  cnt_coding = 0
   cnt_spike = 0
   infp = open(t.source)
   while line = infp.gets
     acc, cnt = line.rstrip.split(/\t/)
-    cnt_all += cnt.to_i
-    cnt_spike += cnt.to_i if /^RNA_SPIKE_/ =~ acc
+    if /^RNA_SPIKE_/ =~ acc
+      cnt_spike += cnt.to_i
+    else
+      cnt_coding += cnt.to_i
+    end
   end
   infp.close
   
   outfp = open(t.name, 'w')
-  outfp.puts [cnt_all, cnt_spike].join("\t")
+  outfp.puts [cnt_coding, cnt_spike].join("\t")
   outfp.close
 end
 

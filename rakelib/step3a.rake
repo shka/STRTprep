@@ -101,7 +101,6 @@ file 'out/cg/regions.bed.gz' => step3a_bed_sources do |t|
   
   extract_5utr(acc2sym, outfp, t.sources[2], ofs)
   extract_proxup(acc2sym, outfp, t.sources[2], ofs)
-  
   outfp.close
 end
 
@@ -132,7 +131,14 @@ file 'tmp/cg/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   acc2sym = load_acc2sym(t.source, isKnownGene)
   
   ofs = isKnownGene ? 1 : 2
-  outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
+  outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | gzip -c > #{t.name}", 'w')
+
+  infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | cut -f 1")
+  while line = infp.gets
+    outfp.puts [line.rstrip, 0, 50, line.rstrip, 0, '+'].join("\t")
+  end
+  infp.close
+  
   extract_exon(acc2sym, outfp, t.sources[2], ofs)
   extract_proxup(acc2sym, outfp, t.sources[2], ofs)
   outfp.close

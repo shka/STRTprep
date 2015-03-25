@@ -28,7 +28,7 @@ samples <- samples.all[which(!is.na(samples.all[, 'NAME'])), ]
 draw_outliers_spikeinReads <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
                   log10(samples[, 'SPIKEIN_READS']),
-                  'Spike-in reads')
+                  expression(log[10]('Spike-in reads')))
 }
 
 extract_outliers_spikeinReads <- function(samples, stat) {
