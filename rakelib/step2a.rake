@@ -1,8 +1,8 @@
-require 'levenshtein'
-
 ##
 ## Step 2a - exclusion of redundant reads by PCR & barcode matching
 ##
+
+require 'levenshtein'
 
 step2a_sources = [File.expand_path(CONF[LIBIDS[0]]['LAYOUT'])]
 LIBIDS.each do |libid|

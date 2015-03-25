@@ -7,17 +7,29 @@ CONF = tmp['LIBS']
 
 LIBIDS = ENV.key?('LIBS') ? ENV['LIBS'].split(',') : CONF.keys
 
-##
-
-targets = Array.new
-LIBIDS.each do |libid|
-  ['A', 'B', 'C', 'D', 'E', 'F'].each do |col|
-    1.upto(8).each do |row|
-      targets.push("tmp/cg/#{libid}.#{col}#{row}.step3c")
-    end
+WELLIDS = Array.new
+['A', 'B', 'C', 'D', 'E', 'F'].each do |col|
+  1.upto(8).each do |row|
+    WELLIDS.push("#{col}#{row}")
   end
 end
 
-task :v2 => targets
+LIBWELLIDS = Array.new
+LIBIDS.each do |libid|
+  WELLIDS.each do |wellid|
+    LIBWELLIDS.push("#{libid}.#{wellid}")
+  end
+end
+
+##
+
+# targets = Array.new
+# LIBIDS.each do |libid|
+#   WELLS.each do |wellid|
+#     targets.push("tmp/cg/#{libid}.#{wellid}.step3c")
+#   end
+# end
+
+task :v2 => ['out/cg/reads_all.txt.gz', 'out/cg/samples.txt']
 
 task :default => :v2
