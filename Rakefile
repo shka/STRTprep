@@ -30,6 +30,6 @@ end
 #   end
 # end
 
-task :v2 => ['out/cg/nreads.txt.gz']
+task :v2 => ['out/cg/nreads.RData']
 
 task :default => :v2
