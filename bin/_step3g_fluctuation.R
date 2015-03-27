@@ -124,6 +124,11 @@ pdf('out/cg/fig_fluctuation.pdf', width=2.26, height=2.26, pointsize=8)
 draw_fluctuation(fluctuation, sig=.25)
 dev.off()
 
+tmp <- data.frame(Gene=names(fluctuation$p.adj), pvalue=fluctuation$p.adj)
+gz <- gzfile('out/cg/fluctuation.txt.gz', 'w')
+write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
+close(gz)
+
 row.fluctuated <- names(fluctuation$p.adj)[which(fluctuation$p.adj < 0.25)]
 row.spikes <- rownames(extract_spikein_reads(nreads))
 nreads.fluctuated <- nreads[union(row.fluctuated, row.spikes), ]

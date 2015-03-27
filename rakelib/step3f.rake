@@ -4,11 +4,11 @@
 
 
 file 'out/cg/reads.txt.gz' =>
-     ['out/cg/samples.txt', 'out/cg/reads_all.txt.gz'] do |t|
+     ['out/cg/samples.csv', 'out/cg/reads_all.txt.gz'] do |t|
   qualified = Hash.new
-  infp = open("| grep -v ^LIBRARY #{t.source}")
+  infp = open("| grep -v ^LIBRARY #{t.source}", 'rt')
   while line = infp.gets
-    cols = line.rstrip.split(/\t/)
+    cols = line.rstrip.split(/,/)
     qualified["#{cols[0]}.#{cols[1]}"] = ''
   end
   infp.close
@@ -40,6 +40,13 @@ file 'out/cg/reads.txt.gz' =>
   end
   infp.close
   outfp.close
+end
+
+file 'out/cg/reads.RData' => 'out/cg/reads.txt.gz' do |t|
+  sh <<EOF
+echo "reads <- read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F); save(reads, file='#{t.name}', compress='gzip')"\
+| R --vanilla --quiet > #{t.name}.log 2>&1
+EOF
 end
 
 file 'out/cg/nreads.RData' => 'out/cg/reads.txt.gz' do |t|

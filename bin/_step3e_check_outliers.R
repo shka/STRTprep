@@ -19,7 +19,7 @@ extract_outliers <- function(x, y, stat) {
 
 ###
 
-samples.all <- read.table('tmp/cg/samples.txt', header=T, sep="\t", quote='', check.names=F)
+samples.all <- read.table('tmp/cg/samples.csv', header=T, sep=',', quote='', check.names=F)
 libwellids <- sprintf('%s.%s', samples.all[, 'LIBRARY'], samples.all[, 'WELL'])
 samples <- samples.all[which(!is.na(samples.all[, 'NAME'])), ]
 
@@ -113,14 +113,14 @@ samples.all[, 'CODING_5END_RATE.OUTLIER'] <-
 
 ###
 
-write.table(samples.all, 'out/cg/samples_all.txt', quote=F, sep="\t", row.names=F, col.names=T)
+write.table(samples.all, 'out/cg/samples_all.csv', quote=F, sep=',', row.names=F, col.names=T)
 
 samples <- samples.all[which(!is.na(samples.all[, 'NAME'])
                              & !samples.all[, 'SPIKEIN_READS.OUTLIER']
                              & !samples.all[, 'MAPPED/SPIKEIN.OUTLIER']
                              & !samples.all[, 'SPIKEIN_5END_RATE.OUTLIER']
                              & !samples.all[, 'CODING_5END_RATE.OUTLIER']), ]
-write.table(samples, 'out/cg/samples.txt', quote=F, sep="\t", row.names=F, col.names=T)
+write.table(samples, 'out/cg/samples.csv', quote=F, sep=',', row.names=F, col.names=T)
 
 ###
 
