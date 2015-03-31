@@ -52,3 +52,5 @@ end
 file 'out/cg/nreads.RData' => 'out/cg/reads.txt.gz' do |t|
   sh "R --vanilla --quiet < bin/_step3f_normalization.R > #{t.name}.log 2>&1"
 end
+
+file 'out/cg/nreads.txt.gz' => 'out/gc/nreads.RData'

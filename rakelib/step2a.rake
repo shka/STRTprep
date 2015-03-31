@@ -118,6 +118,10 @@ file 'tmp/step2a' => step2a_sources do |t|
   end
 end
 
+file 'tmp/step2a.trace' => 'tmp/step2a' do |t|
+    sh "touch #{t.name}"
+end
+
 task :clean_step2a do
   rm_rf "tmp/step2a"
   rm_rf "tmp/step2a.trace"

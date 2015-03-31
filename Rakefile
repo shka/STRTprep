@@ -30,6 +30,6 @@ end
 #   end
 # end
 
-task :v2 => ['out/cg/nreads.RData']
+task :v2 => 'out/cg/diffexp.csv'
 
 task :default => :v2

@@ -5,11 +5,11 @@ reads.spike.colSums <- colSums(reads.spike)
 reads.scale <- 1/reads.spike.colSums
 nreads <- as.matrix(reads*rep(reads.scale, each=nrow(reads)))
 
+save(nreads, file="out/cg/nreads.RData", compress='gzip')
+
 gz <- gzfile("out/cg/nreads.txt.gz", 'w')
 write.table(nreads, file=gz, quote=F, sep="\t", row.names=T, col.names=NA)
 close(gz)
-
-save(nreads, file="out/cg/nreads.RData", compress='gzip')
 
 ###
 

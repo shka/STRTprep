@@ -65,7 +65,7 @@ begin
   if /^knownGene/ =~ tdbpath.pathmap('%f')
     step3a_bed_sources.push(tdbpath.sub('knownGene', 'kgXref'))
   else
-    step3a_bed.push(tdbPath.sub('ensGene', 'ensemblToGeneName'))
+    step3a_bed_sources.push(tdbpath.sub('ensGene', 'ensemblToGeneName'))
   end
   step3a_bed_sources.push(File.expand_path(conf['GENOMESPIKERIBO']+'.fa.fai'))
   step3a_bed_sources.push(tdbpath)
