@@ -94,7 +94,7 @@ samples.all[, 'SPIKEIN_5END_RATE.OUTLIER'] <-
 draw_outliers_codingCapture <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
                   samples[, 'CODING_5END_RATE'],
-                  "Spike-in 5'-end capture rate")
+                  "Coding gene 5'-end capture rate")
 }
 
 extract_outliers_codingCapture <- function(samples, stat) {
