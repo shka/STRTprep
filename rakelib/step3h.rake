@@ -43,7 +43,7 @@ file 'out/byGene/diffexp.csv' => step3h_sources do |t|
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
-      tmp[cols[0]] = "#{tmp[cols[0]]},#{cols[1]}"
+      tmp[cols[0]] = "#{tmp[cols[0]]},#{cols[1]}" if tmp.key?(cols[0])
     end
     infp.close
     diffexps[idx] = tmp
@@ -80,13 +80,13 @@ file 'out/byGene/diffexp.csv' => step3h_sources do |t|
   1.upto(header_reads.length-1) do |i|
     header_reads[i] = "R|#{header_reads[i]}"
   end
-  outfp.puts ([header_reads[0], 'pvalue.fluctuation'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
+  outfp.puts ([header_reads[0], 'fluctuation.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     row_diffexps = Array.new
     diffexps.keys.sort.each do |idx|
       tmp = diffexps[idx]
-      row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : "NA,NA,NA")
+      row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : "NA,NA,NA,NA")
     end
     outfp.puts ([cols[0], fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
   end

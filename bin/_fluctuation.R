@@ -32,24 +32,30 @@ estimate_errormodels <- function(nreads) {
 
 create_scale_matrix <- function(errormodels) {
     tmp <- data.frame(errormodels[[1]]$scales)
-    for(i in 2:length(errormodels))
-        tmp <- cbind(tmp, data.frame(errormodels[[i]]$scales))
+    if(length(errormodels) > 1) {
+        for(i in 2:length(errormodels))
+            tmp <- cbind(tmp, data.frame(errormodels[[i]]$scales))
+    }
     colnames(tmp) <- names(errormodels)
     as.matrix(tmp)
 }
 
 create_response_matrix <- function(errormodels) {
     tmp <- data.frame(errormodels[[1]]$responses)
-    for(i in 2:length(errormodels))
-        tmp <- cbind(tmp, data.frame(errormodels[[i]]$responses))
+    if(length(errormodels) > 1) {
+        for(i in 2:length(errormodels))
+            tmp <- cbind(tmp, data.frame(errormodels[[i]]$responses))
+    }
     colnames(tmp) <- names(errormodels)
     as.matrix(tmp)
 }
 
 create_shape_vector <- function(errormodels) {
-    tmp <- errormodels[[1]]$shape
-    for(i in 2:length(errormodels))
-        tmp <- c(tmp, errormodels[[i]]$shape)
+    tmp <- c(errormodels[[1]]$shape)
+    if(length(errormodels) > 1) {
+        for(i in 2:length(errormodels))
+            tmp <- c(tmp, errormodels[[i]]$shape)
+    }
     names(tmp) <- names(errormodels)
     tmp
 }
