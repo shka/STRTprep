@@ -83,7 +83,7 @@ def load_acc2sym(path, isKnownGene)
   return acc2sym
 end
 
-file 'out/cg/regions.bed.gz' => step3a_bed_sources do |t|
+file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
   mkdir_p t.name.pathmap('%d')
 
   isKnownGene = /^kgXref/ =~ t.source.pathmap('%f')
@@ -123,7 +123,7 @@ def extract_exon(acc2sym, outfp, tbl, ofs=1)
   infp.close
 end
 
-file 'tmp/cg/regions_forQC.bed.gz' => step3a_bed_sources do |t|
+file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   mkdir_p t.name.pathmap('%d')
 
   isKnownGene = /^kgXref/ =~ t.source.pathmap('%f')
@@ -147,6 +147,6 @@ end
 #
 
 task :clean_step3a do
-  sh 'rm out/cg/regions.bed.gz'
-  sh 'rm tmp/cg/regions_forQC.bed.gz'
+  sh 'rm out/byGene/regions.bed.gz'
+  sh 'rm tmp/byGene/regions_forQC.bed.gz'
 end

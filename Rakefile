@@ -4,6 +4,7 @@ PROCS = `gnproc`.to_i
 
 tmp = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'conf.yaml')
 CONF = tmp['LIBS']
+DEFAULTS = tmp['DEFAULTS']
 
 LIBIDS = ENV.key?('LIBS') ? ENV['LIBS'].split(',') : CONF.keys
 
@@ -23,13 +24,9 @@ end
 
 ##
 
-# targets = Array.new
-# LIBIDS.each do |libid|
-#   WELLS.each do |wellid|
-#     targets.push("tmp/cg/#{libid}.#{wellid}.step3c")
-#   end
-# end
+targets = ['out/cg/diffexp.csv']
+LIBWELLIDS.each do |libwellid|
+  targets.unshift("tmp/cg/#{libwellid}.step3c_cnt")
+end
 
-task :v2 => 'out/cg/diffexp.csv'
-
-task :default => :v2
+task :default => targets

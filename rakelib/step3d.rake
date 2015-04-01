@@ -6,10 +6,10 @@ require 'csv'
 
 step3d_sources = ['src/samples.csv']
 LIBWELLIDS.each do |libwellid|
-  step3d_sources.push("tmp/cg/#{libwellid}.step3b")
+  step3d_sources.push("tmp/byGene/#{libwellid}.step3b")
 end
 
-file 'out/cg/reads_all.txt.gz' => step3d_sources do |t|
+file 'out/byGene/reads_all.txt.gz' => step3d_sources do |t|
   libwellid2name = Hash.new
   samples = CSV.table(t.source)
   samples.each do |row|
@@ -26,7 +26,7 @@ file 'out/cg/reads_all.txt.gz' => step3d_sources do |t|
 
   tmp = Array.new
   LIBWELLIDS.each do |libwellid|
-    tmp.push("tmp/cg/#{libwellid}.step3b")
+    tmp.push("tmp/byGene/#{libwellid}.step3b")
   end
   infp = open("| cat "+tmp.join(" | join -t '\t' -j 1 - "))
   while line = infp.gets
@@ -37,5 +37,5 @@ file 'out/cg/reads_all.txt.gz' => step3d_sources do |t|
 end
 
 task :clean_step3d do
-  sh 'rm out/cg/reads_all.txt.gz'
+  sh 'rm out/byGene/reads_all.txt.gz'
 end

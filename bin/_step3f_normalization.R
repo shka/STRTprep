@@ -1,13 +1,13 @@
-reads <- read.table("out/cg/reads.txt.gz", header=T, sep="\t", quote='', row.names=1, check.names=F)
+reads <- read.table("out/byGene/reads.txt.gz", header=T, sep="\t", quote='', row.names=1, check.names=F)
 
 reads.spike <- reads[which(substr(rownames(reads), 1, 10) == 'RNA_SPIKE_'), ]
 reads.spike.colSums <- colSums(reads.spike)
 reads.scale <- 1/reads.spike.colSums
 nreads <- as.matrix(reads*rep(reads.scale, each=nrow(reads)))
 
-save(nreads, file="out/cg/nreads.RData", compress='gzip')
+save(nreads, file="out/byGene/nreads.RData", compress='gzip')
 
-gz <- gzfile("out/cg/nreads.txt.gz", 'w')
+gz <- gzfile("out/byGene/nreads.txt.gz", 'w')
 write.table(nreads, file=gz, quote=F, sep="\t", row.names=T, col.names=NA)
 close(gz)
 

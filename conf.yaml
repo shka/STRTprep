@@ -7,10 +7,8 @@ DEFAULTS: &defaults
  PHYX: src/ebwt/phyX/phyX
  GENOMESPIKERIBO: src/ebwt/hg19_ercc92_u13369/ref
  TRANSCRIPT: src/ebwt/hg19_ercc92_u13369/knownGene-140214
- WELLS:
-  FAILURE:
-  EXCEPTION:
- FDR: 0.01
+ FLUCTUATION: 0.05
+ DIFFEXP: 0.05
 LIBS:
  TEST1:
   <<: *defaults

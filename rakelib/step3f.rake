@@ -3,8 +3,8 @@
 ##
 
 
-file 'out/cg/reads.txt.gz' =>
-     ['out/cg/samples.csv', 'out/cg/reads_all.txt.gz'] do |t|
+file 'out/byGene/reads.txt.gz' =>
+     ['out/byGene/samples.csv', 'out/byGene/reads_all.txt.gz'] do |t|
   qualified = Hash.new
   infp = open("| grep -v ^LIBRARY #{t.source}", 'rt')
   while line = infp.gets
@@ -42,15 +42,15 @@ file 'out/cg/reads.txt.gz' =>
   outfp.close
 end
 
-file 'out/cg/reads.RData' => 'out/cg/reads.txt.gz' do |t|
+file 'out/byGene/reads.RData' => 'out/byGene/reads.txt.gz' do |t|
   sh <<EOF
 echo "reads <- read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F); save(reads, file='#{t.name}', compress='gzip')"\
 | R --vanilla --quiet > #{t.name}.log 2>&1
 EOF
 end
 
-file 'out/cg/nreads.RData' => 'out/cg/reads.txt.gz' do |t|
+file 'out/byGene/nreads.RData' => 'out/byGene/reads.txt.gz' do |t|
   sh "R --vanilla --quiet < bin/_step3f_normalization.R > #{t.name}.log 2>&1"
 end
 
-file 'out/cg/nreads.txt.gz' => 'out/gc/nreads.RData'
+file 'out/byGene/nreads.txt.gz' => 'out/byGene/nreads.RData'

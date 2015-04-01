@@ -7,11 +7,11 @@ LIBWELLIDS.each do |libwellid|
   step3e_sources.push("tmp/#{libwellid}.step2d_cnt")
   step3e_sources.push("tmp/#{libwellid}.step2e_cnt")
   step3e_sources.push("tmp/#{libwellid}.step2f_cnt")
-  step3e_sources.push("tmp/cg/#{libwellid}.step3b_cnt")
-  step3e_sources.push("tmp/cg/#{libwellid}.step3c_cnt")
+  step3e_sources.push("tmp/byGene/#{libwellid}.step3b_cnt")
+  step3e_sources.push("tmp/byGene/#{libwellid}.step3c_cnt")
 end
 
-file 'tmp/cg/samples.csv' => step3e_sources do |t|
+file 'tmp/byGene/samples.csv' => step3e_sources do |t|
   libwellid2name = Hash.new
   libwellid2other = Hash.new
   
@@ -65,13 +65,13 @@ file 'tmp/cg/samples.csv' => step3e_sources do |t|
     infp.close
     reads_qualified = tmp[0].to_i
     
-    infp = open("tmp/cg/#{libwellid}.step3b_cnt")
+    infp = open("tmp/byGene/#{libwellid}.step3b_cnt")
     tmp = infp.gets.rstrip.split("\t")
     infp.close
     reads_mapped_coding_5utr = tmp[0].to_i
     reads_mapped_spike_5end = tmp[1].to_i
 
-    infp = open("tmp/cg/#{libwellid}.step3c_cnt")
+    infp = open("tmp/byGene/#{libwellid}.step3c_cnt")
     tmp = infp.gets.rstrip.split("\t")
     infp.close
     reads_mapped_coding_exon = tmp[0].to_i
@@ -100,6 +100,6 @@ file 'tmp/cg/samples.csv' => step3e_sources do |t|
   outfp.close
 end
 
-file 'out/cg/samples.csv' => 'tmp/cg/samples.csv' do |t|
+file 'out/byGene/samples.csv' => 'tmp/byGene/samples.csv' do |t|
   sh "R --vanilla --quiet < bin/_step3e_check_outliers.R > #{t.name}.log 2>&1"
 end

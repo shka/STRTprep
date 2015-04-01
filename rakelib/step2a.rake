@@ -116,11 +116,10 @@ file 'tmp/step2a' => step2a_sources do |t|
   pids.each do |pid|
     Process.waitpid(pid)
   end
+  sh "touch #{t.name}.trace"
 end
 
-file 'tmp/step2a.trace' => 'tmp/step2a' do |t|
-    sh "touch #{t.name}"
-end
+file 'tmp/step2a.trace' => 'tmp/step2a'
 
 task :clean_step2a do
   rm_rf "tmp/step2a"

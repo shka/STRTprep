@@ -19,7 +19,7 @@ extract_outliers <- function(x, y, stat) {
 
 ###
 
-samples.all <- read.table('tmp/cg/samples.csv', header=T, sep=',', quote='', check.names=F)
+samples.all <- read.table('tmp/byGene/samples.csv', header=T, sep=',', quote='', check.names=F)
 libwellids <- sprintf('%s.%s', samples.all[, 'LIBRARY'], samples.all[, 'WELL'])
 samples <- samples.all[which(!is.na(samples.all[, 'NAME'])), ]
 
@@ -38,7 +38,7 @@ extract_outliers_spikeinReads <- function(samples, stat) {
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
 
-pdf('out/cg/fig_outliers_spikeinReads.pdf', width=1.13, height=2.26, pointsize=6)
+pdf('out/byGene/fig_outliers_spikeinReads.pdf', width=1.13, height=2.26, pointsize=6)
 tmp <- draw_outliers_spikeinReads(samples)
 dev.off()
 
@@ -60,7 +60,7 @@ extract_outliers_mappedPerSpikein <- function(samples, stat) {
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
 
-pdf('out/cg/fig_outliers_mappedPerSpikein.pdf', width=1.13, height=2.26, pointsize=6)
+pdf('out/byGene/fig_outliers_mappedPerSpikein.pdf', width=1.13, height=2.26, pointsize=6)
 tmp <- draw_outliers_mappedPerSpikein(samples)
 dev.off()
 
@@ -82,7 +82,7 @@ extract_outliers_spikeinCapture <- function(samples, stat) {
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
 
-pdf('out/cg/fig_outliers_spikeinCapture.pdf', width=1.13, height=2.26, pointsize=6)
+pdf('out/byGene/fig_outliers_spikeinCapture.pdf', width=1.13, height=2.26, pointsize=6)
 tmp <- draw_outliers_spikeinCapture(samples)
 dev.off()
 
@@ -104,7 +104,7 @@ extract_outliers_codingCapture <- function(samples, stat) {
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
 
-pdf('out/cg/fig_outliers_codingCapture.pdf', width=1.13, height=2.26, pointsize=6)
+pdf('out/byGene/fig_outliers_codingCapture.pdf', width=1.13, height=2.26, pointsize=6)
 tmp <- draw_outliers_codingCapture(samples)
 dev.off()
 
@@ -113,14 +113,14 @@ samples.all[, 'CODING_5END_RATE.OUTLIER'] <-
 
 ###
 
-write.table(samples.all, 'out/cg/samples_all.csv', quote=F, sep=',', row.names=F, col.names=T)
+write.table(samples.all, 'out/byGene/samples_all.csv', quote=F, sep=',', row.names=F, col.names=T)
 
 samples <- samples.all[which(!is.na(samples.all[, 'NAME'])
                              & !samples.all[, 'SPIKEIN_READS.OUTLIER']
                              & !samples.all[, 'MAPPED/SPIKEIN.OUTLIER']
                              & !samples.all[, 'SPIKEIN_5END_RATE.OUTLIER']
                              & !samples.all[, 'CODING_5END_RATE.OUTLIER']), ]
-write.table(samples, 'out/cg/samples.csv', quote=F, sep=',', row.names=F, col.names=T)
+write.table(samples, 'out/byGene/samples.csv', quote=F, sep=',', row.names=F, col.names=T)
 
 ###
 

@@ -3,8 +3,8 @@
 ##
 
 def step3b_sources(path)
-  return ['out/cg/regions.bed.gz',
-          path.sub(/^tmp\/cg/, 'tmp').sub(/\.step3b$/, '.step2e')]
+  return ['out/byGene/regions.bed.gz',
+          path.sub(/^tmp\/byGene/, 'tmp').sub(/\.step3b$/, '.step2e')]
 end
 
 def step3b_job(t)
@@ -28,7 +28,7 @@ def step3b_job(t)
   outfp.close
 end
 
-rule /^tmp\/cg\/[^\/]+\.step3b$/ => [->(path){ step3b_sources(path) }] do |t|
+rule /^tmp\/byGene\/[^\/]+\.step3b$/ => [->(path){ step3b_sources(path) }] do |t|
   step3b_job(t)
 end
 
@@ -61,7 +61,7 @@ end
 
 task :clean_step3b do
   LIBIDS.each do |libid|
-    sh "rm -rf tmp/cg/#{libid}.*.step3b"
-    sh "rm -rf tmp/cg/#{libid}.*.step3b_cnt"
+    sh "rm -rf tmp/byGene/#{libid}.*.step3b"
+    sh "rm -rf tmp/byGene/#{libid}.*.step3b_cnt"
   end
 end
