@@ -16,6 +16,7 @@ brew install pigz
 
 gem install bundler
 bundle
+gem install rake
 
 R --vanilla --quiet <<EOF
 source("http://bioconductor.org/biocLite.R")
