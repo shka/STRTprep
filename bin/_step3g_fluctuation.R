@@ -76,7 +76,7 @@ clustfun <- function(d) hclust(d, method='ward.D2')
 tmp.nreads.pre <- nreads.fluctuated+min(nreads[which(nreads>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
 hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-pdf('out/byGene/fig_heatmap.pdf', width=6.69, height=6.69, pointsize=6)
+pdf('out/byGene/fig_heatmap_global.pdf', width=6.69, height=6.69, pointsize=6)
 plot(hm)
 dev.off()
 

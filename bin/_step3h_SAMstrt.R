@@ -92,7 +92,7 @@ nreads.diffexp <- nreads[row.diffexp, ]
 tmp.nreads.pre <- nreads.diffexp+min(nreads.org[which(nreads.org>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
 hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-pdf(sprintf('out/byGene/fig_diffexp%d.pdf', idx), width=6.69, height=6.69, pointsize=6)
+pdf(sprintf('out/byGene/fig_heatmap_diffexp%d.pdf', idx), width=6.69, height=6.69, pointsize=6)
 plot(hm)
 dev.off()
 
