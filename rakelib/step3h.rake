@@ -18,14 +18,16 @@ end
 step3h_sources = ['out/byGene/reads.txt.gz',
                   'out/byGene/nreads.txt.gz',
                   'out/byGene/fluctuation.txt.gz']
-infp = open('src/samples.csv', 'rt')
-colnames = infp.gets.rstrip.split(',')
-classes = colnames.select { |colname| /^CLASS\.\d+$/.match(colname) }
-classes.each do |cls|
-  idx = /^CLASS\.(\d+)$/.match(cls).to_a[1]
-  step3h_sources.push("out/byGene/diffexp#{idx}.txt.gz")
+begin
+  infp = open('src/samples.csv', 'rt')
+  colnames = infp.gets.rstrip.split(',')
+  classes = colnames.select { |colname| /^CLASS\.\d+$/.match(colname) }
+  classes.each do |cls|
+    idx = /^CLASS\.(\d+)$/.match(cls).to_a[1]
+    step3h_sources.push("out/byGene/diffexp#{idx}.txt.gz")
+  end
+  infp.close
 end
-infp.close
 
 file 'out/byGene/diffexp.csv' => step3h_sources do |t|
   diffexps = Hash.new

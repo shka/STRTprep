@@ -28,9 +28,10 @@ brew install fastq-tools
 brew install parallel
 brew install pigz
 brew install gawk
-brew install samtools
+brew install samtools-0.1
 brew install bowtie
 brew install tophat
+brew install cufflinks
 brew install kent-tools
 brew install R --with-openblas --without-tcltk --without-x11
 
