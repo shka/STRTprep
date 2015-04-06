@@ -30,7 +30,7 @@ brew install pigz
 brew install gawk
 brew install samtools
 brew install bowtie
-brew install tophat -without-bowtie2
+brew install tophat
 brew install kent-tools
 brew install R --with-openblas --without-tcltk --without-x11
 
