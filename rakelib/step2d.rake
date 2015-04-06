@@ -82,8 +82,6 @@ end
 
 task :clean_step2d do
   LIBIDS.each do |libid|
-    rm_rf "tmp/#{libid}.*.step2d"
-    rm_rf "out/bam/#{libid}.*.bam"
-    rm_rf "tmp/#{libid}.*.step2d_cnt"
+    sh "rm tmp/#{libid}.*.step2d out/bam/#{libid}.*.bam tmp/#{libid}.*.step2d_cnt"
   end
 end
