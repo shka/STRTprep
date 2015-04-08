@@ -27,13 +27,13 @@ samples <- samples.all[which(!is.na(samples.all[, 'NAME'])), ]
 
 draw_outliers_spikeinReads <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
-                  log10(samples[, 'SPIKEIN_READS']),
+                  log10(as.numeric(samples[, 'SPIKEIN_READS'])),
                   expression(log[10]('Spike-in reads')))
 }
 
 extract_outliers_spikeinReads <- function(samples, stat) {
     tmp <- extract_outliers(samples[, 'LIBRARY'],
-                            log10(samples[, 'SPIKEIN_READS']),
+                            log10(as.numeric(samples[, 'SPIKEIN_READS'])),
                             stat)
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
@@ -49,13 +49,13 @@ samples.all[, 'SPIKEIN_READS.OUTLIER'] <-
 
 draw_outliers_mappedPerSpikein <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
-                  log10(samples[, 'MAPPED/SPIKEIN']),
+                  log10(as.numeric(samples[, 'MAPPED/SPIKEIN'])),
                   'Mapped reads / Spike-in reads')
 }
 
 extract_outliers_mappedPerSpikein <- function(samples, stat) {
     tmp <- extract_outliers(samples[, 'LIBRARY'],
-                            log10(samples[, 'MAPPED/SPIKEIN']),
+                            log10(as.numeric(samples[, 'MAPPED/SPIKEIN'])),
                             stat)
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
@@ -71,13 +71,13 @@ samples.all[, 'MAPPED/SPIKEIN.OUTLIER'] <-
 
 draw_outliers_spikeinCapture <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
-                  samples[, 'SPIKEIN_5END_RATE'],
+                  as.numeric(samples[, 'SPIKEIN_5END_RATE']),
                   "Spike-in 5'-end capture rate")
 }
 
 extract_outliers_spikeinCapture <- function(samples, stat) {
     tmp <- extract_outliers(samples[, 'LIBRARY'],
-                            samples[, 'SPIKEIN_5END_RATE'],
+                            as.numeric(samples[, 'SPIKEIN_5END_RATE']),
                             stat)
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
@@ -93,13 +93,13 @@ samples.all[, 'SPIKEIN_5END_RATE.OUTLIER'] <-
 
 draw_outliers_codingCapture <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
-                  samples[, 'CODING_5END_RATE'],
+                  as.numeric(samples[, 'CODING_5END_RATE']),
                   "Coding gene 5'-end capture rate")
 }
 
 extract_outliers_codingCapture <- function(samples, stat) {
     tmp <- extract_outliers(samples[, 'LIBRARY'],
-                            samples[, 'CODING_5END_RATE'],
+                            as.numeric(samples[, 'CODING_5END_RATE']),
                             stat)
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
