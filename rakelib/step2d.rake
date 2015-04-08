@@ -37,7 +37,7 @@ rule /^out\/bam\/[^\/]+\.bam$/ => [->(path){ step2d_bam_sources(path) }] do |t|
   mkdir_p t.name.pathmap('%d')
   
   outfifo = mymkfifo('step2d-bam-')
-  pid = spawn "samtools view -@ #{PROCS} -b #{outfifo} > #{t.name}"
+  pid = spawn "samtools view -S -@ #{PROCS} -b #{outfifo} > #{t.name}"
 
   tmpfifo1 = mymkfifo('step2d-bam-')
   pid1 = spawn "gunzip -c #{t.sources[1]} > #{tmpfifo1}"
@@ -82,6 +82,6 @@ end
 
 task :clean_step2d do
   LIBIDS.each do |libid|
-    sh "rm tmp/#{libid}.*.step2d out/bam/#{libid}.*.bam tmp/#{libid}.*.step2d_cnt"
+    sh "rm -f tmp/#{libid}.*.step2d out/bam/#{libid}.*.bam tmp/#{libid}.*.step2d_cnt"
   end
 end
