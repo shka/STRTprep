@@ -3,7 +3,7 @@
 ##
 
 def extract_5utr(acc2sym, outfp, tbl, ofs=1)
-  infp = open("| gunzip -c #{tbl} | cut -f #{ofs}-")
+  infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     # no ORF ~ CDS start != CDS stop, since the start position is 0-based
@@ -39,7 +39,7 @@ def extract_5utr(acc2sym, outfp, tbl, ofs=1)
 end
 
 def extract_proxup(acc2sym, outfp, tbl, ofs=1)
-  infp = open("| gunzip -c #{tbl} | cut -f #{ofs}-")
+  infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     # no ORF ~ CDS start != CDS stop, since the start position is 0-based
@@ -93,7 +93,7 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
   ofs = isKnownGene ? 1 : 2
   outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
     
-  infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | cut -f 1")
+  infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
   while line = infp.gets
     outfp.puts [line.rstrip, 0, 50, line.rstrip, 0, '+'].join("\t")
   end
@@ -107,7 +107,7 @@ end
 #
 
 def extract_exon(acc2sym, outfp, tbl, ofs=1)
-  infp = open("| gunzip -c #{tbl} | cut -f #{ofs}-")
+  infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     if cols[5] != cols[6]
@@ -133,7 +133,7 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   ofs = isKnownGene ? 1 : 2
   outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | gzip -c > #{t.name}", 'w')
 
-  infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | cut -f 1")
+  infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
   while line = infp.gets
     outfp.puts [line.rstrip, 0, 50, line.rstrip, 0, '+'].join("\t")
   end

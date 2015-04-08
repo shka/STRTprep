@@ -2,9 +2,7 @@
 ## Step 3f - Reads and the normalized reads in the qualified samples
 ##
 
-
-file 'out/byGene/reads.txt.gz' =>
-     ['out/byGene/samples.csv', 'out/byGene/reads_all.txt.gz'] do |t|
+def step3f_job(t, colname)
   qualified = Hash.new
   infp = open("| grep -v ^LIBRARY #{t.source}", 'rt')
   while line = infp.gets
@@ -19,7 +17,7 @@ file 'out/byGene/reads.txt.gz' =>
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     if header.length == 1
-      tmp = ['Gene']
+      tmp = [colname]
       cols[1..-1].each do |colname|
         libwellid, name = colname.split(/\|/)
         header.push(qualified.key?(libwellid))
@@ -42,15 +40,25 @@ file 'out/byGene/reads.txt.gz' =>
   outfp.close
 end
 
-file 'out/byGene/reads.RData' => 'out/byGene/reads.txt.gz' do |t|
+file 'out/byGene/reads.txt.gz' =>
+     ['out/byGene/samples.csv', 'out/byGene/reads_all.txt.gz'] do |t|
+  step3f_job(t, 'Gene')
+end
+
+rule /\/reads\.RData$/ => [->(path){ path.sub(/\.RData$/, '.txt.gz') }] do |t|
   sh <<EOF
-echo "reads <- read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F); save(reads, file='#{t.name}', compress='gzip')"\
+echo "reads <- as.matrix(read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F)); save(reads, file='#{t.name}', compress='gzip')"\
 | R --vanilla --quiet > #{t.name}.log 2>&1
 EOF
 end
 
-file 'out/byGene/nreads.RData' => 'out/byGene/reads.txt.gz' do |t|
-  sh "R --vanilla --quiet < bin/_step3f_normalization.R > #{t.name}.log 2>&1"
+rule /\/nreads\.txt\.gz$/ => [->(path){ path.sub(/\/nreads\.txt\.gz$/, '/reads.RData') }] do |t|
+  sh "R --vanilla --quiet --args #{t.source} #{t.name} < bin/_step3f_normalization.R > #{t.name}.log 2>&1"
 end
 
-file 'out/byGene/nreads.txt.gz' => 'out/byGene/nreads.RData'
+rule /\/nreads\.RData$/ => [->(path){ path.sub(/\.RData$/, '.txt.gz') }] do |t|
+  sh <<EOF
+echo "nreads <- as.matrix(read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F)); save(nreads, file='#{t.name}', compress='gzip')"\
+| R --vanilla --quiet > #{t.name}.log 2>&1
+EOF
+end

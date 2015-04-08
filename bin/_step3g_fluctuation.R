@@ -40,24 +40,25 @@ draw_fluctuation <- function(fluctuation, sig=0.01) {
 
 args <- commandArgs(trailingOnly=T)
 p.fluctuation <- as.numeric(args[1])
+dir <- args[2]
 
-load("out/byGene/nreads.RData")
+load(sprintf("%s/nreads.RData", dir))
 
 errormodels <- estimate_errormodels(nreads)
-save(errormodels, file='out/byGene/errormodels.RData', compress='gzip')
+save(errormodels, file=sprintf('%s/errormodels.RData', dir), compress='gzip')
 
 errormodel <- merge_errormodels(errormodels)
-save(errormodel, file='out/byGene/errormodel.RData', compress='gzip')
+save(errormodel, file=sprintf('%s/errormodel.RData', dir), compress='gzip')
 
 fluctuation <- estimate_fluctuation(errormodel)
-save(fluctuation, file='out/byGene/fluctuation.RData', compress='gzip')
+save(fluctuation, file=sprintf('%s/fluctuation.RData', dir), compress='gzip')
 
-pdf('out/byGene/fig_fluctuation.pdf', width=2.26, height=2.26, pointsize=8)
+pdf(sprintf('%s/fig_fluctuation.pdf', dir), width=2.26, height=2.26, pointsize=8)
 draw_fluctuation(fluctuation, sig=p.fluctuation)
 dev.off()
 
 tmp <- data.frame(Gene=names(fluctuation$p.adj), pvalue=fluctuation$p.adj)
-gz <- gzfile('out/byGene/fluctuation.txt.gz', 'w')
+gz <- gzfile(sprintf('%s/fluctuation.txt.gz', dir), 'w')
 write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)
 
@@ -66,7 +67,6 @@ close(gz)
 row.fluctuated <- names(fluctuation$p.adj)[which(fluctuation$p.adj < p.fluctuation)]
 row.spikes <- rownames(extract_spikein_reads(nreads))
 nreads.fluctuated <- nreads[union(row.fluctuated, row.spikes), ]
-save(nreads.fluctuated, file='out/byGene/nreads.fluctuated.RData', compress='gzip')
 
 ###
 
@@ -76,7 +76,7 @@ clustfun <- function(d) hclust(d, method='ward.D2')
 tmp.nreads.pre <- nreads.fluctuated+min(nreads[which(nreads>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
 hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-pdf('out/byGene/fig_heatmap_global.pdf', width=6.69, height=6.69, pointsize=6)
+pdf(sprintf('%s/fig_heatmap_global.pdf', dir), width=6.69, height=6.69, pointsize=6)
 plot(hm)
 dev.off()
 
@@ -103,7 +103,7 @@ pca_by_spearman <- function(dat) {
 }
 
 tmp <- pca_by_spearman(t(tmp.nreads))
-pdf('out/byGene/fig_pca.pdf', width=6.69, height=6.69, pointsize=6)
+pdf(sprintf('%s/fig_pca.pdf', dir), width=6.69, height=6.69, pointsize=6)
 plot(tmp$factor.score[, 1], tmp$factor.score[, 2], col='white', xlab='PC1', ylab='PC2')
 text(tmp$factor.score[, 1], tmp$factor.score[, 2], labels=unlist(sapply(colnames(tmp.nreads), function(colname) { strsplit(colname, '\\|')[[1]][2] })))
 dev.off()

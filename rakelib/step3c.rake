@@ -1,5 +1,5 @@
 ##
-## Step 3c - Count in the regions
+## Step 3c - Count in the regions for QC
 ##
 
 def step3c_sources(path)

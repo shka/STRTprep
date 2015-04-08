@@ -6,6 +6,7 @@ path_nreads <- ifelse(is.na(args[3]), 'out/byGene/nreads.RData', args[4])
 path_diffexp <- ifelse(is.na(args[5]), sprintf('out/byGene/diffexp%d.txt.gz', idx), args[5])
 q.diffexp <- ifelse(is.na(args[6]), 0.05, as.numeric(args[6]))
 p.fluctuation <- ifelse(is.na(args[7]), 0.05, as.numeric(args[7]))
+dir <- ifelse(is.na(args[8]), 'out/byTFE', args[8])
 
 samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F)
 tmp.classes <- samples[, sprintf('CLASS.%d', idx)]
@@ -22,10 +23,10 @@ reads <- tmp.reads[which(rowSums(tmp.reads) > 0), ]
 
 library(SAMstrt)
 
-test_twoClasses <- function(reads, classes, blocks, idx) {
+test_twoClasses <- function(reads, classes, blocks, dir, idx) {
     samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
                      random.seed=1, resp.type='Two class unpaired', nperms=1000)
-    save(samfit, file=sprintf('out/byGene/samfit%d.RData', idx), compress='gzip')
+    save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
     tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
                                            samfit$samr.obj, samfit$delta.table,
                                            all.genes=TRUE)
@@ -39,10 +40,10 @@ test_twoClasses <- function(reads, classes, blocks, idx) {
                qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
 }
 
-test_multiClasses <- function(reads, classes, blocks, idx) {
+test_multiClasses <- function(reads, classes, blocks, dir, idx) {
     samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
                      random.seed=1, resp.type='Multiclass', nperms=1000)
-    save(samfit, file=sprintf('out/byGene/samfit%d.RData', idx), compress='gzip')
+    save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
     tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
                                            samfit$samr.obj, samfit$delta.table,
                                            all.genes=TRUE)
@@ -57,9 +58,9 @@ test_multiClasses <- function(reads, classes, blocks, idx) {
 }
 
 if(setequal(unique(classes), c(1, 2))) {
-    diffexp <- test_twoClasses(reads, classes, blocks, idx)
+    diffexp <- test_twoClasses(reads, classes, blocks, dir, idx)
 } else {
-    diffexp <- test_multiClasses(reads, classes, blocks, idx)
+    diffexp <- test_multiClasses(reads, classes, blocks, dir, idx)
 }
 
 gz <- gzfile(path_diffexp, 'w')
@@ -70,17 +71,17 @@ close(gz)
 
 source('bin/_fluctuation.R')
 
-load('out/byGene/nreads.RData')
+load(path_nreads)
 nreads.org <- nreads
 nreads <- nreads[rownames(reads), colnames(reads)]
 errormodels <- estimate_errormodels(nreads)
-save(errormodels, file=sprintf('out/byGene/errormodels_diffexp%d.RData', idx), compress='gzip')
+save(errormodels, file=sprintf('%s/errormodels_diffexp%d.RData', dir, idx), compress='gzip')
 errormodel <- merge_errormodels(errormodels)
-save(errormodel, file=sprintf('out/byGene/errormodel_diffexp%d.RData', idx), compress='gzip')
+save(errormodel, file=sprintf('%s/errormodel_diffexp%d.RData', dir, idx), compress='gzip')
 fluctuation <- estimate_fluctuation(errormodel)
-save(fluctuation, file=sprintf('out/byGene/fluctuation_diffexp%d.RData', idx), compress='gzip')
+save(fluctuation, file=sprintf('%s/fluctuation_diffexp%d.RData', dir, idx), compress='gzip')
 tmp <- data.frame(Gene=names(fluctuation$p.adj), pvalue=fluctuation$p.adj)
-gz <- gzfile(sprintf('out/byGene/fluctuation_diffexp%d.txt.gz', idx), 'w')
+gz <- gzfile(sprintf('%s/fluctuation_diffexp%d.txt.gz', dir, idx), 'w')
 write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)
 
@@ -92,7 +93,7 @@ nreads.diffexp <- nreads[row.diffexp, ]
 tmp.nreads.pre <- nreads.diffexp+min(nreads.org[which(nreads.org>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
 hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-pdf(sprintf('out/byGene/fig_heatmap_diffexp%d.pdf', idx), width=6.69, height=6.69, pointsize=6)
+pdf(sprintf('%s/fig_heatmap_diffexp%d.pdf', dir, idx), width=6.69, height=6.69, pointsize=6)
 plot(hm)
 dev.off()
 

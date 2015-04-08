@@ -4,13 +4,13 @@
 
 def step3h_diffexpN_sources(path)
   root = path.pathmap('%d')
-  return ["#{root}/samples.csv", "#{root}/reads.RData", "#{root}/nreads.RData"]
+  return ["out/byGene/samples.csv", "#{root}/reads.RData", "#{root}/nreads.RData"]
 end
 
 rule /diffexp[\d+]\.txt\.gz$/ =>
                          [->(path){ step3h_diffexpN_sources(path) }] do |t|
   idx = /diffexp([\d+])\.txt\.gz$/.match(t.name).to_a[1]
-  sh "R --vanilla --quiet --args #{idx} #{t.source} #{t.sources[1]} #{t.sources[2]} #{t.name} #{DEFAULTS['DIFFEXP']} #{DEFAULTS['FLUCTUATION']} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1"
+  sh "R --vanilla --quiet --args #{idx} #{t.source} #{t.sources[1]} #{t.sources[2]} #{t.name} #{DEFAULTS['DIFFEXP']} #{DEFAULTS['FLUCTUATION']} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1"
 end
 
 ##
@@ -29,19 +29,41 @@ begin
   infp.close
 end
 
-file 'out/byGene/diffexp.csv' => step3h_sources do |t|
+def step3h_job(t)
+  ofs = /regions/ =~ t.sources[3] ? 5 : 3
+  
+  annotation = nil
+  regions = nil
+  if ofs == 5
+    regions = Hash.new
+    infp = open("| gunzip -c #{t.sources[3]}")
+    while line = infp.gets
+      cols = line.rstrip.split(/\t/)
+      regions[cols[3]] = "#{cols[0]}:#{cols[1].to_i+1}-#{cols[2]};#{cols[5]}"
+    end
+    infp.close
+    
+    annotation = Hash.new
+    infp = open("| gunzip -c #{t.sources[4]}")
+    while line = infp.gets
+      cols = line.rstrip.split(/\t/)
+      annotation[cols[0]] = cols[1..-1]
+    end
+    infp.close
+  end
+  
   diffexps = Hash.new
   header_diffexps = Array.new
-  t.sources[3..-1].each_index do |idx|
+  t.sources[ofs..-1].each_index do |idx|
     tmp = Hash.new
-    infp = open("| gunzip -c #{t.sources[idx+3]}")
+    infp = open("| gunzip -c #{t.sources[idx+ofs]}")
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
       tmp[cols[0]] = cols[1..-1].join(',')
     end
     infp.close
-    infp = open("| gunzip -c #{t.sources[idx+3].sub('/diffexp', '/fluctuation_diffexp')}")
+    infp = open("| gunzip -c #{t.sources[idx+ofs].sub('/diffexp', '/fluctuation_diffexp')}")
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
@@ -82,7 +104,7 @@ file 'out/byGene/diffexp.csv' => step3h_sources do |t|
   1.upto(header_reads.length-1) do |i|
     header_reads[i] = "R|#{header_reads[i]}"
   end
-  outfp.puts ([header_reads[0], 'fluctuation.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
+  outfp.puts ([header_reads[0]] + (annotation.nil? ? [] : ['Region', 'Peak', 'Gene', 'Transcript', 'Location']) + ['fluctuation.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     row_diffexps = Array.new
@@ -90,10 +112,14 @@ file 'out/byGene/diffexp.csv' => step3h_sources do |t|
       tmp = diffexps[idx]
       row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : "NA,NA,NA,NA")
     end
-    outfp.puts ([cols[0], fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
+    outfp.puts ([cols[0]] + (regions.nil? ? [] : [regions[cols[0]]]) + (annotation.nil? ? [] : annotation[cols[0]]) + [fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
   end
   infp.close
   outfp.close
+end
+
+file 'out/byGene/diffexp.csv' => step3h_sources do |t|
+  step3h_job(t)
 end
 
 task :clean_step3h do
