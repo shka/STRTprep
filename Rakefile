@@ -24,9 +24,4 @@ end
 
 ##
 
-targets = ['out/byGene/diffexp.csv']
-LIBWELLIDS.each do |libwellid|
-  targets.unshift("tmp/byGene/#{libwellid}.step3c_cnt")
-end
-
-task :default => targets
+task :default => ['out/byGene/diffexp.csv', 'out/byTFE/diffexp.csv']

@@ -18,3 +18,4 @@ module load bowtie/1.1.0
 module load tophat/2.0.12
 module load ucsc-utilities/v287
 module load R/3.1.0
+module load cufflinks/2.1.1
