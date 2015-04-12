@@ -60,20 +60,31 @@ end
 
 step3a_bed_sources = Array.new
 begin
-  conf = CONF[LIBIDS[0]]
-  tdbpath = File.expand_path(conf['TRANSCRIPT']+'.txt.gz')
-  if /^knownGene/ =~ tdbpath.pathmap('%f')
-    step3a_bed_sources.push(tdbpath.sub('knownGene', 'kgXref'))
+  tdbpath = File.expand_path(DEFAULTS['TRANSCRIPT'].pathmap('%d'))
+  ref = File.expand_path(DEFAULTS['GENOMESPIKERIBO']+'.fa.fai')
+  if File.exist?("#{tdbpath}/kgXref.txt.gz")
+    step3a_bed_sources.push("#{tdbpath}/kgXref.txt.gz")
+    step3a_bed_sources.push(ref)
+    step3a_bed_sources.push("#{tdbpath}/knownGene.txt.gz")
+  elsif File.exist?("#{tdbpath}/refGene.txt.gz")
+    step3a_bed_sources.push("#{tdbpath}/refGene.txt.gz")
+    step3a_bed_sources.push(ref)
+    step3a_bed_sources.push("#{tdbpath}/refGene.txt.gz")
+  elsif File.exist?("#{tdbpath}/ensemblToGeneName.txt.gz")
+    step3a_bed_sources.push("#{tdbpath}/ensemblToGeneName.txt.gz")
+    step3a_bed_sources.push(ref)
+    step3a_bed_sources.push("#{tdbpath}/ensGene.txt.gz")
   else
-    step3a_bed_sources.push(tdbpath.sub('ensGene', 'ensemblToGeneName'))
+    raise "No annotation file at #{tdbpath}."
   end
-  step3a_bed_sources.push(File.expand_path(conf['GENOMESPIKERIBO']+'.fa.fai'))
-  step3a_bed_sources.push(tdbpath)
 end
 
-def load_acc2sym(path, isKnownGene)
+def load_acc2sym(path)
   acc2sym = Hash.new
-  infp = open("| gunzip -c #{path} #{isKnownGene ? '| gcut -f 1,5' : ''}")
+  cut = ''
+  cut = '| gcut -f 1,5' if /^kgXref/ =~ path.pathmap('%f')
+  cut = '| gcut -f 2,13' if /^refGene/ =~ path.pathmap('%f')
+  infp = open("| gunzip -c #{path} #{cut}")
   while line = infp.gets
     acc, sym = line.rstrip.split(/\t/)
     acc2sym[acc] = sym.gsub(' ', '%20')
@@ -86,11 +97,8 @@ end
 file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
   mkdir_p t.name.pathmap('%d')
 
-  isKnownGene = /^kgXref/ =~ t.source.pathmap('%f')
+  acc2sym = load_acc2sym(t.source)
 
-  acc2sym = load_acc2sym(t.source, isKnownGene)
-  
-  ofs = isKnownGene ? 1 : 2
   outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
     
   infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
@@ -98,9 +106,11 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
     outfp.puts [line.rstrip, 0, 50, line.rstrip, 0, '+'].join("\t")
   end
   infp.close
-  
-  extract_5utr(acc2sym, outfp, t.sources[2], ofs)
-  extract_proxup(acc2sym, outfp, t.sources[2], ofs)
+
+  tbl = t.sources[t.sources.length == 2 ? 0 : 2]
+  ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
+  extract_5utr(acc2sym, outfp, tbl, ofs)
+  extract_proxup(acc2sym, outfp, tbl, ofs)
   outfp.close
 end
 
@@ -126,11 +136,8 @@ end
 file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   mkdir_p t.name.pathmap('%d')
 
-  isKnownGene = /^kgXref/ =~ t.source.pathmap('%f')
-
-  acc2sym = load_acc2sym(t.source, isKnownGene)
+  acc2sym = load_acc2sym(t.source)
   
-  ofs = isKnownGene ? 1 : 2
   outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | gzip -c > #{t.name}", 'w')
 
   infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
@@ -138,9 +145,11 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
     outfp.puts [line.rstrip, 0, 50, line.rstrip, 0, '+'].join("\t")
   end
   infp.close
-  
-  extract_exon(acc2sym, outfp, t.sources[2], ofs)
-  extract_proxup(acc2sym, outfp, t.sources[2], ofs)
+
+  tbl = t.sources[t.sources.length == 2 ? 0 : 2]
+  ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
+  extract_exon(acc2sym, outfp, tbl, ofs)
+  extract_proxup(acc2sym, outfp, tbl, ofs)
   outfp.close
 end
 

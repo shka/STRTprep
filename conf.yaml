@@ -4,9 +4,9 @@ DEFAULTS: &defaults
  GAP: 3
  CDNA: 37
  LAYOUT: src/barcodes.old.txt
- PHYX: src/ebwt/phyX/phyX
- GENOMESPIKERIBO: src/ebwt/hg19_ercc92_u13369/ref
- TRANSCRIPT: src/ebwt/hg19_ercc92_u13369/knownGene-140214
+ PHYX: src/ebwt/phyX/ref
+ GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
+ TRANSCRIPT: src/ebwt/hg19_refGene/ref
  FLUCTUATION: 0.05
  DIFFEXP: 0.05
 LIBS:
