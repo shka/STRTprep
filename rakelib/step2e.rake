@@ -7,7 +7,7 @@ def step2e_sources(path)
 end
 
 rule /.step2e$/ => [->(path){ step2e_sources(path) }] do |t|
-  outfp = open("| gzip -c > #{t.name}", 'w')
+  outfp = open("| pigz -c > #{t.name}", 'w')
   infp = open("| bamToBed -i #{t.source}")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
@@ -26,8 +26,8 @@ end
 
 rule '.step2e_cnt' => '.step2e' do |t|
   sh <<EOF
-(gunzip -c #{t.source} | wc -l | gtr -d ' ';\
- gunzip -c #{t.source} | grep ^RNA_SPIKE_ | wc -l | gtr -d ' ')\
+(unpigz -c #{t.source} | wc -l | gtr -d ' '; \
+ unpigz -c #{t.source} | grep ^RNA_SPIKE_ | wc -l | gtr -d ' ')\
 | gpaste -s - > #{t.name}
 EOF
 end

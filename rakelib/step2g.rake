@@ -22,6 +22,6 @@ bamToBed -i #{t.sources[1]} \
 | gsort --parallel=#{PROCS} -S #{3*PROCS}G -k 1,1 -k 2,2n \
 | guniq -c \
 | gawk 'BEGIN{OFS="\t"}{print $2,$3,$4,$5,$1/#{scale},$7}' \
-| gzip -c > #{t.name}
+| pigz -c > #{t.name}
 EOF
 end

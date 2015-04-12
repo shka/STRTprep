@@ -4,12 +4,12 @@
 
 rule /.step2d$/ => ['tmp/step2a', 'tmp/step2b.trace'] do |t|
   repacc2accpath = mymkfifo('step2d-')
-  pid1 = spawn "gunzip -c #{t.sources[1]} > #{repacc2accpath}"
+  pid1 = spawn "unpigz -c #{t.sources[1]} > #{repacc2accpath}"
 
   libwellid = t.name.pathmap("%n")
   bcaccpath = mymkfifo('step2d-')
   pid2 = spawn <<EOF
-gunzip -c #{t.source} \
+unpigz -c #{t.source} \
 | grep '^#{libwellid}\t'\
 | gcut -f 2-4 \
 | gsort -S #{1500*PROCS}M -k 1,1 > #{bcaccpath}
@@ -18,7 +18,7 @@ EOF
   sh <<EOF
 gjoin -t '\t' -j 1 -o 1.2,2.1,2.2,2.3 #{repacc2accpath} #{bcaccpath}\
 | gsort -S #{1500*PROCS}M -k 1,1\
-| gzip -c > #{t.name}
+| pigz -c > #{t.name}
 EOF
 
   Process.waitpid(pid1)
@@ -40,10 +40,10 @@ rule /^out\/bam\/[^\/]+\.bam$/ => [->(path){ step2d_bam_sources(path) }] do |t|
   pid = spawn "samtools view -S -@ #{PROCS} -b #{outfifo} > #{t.name}"
 
   tmpfifo1 = mymkfifo('step2d-bam-')
-  pid1 = spawn "gunzip -c #{t.sources[1]} > #{tmpfifo1}"
+  pid1 = spawn "unpigz -c #{t.sources[1]} > #{tmpfifo1}"
 
   tmpfifo2 = mymkfifo('step2d-bam-')
-  pid2 = spawn "gunzip -c #{t.sources[2]} > #{tmpfifo2}"
+  pid2 = spawn "unpigz -c #{t.sources[2]} > #{tmpfifo2}"
 
   outfp = open(outfifo, 'w')
   infp = open(t.source)
@@ -75,7 +75,7 @@ end
 #
 
 rule '.step2d_cnt' => '.step2d' do |t|
-  sh "gunzip -c #{t.source} | wc -l | gtr -d ' ' > #{t.name}"
+  sh "unpigz -c #{t.source} | wc -l | gtr -d ' ' > #{t.name}"
 end
 
 #

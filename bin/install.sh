@@ -19,8 +19,8 @@ fi
 . bin/setup.sh
 
 brew update
-
 brew tap homebrew/science
+brew install R --with-openblas --without-tcltk --without-x11
 
 # bedtools, not later than 2.22.0
 rm .homebrew/Library/Taps/homebrew/homebrew-science/bedtools.rb
@@ -28,9 +28,7 @@ git --work-tree .homebrew/Library/Taps/homebrew/homebrew-science --git-dir .home
 brew install bedtools
 
 brew install ruby
-brew install homebrew/versions/boost155
 brew install coreutils
-brew install fastq-tools
 brew install parallel
 brew install pigz
 brew install gawk
@@ -38,7 +36,6 @@ brew install samtools-0.1
 brew install bowtie
 brew install tophat --with-bowtie
 brew install kent-tools
-brew install R --with-openblas --without-tcltk --without-x11
 
 gem install bundler
 bundle

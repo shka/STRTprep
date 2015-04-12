@@ -8,14 +8,14 @@ end
 
 rule /\.step2f$/ => [->(path){ step2f_sources(path) }] do |t|
   repacc2accpath = mymkfifo('step2f-')
-  pid = spawn "gunzip -c #{t.sources[1]} > #{repacc2accpath}"
+  pid = spawn "unpigz -c #{t.sources[1]} > #{repacc2accpath}"
 
   sh <<EOF
-gunzip -c #{t.source} \
+unpigz -c #{t.source} \
 | gcut -f 2 \
-| gsort -S 3G -k 1,1\
-| gjoin -t '\t' -j 1 - #{repacc2accpath}\
-| gzip -c > #{t.name}
+| gsort -S 3G -k 1,1 \
+| gjoin -t '\t' -j 1 - #{repacc2accpath} \
+| pigz -c > #{t.name}
 EOF
 
   Process.waitpid(pid)
@@ -24,7 +24,7 @@ end
 #
 
 rule '.step2f_cnt' => '.step2f' do |t|
-  sh "gunzip -c #{t.source} | wc -l | gtr -d ' ' > #{t.name}"
+  sh "unpigz -c #{t.source} | wc -l | gtr -d ' ' > #{t.name}"
 end
 
 #

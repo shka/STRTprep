@@ -92,10 +92,12 @@ row.diffexp <- intersect(diffexp[which(diffexp[, 'qvalue'] < q.diffexp), 'Gene']
 nreads.diffexp <- nreads[row.diffexp, ]
 tmp.nreads.pre <- nreads.diffexp+min(nreads.org[which(nreads.org>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
-hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-pdf(sprintf('%s/fig_heatmap_diffexp%d.pdf', dir, idx), width=6.69, height=6.69, pointsize=6)
-plot(hm)
-dev.off()
+if(nrow(tmp.nreads)>1 & ncol(tmp.nreads)>1) {
+    hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
+    pdf(sprintf('%s/fig_heatmap_diffexp%d.pdf', dir, idx), width=6.69, height=6.69, pointsize=6)
+    plot(hm)
+    dev.off()
+}
 
 ###
 
