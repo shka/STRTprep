@@ -67,7 +67,7 @@ def step3h_job(t)
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
-      tmp[cols[0]] = "#{tmp[cols[0]]},#{cols[1]}" if tmp.key?(cols[0])
+      tmp[cols[0]] = "#{tmp[cols[0]]},#{cols[1] != 'NA' ? cols[1] : 1}" if tmp.key?(cols[0])
     end
     infp.close
     diffexps[idx] = tmp
@@ -82,7 +82,7 @@ def step3h_job(t)
   header_fluctuation = infp.gets
   while line = infp.gets
     gene, pvalue = line.rstrip.split(/\t/)
-    fluctuation[gene] = pvalue
+    fluctuation[gene] = pvalue != 'NA' ? pvalue : 1
   end
   infp.close
   
@@ -110,7 +110,7 @@ def step3h_job(t)
     row_diffexps = Array.new
     diffexps.keys.sort.each do |idx|
       tmp = diffexps[idx]
-      row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : "NA,NA,NA,NA")
+      row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : ",,,")
     end
     outfp.puts ([cols[0]] + (regions.nil? ? [] : [regions[cols[0]]]) + (annotation.nil? ? [] : annotation[cols[0]]) + [fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
   end
