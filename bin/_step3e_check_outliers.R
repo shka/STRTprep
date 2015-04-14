@@ -50,7 +50,7 @@ samples.all[, 'SPIKEIN_READS.OUTLIER'] <-
 draw_outliers_mappedPerSpikein <- function(samples) {
     draw_outliers(samples[, 'LIBRARY'],
                   log10(as.numeric(samples[, 'MAPPED/SPIKEIN'])),
-                  'Mapped reads / Spike-in reads')
+                  expression(log[10]('Mapped / Spike-in reads')))
 }
 
 extract_outliers_mappedPerSpikein <- function(samples, stat) {
