@@ -4,7 +4,7 @@
 
 file 'tmp/step2b' => 'tmp/step2a' do |t|
   outfp = open("| pigz -c > #{t.name}", 'w')
-  tracefp = open("| gsort --parallel=#{PROCS} -S #{3*PROCS}G -k 1,1 | pigz -c > #{t.name}.trace", 'w')
+  tracefp = open("| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 | pigz -c > #{t.name}.trace", 'w')
   infp = open("| unpigz -c #{t.source}")
   line = infp.gets
   prebc, preacc, preqv, preseq = line.rstrip.split(/\t/)

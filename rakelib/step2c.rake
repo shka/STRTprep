@@ -30,7 +30,7 @@ rule '.samUniqSortedByAcc' => '.bam' do |t|
   sh <<EOF
 samtools view #{t.source}\
 | grep -E 'NH:i:1(\\s|$)'\
-| gsort --parallel=#{PROCS} -S #{3*PROCS} -k 1,1 \
+| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 \
 | pigz -c > #{t.name} 2> #{t.name}.log
 EOF
 end

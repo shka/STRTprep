@@ -12,12 +12,12 @@ rule /.step2d$/ => ['tmp/step2a', 'tmp/step2b.trace'] do |t|
 unpigz -c #{t.source} \
 | grep '^#{libwellid}\t'\
 | gcut -f 2-4 \
-| gsort -S #{1500*PROCS}M -k 1,1 > #{bcaccpath}
+| gsort -S #{50/(PROCS+1)}% -k 1,1 > #{bcaccpath}
 EOF
 
   sh <<EOF
 gjoin -t '\t' -j 1 -o 1.2,2.1,2.2,2.3 #{repacc2accpath} #{bcaccpath}\
-| gsort -S #{1500*PROCS}M -k 1,1\
+| gsort -S #{50/(PROCS+1)}% -k 1,1\
 | pigz -c > #{t.name}
 EOF
 
@@ -51,7 +51,7 @@ rule /^out\/bam\/[^\/]+\.bam$/ => [->(path){ step2d_bam_sources(path) }] do |t|
     outfp.puts line
   end
   infp.close
-  infp = open("| gjoin -t '\t' -j 1 #{tmpfifo1} #{tmpfifo2} | gsort -S #{3*PROCS} -k 3,3 -k 4,4n")
+  infp = open("| gjoin -t '\t' -j 1 #{tmpfifo1} #{tmpfifo2} | gsort -S #{100/(PROCS+1)}% -k 3,3 -k 4,4n")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     cols[0] = cols[-3]

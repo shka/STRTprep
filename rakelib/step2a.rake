@@ -43,8 +43,8 @@ file 'tmp/step2a' => step2a_sources do |t|
     fifos = Array.new
     infifopaths.each { |fifopath| fifos.push(open(fifopath, 'w')) }
     fifoidx = 0
-    tracefp = open("| gsort --parallel=#{PROCS} -S #{PROCS}G | pigz -c > #{t.name}.trace", 'w')
-    infp = open("| unpigz -c #{t.sources[0..-2].join(' ')} | gsort --parallel=#{PROCS} -S #{PROCS}G -k 4,4 -k 3,3r -m")
+    tracefp = open("| gsort --parallel=#{PROCS} -S 25% | pigz -c > #{t.name}.trace", 'w')
+    infp = open("| unpigz -c #{t.sources[0..-2].join(' ')} | gsort --parallel=#{PROCS} -S 25% -k 4,4 -k 3,3r -m")
     line = infp.gets
     prelibid, tmpacc, preqv, preseq = line.rstrip.split(/\t/)
     preacc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
@@ -95,7 +95,7 @@ file 'tmp/step2a' => step2a_sources do |t|
     pids.push(pid)
   end
 
-  outfp = open("| gsort --parallel=#{PROCS} -S #{PROCS}G -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
+  outfp = open("| gsort --parallel=#{PROCS} -S 25% -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
   fifos = Array.new
   outfifopaths.each { |fifopath| fifos.push(open(fifopath, 'r')) }
   fifodones = Hash.new

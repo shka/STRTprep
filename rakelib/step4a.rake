@@ -68,7 +68,7 @@ end
 rule /\.step4a\/fivePrimes.bed.gz$/ => [->(path){ step4a_fivePrimes_sources(path) }] do |t|
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
-| gsort --parallel=#{PROCS} -S #{3*PROCS}G -k 1,1 -k 2,2n \
+| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 -k 2,2n \
 | mergeBed -s -c 4,5,6 -o distinct,mean,distinct -d -1 -i - \
 | gzip -c > #{t.name}
 EOF
@@ -116,7 +116,7 @@ end
 file 'tmp/byTFE/fivePrimes.bed.gz' => step4a_fivePrimes do |t|
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
-| gsort --parallel=#{PROCS} -S #{3*PROCS}G -k 1,1 -k 2,2n \
+| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 -k 2,2n \
 | mergeBed -s -c 4,5,6 -o distinct,mean,distinct -d -1 -i - \
 | gzip -c > #{t.name}
 EOF
@@ -130,10 +130,10 @@ file 'out/byTFE/peaks.bed.gz' => ['out/byTFE/regions.bed.gz',
 intersectBed -wa -wb -s -a #{t.source} -b #{t.sources[1]} \
 | gcut -f 4,7,8,9,11,12 \
 | gawk 'BEGIN{OFS="\t"}{p=$6=="+"?$3:-$4;print $2,$3,$4,$1,$5,$6,p,$1}' \
-| gsort --parallel=#{PROCS} -S #{1500*PROCS}M -k 8,8 -k 5,5gr -k 7,7g \
+| gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -k 8,8 -k 5,5gr -k 7,7g \
 | guniq -f 7 \
 | gcut -f 1-6 \
-| gsort --parallel=#{PROCS} -S #{1500*PROCS}M -k 1,1 -k 2,2n \
+| gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -k 1,1 -k 2,2n \
 | pigz -c > #{t.name}
 EOF
 end
@@ -167,7 +167,7 @@ rule /peaks_class\d+\.txt\.gz$/ => [->(path){ step4a_peakClass_sources(path) }] 
   cls = /lass(\d+)\.(txt|bed)\.gz$/.match(t.name).to_a[1].to_i
   loc = step4a_class2location[cls]
   
-  infp = open("| intersectBed -s -wa -wb -a #{t.source} -b #{t.sources[1]} | cut -f 1,4,6,9,10")
+  infp = open("| intersectBed -s -wa -wb -a #{t.source} -b #{t.sources[1]} | gcut -f 1,4,6,9,10")
   tfe2sym2acc = Hash.new
   tfe2id = Hash.new
   while line = infp.gets
