@@ -177,7 +177,7 @@ rule /peaks_class\d+\.txt\.gz$/ => [->(path){ step4a_peakClass_sources(path) }] 
     tfe2sym2acc[tfe] = Hash.new unless tfe2sym2acc.key?(tfe)
     tfe2sym2acc[tfe][sym] = Hash.new unless tfe2sym2acc[tfe].key?(sym)
     tfe2sym2acc[tfe][sym][acc] = ''
-    tfe2id[tfe] = "#{chr}:#{pos};#{str}" unless tfe2id.key?(tfe)
+    tfe2id[tfe] = "#{chr}\t#{pos}\t#{str}" unless tfe2id.key?(tfe)
   end
   infp.close
   
@@ -201,12 +201,21 @@ end
                            
 ##
 
-file 'tmp/byTFE/peaks_class9.txt.gz' => 'tmp/byTFE/peaks_nonClass8.bed.gz' do |t|
-  outfp = open("| gzip -c > #{t.name}", 'w')
+file 'tmp/byTFE/peaks_class9.txt.gz' =>
+     ['out/byTFE/regions.bed.gz', 'tmp/byTFE/peaks_nonClass8.bed.gz'] do |t|
+  rid = Hash.new
   infp = open("| gunzip -c #{t.source}")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
-    outfp.puts [cols[3], "#{cols[0]}:#{cols[2]};#{cols[5]}", 'NA', 'NA', 'Unannotated'].join("\t")
+    rid[cols[3]] = "#{cols[0]}:#{cols[1].to_i+1}-#{cols[2]};#{cols[5]}"
+  end
+  infp.close
+  
+  outfp = open("| gzip -c > #{t.name}", 'w')
+  infp = open("| gunzip -c #{t.sources[1]}")
+  while line = infp.gets
+    cols = line.rstrip.split(/\t/)
+    outfp.puts [cols[3], "#{cols[0]}\t#{cols[2]}\t#{cols[5]}", rid[cols[3]], '', 'Unannotated'].join("\t")
   end
   infp.close
   outfp.close

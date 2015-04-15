@@ -33,21 +33,21 @@ def step3h_job(t)
   ofs = /regions/ =~ t.sources[3] ? 5 : 3
   
   annotation = nil
-  regions = nil
   if ofs == 5
-    regions = Hash.new
+    annotation = Hash.new
+    
     infp = open("| gunzip -c #{t.sources[3]}")
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
-      regions[cols[3]] = "#{cols[0]}:#{cols[1].to_i+1}-#{cols[2]};#{cols[5]}"
+      start = cols[1].to_i+1
+      annotation[cols[3]] = ["#{cols[0]}:#{start}-#{cols[2]}", cols[5], cols[0], start, cols[2]]
     end
     infp.close
     
-    annotation = Hash.new
     infp = open("| gunzip -c #{t.sources[4]}")
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
-      annotation[cols[0]] = cols[1..-1]
+      annotation[cols[0]] = ([cols[4], cols[6]] + annotation[cols[0]] + [cols[2], cols[5]]).join(',')
     end
     infp.close
   end
@@ -104,7 +104,7 @@ def step3h_job(t)
   1.upto(header_reads.length-1) do |i|
     header_reads[i] = "R|#{header_reads[i]}"
   end
-  outfp.puts ([header_reads[0]] + (annotation.nil? ? [] : ['Region', 'Peak', 'Gene', 'Transcript', 'Location']) + ['fluctuation.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
+  outfp.puts ([header_reads[0]] + (annotation.nil? ? [] : ['Gene', 'Location', 'Region', 'Str', 'Chr', 'Start', 'Stop', 'Peak', 'Transcript']) + ['fluctuation.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     row_diffexps = Array.new
@@ -112,7 +112,7 @@ def step3h_job(t)
       tmp = diffexps[idx]
       row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : ",,,")
     end
-    outfp.puts ([cols[0]] + (regions.nil? ? [] : [regions[cols[0]]]) + (annotation.nil? ? [] : annotation[cols[0]]) + [fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
+    outfp.puts ([cols[0]] + (annotation.nil? ? [] : [annotation[cols[0]]]) + [fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
   end
   infp.close
   outfp.close
