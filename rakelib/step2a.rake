@@ -49,7 +49,6 @@ file 'tmp/step2a' => step2a_sources do |t|
     prelibid, tmpacc, preqv, preseq = line.rstrip.split(/\t/)
     preacc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
     tracefp.puts [preacc, preacc].join("\t")
-    cnt = 0
     while line = infp.gets
       libid, tmpacc, qv, seq = line.rstrip.split(/\t/)
       acc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
@@ -57,8 +56,6 @@ file 'tmp/step2a' => step2a_sources do |t|
         fifos[fifoidx].puts [prelibid, preacc, preqv, preseq].join("\t")
         fifoidx += 1
         fifoidx = 0 if fifoidx == PROCS
-        cnt += 1
-        puts cnt if cnt % 10000 == 0
         prelibid = libid
         preacc = acc
         preqv = qv
