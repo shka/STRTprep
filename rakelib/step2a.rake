@@ -2,7 +2,7 @@
 ## Step 2a - exclusion of redundant reads by PCR & barcode matching
 ##
 
-require 'levenshtein'
+require 'levenshtein-ffi'
 
 step2a_sources = [File.expand_path(CONF[LIBIDS[0]]['LAYOUT'])]
 LIBIDS.each do |libid|
@@ -49,6 +49,7 @@ file 'tmp/step2a' => step2a_sources do |t|
     prelibid, tmpacc, preqv, preseq = line.rstrip.split(/\t/)
     preacc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
     tracefp.puts [preacc, preacc].join("\t")
+    cnt = 0
     while line = infp.gets
       libid, tmpacc, qv, seq = line.rstrip.split(/\t/)
       acc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
@@ -56,6 +57,8 @@ file 'tmp/step2a' => step2a_sources do |t|
         fifos[fifoidx].puts [prelibid, preacc, preqv, preseq].join("\t")
         fifoidx += 1
         fifoidx = 0 if fifoidx == PROCS
+        cnt += 1
+        puts cnt if cnt % 10000 == 0
         prelibid = libid
         preacc = acc
         preqv = qv
@@ -79,7 +82,7 @@ file 'tmp/step2a' => step2a_sources do |t|
         libid, acc, qv, seq = line.rstrip.split(/\t/)
         tmpdists = Hash.new
         barcodegaps.each_index do |idx|
-          tmpdist = Levenshtein.distance(barcodegaps[idx], seq[umi, barcode+gap], threshold=2)
+          tmpdist = Levenshtein.ffi_distance(barcodegaps[idx], seq[umi, barcode+gap])
           dist = tmpdist.nil? ? 2 : tmpdist
           tmpdists[wells[idx]] = dist
           break if dist < 2

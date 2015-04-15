@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
 gem 'bio-faster'
-gem 'levenshtein'
 gem 'levenshtein-ffi', :require => 'levenshtein'
 gem 'mkfifo'
