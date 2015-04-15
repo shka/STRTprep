@@ -24,4 +24,4 @@ end
 
 ##
 
-task :default => ['out/byGene/diffexp.csv', 'out/byTFE/diffexp.csv', :web]
+task :default => ['out/byGene/diffexp.csv', 'out/byTFE/diffexp.csv']
