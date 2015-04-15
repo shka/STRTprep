@@ -11,4 +11,3 @@ task :clean_step3g do
   rm 'out/byGene/fluctuation.txt.gz'
 end
 
-task :fluctuation => 'out/byGene/fluctuation.RData'

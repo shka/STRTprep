@@ -24,4 +24,9 @@ end
 
 ##
 
-task :default => ['out/byGene/diffexp.csv', 'out/byTFE/diffexp.csv', :web]
+task :default => ['out/byGene/diffexp.csv',
+                  'out/byTFE/diffexp.csv',
+                  :web]
+
+task :fluctuation => ['out/byGene/fluctuation.txt.gz',
+                      'out/byTFE/fluctuation.txt.gz']
