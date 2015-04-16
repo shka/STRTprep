@@ -2,7 +2,7 @@
 ## Step 2a - exclusion of redundant reads by PCR & barcode matching
 ##
 
-require 'levenshtein-ffi'
+require 'damerau-levenshtein'
 
 step2a_sources = [File.expand_path(CONF[LIBIDS[0]]['LAYOUT'])]
 LIBIDS.each do |libid|
@@ -92,7 +92,7 @@ file 'tmp/step2a' => step2a_sources do |t|
         libid, acc, qv, seq = line.rstrip.split(/\t/)
         tmpdists = Hash.new
         barcodegaps.each_index do |idx|
-          tmpdist = Levenshtein.ffi_distance(barcodegaps[idx], seq[umi, barcode+gap])
+          tmpdist = DamerauLevenshtein.distance(barcodegaps[idx], seq[umi, barcode+gap], 0, max_distance=2)
           dist = tmpdist.nil? ? 2 : tmpdist
           tmpdists[wells[idx]] = dist
           break if dist < 2
