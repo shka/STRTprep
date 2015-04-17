@@ -66,6 +66,7 @@ file 'tmp/step2a' => step2a_sources do |t|
         fifoidx = 0 if fifoidx == PROCS
         pres[fifoidx] << "#{libid}\t#{acc}\t#{qv}\t#{seq}\n"
         preacc = acc
+        preseq = seq
       end
       buf << "#{preacc}\t#{acc}\n"
       if buf.length > 65536
