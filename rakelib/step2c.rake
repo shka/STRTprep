@@ -6,7 +6,7 @@ file 'tmp/step2c/reads.fq.gz' => 'tmp/step2b' do |t|
   mkdir_p t.name.pathmap('%d')
   sh <<EOF
 unpigz -c #{t.source}\
- | gawk 'BEGIN { FS="\t"; OFS="\n" }; { print "@"$2,$4,"+",$3 }'\
+ | gawk 'BEGIN { FS="\t"; OFS="\\n" }; { print "@"$2,$4,"+",$3 }'\
  | pigz -c > #{t.name} 2> #{t.name}.log
 EOF
 end
