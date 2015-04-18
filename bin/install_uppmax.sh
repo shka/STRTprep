@@ -12,7 +12,6 @@ brew tap homebrew/science
 brew update
 
 brew install coreutils
-brew install pigz
 
 gem install bundler
 bundle

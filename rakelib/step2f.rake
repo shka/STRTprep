@@ -13,7 +13,7 @@ rule /\.step2f$/ => [->(path){ step2f_sources(path) }] do |t|
   sh <<EOF
 unpigz -c #{t.source} \
 | gcut -f 2 \
-| gsort -S #{100/(PROCS+1)}% -k 1,1 \
+| gsort -S #{100/(PROCS+1)}% -t '\t' -k 1,1 \
 | gjoin -t '\t' -j 1 - #{repacc2accpath} \
 | pigz -c > #{t.name}
 EOF
@@ -26,21 +26,3 @@ end
 rule '.step2f_cnt' => '.step2f' do |t|
   sh "unpigz -c #{t.source} | wc -l | gtr -d ' ' > #{t.name}"
 end
-
-#
-
-task :clean_step2f do |t|
-  LIBIDS.each do |libid|
-    sh "rm tmp/#{libid}.*.step2f"
-    sh "rm tmp/#{libid}.*.step2f_cnt"
-  end
-end
-
-#
-
-targets_step2f = Array.new
-LIBWELLIDS.each do |libwellid|
-  targets_step2f.push("tmp/#{libwellid}.step2f_cnt")
-end
-
-task :step2f => targets_step2f

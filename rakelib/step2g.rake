@@ -18,10 +18,10 @@ rule /\.step2g$/ => [
   scale = estimate_scale(t)
   sh <<EOF
 bamToBed -i #{t.sources[1]} \
-| gawk '{if($6=="+"){print $1,$2,$2+1,".",0,"+"}else{print $1,$3-1,$3,".",0,"-"}}' \
-| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 -k 2,2n \
+| gawk 'BEGIN{ FS='\t'; OFS='\t' }{if($6=="+"){print $1,$2,$2+1,".",0,"+"}else{print $1,$3-1,$3,".",0,"-"}}' \
+| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
 | guniq -c \
-| gawk 'BEGIN{OFS="\t"}{print $2,$3,$4,$5,$1/#{scale},$7}' \
+| gawk 'BEGIN{ FS='\t'; OFS='\t' }{print $2,$3,$4,$5,$1/#{scale},$7}' \
 | pigz -c > #{t.name}
 EOF
 end

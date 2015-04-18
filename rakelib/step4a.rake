@@ -68,7 +68,7 @@ end
 rule /\.step4a\/fivePrimes.bed.gz$/ => [->(path){ step4a_fivePrimes_sources(path) }] do |t|
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
-| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 -k 2,2n \
+| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
 | mergeBed -s -c 4,5,6 -o distinct,mean,distinct -d -1 -i - \
 | gzip -c > #{t.name}
 EOF
@@ -94,7 +94,7 @@ file 'out/byTFE/regions.bed.gz' => step4a_firstExons do |t|
   mkdir_p t.name.pathmap('%d')
   
   outfp = open("| gzip -c > #{t.name}", 'w')
-  infp = open("| gunzip -c #{t.sources.join(' ')} | gsort -k 1,1 -k 2,2n | mergeBed -s -c 6 -o distinct -i -")
+  infp = open("| gunzip -c #{t.sources.join(' ')} | gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -c 6 -o distinct -i -")
   spikes = Hash.new
   tfe = 0
   while line = infp.gets
@@ -116,7 +116,7 @@ end
 file 'tmp/byTFE/fivePrimes.bed.gz' => step4a_fivePrimes do |t|
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
-| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 1,1 -k 2,2n \
+| gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
 | mergeBed -s -c 4,5,6 -o distinct,mean,distinct -d -1 -i - \
 | gzip -c > #{t.name}
 EOF
@@ -129,11 +129,11 @@ file 'out/byTFE/peaks.bed.gz' => ['out/byTFE/regions.bed.gz',
   sh <<EOF
 intersectBed -wa -wb -s -a #{t.source} -b #{t.sources[1]} \
 | gcut -f 4,7,8,9,11,12 \
-| gawk 'BEGIN{OFS="\t"}{p=$6=="+"?$3:-$4;print $2,$3,$4,$1,$5,$6,p,$1}' \
-| gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -k 8,8 -k 5,5gr -k 7,7g \
+| gawk 'BEGIN{ FS='\t'; OFS='\t' }{p=$6=="+"?$3:-$4;print $2,$3,$4,$1,$5,$6,p,$1}' \
+| gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -t '\t' -k 8,8 -k 5,5gr -k 7,7g \
 | guniq -f 7 \
 | gcut -f 1-6 \
-| gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -k 1,1 -k 2,2n \
+| gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
 | pigz -c > #{t.name}
 EOF
 end
@@ -231,7 +231,3 @@ end
 file 'out/byTFE/annotation.txt.gz' => step4a_annotation_sources do |t|
   sh "gunzip -c #{t.sources.join(' ')} | gzip -c > #{t.name}"
 end
-
-##
-
-task :step4a => 'out/byTFE/peaks.bed.gz'

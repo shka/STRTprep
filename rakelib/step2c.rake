@@ -6,7 +6,7 @@ file 'tmp/step2c/reads.fq.gz' => 'tmp/step2b' do |t|
   mkdir_p t.name.pathmap('%d')
   sh <<EOF
 unpigz -c #{t.source}\
- | gawk 'BEGIN { FS="\\t"; OFS="\\n" }; { print "@"$2,$4,"+",$3 }'\
+ | gawk 'BEGIN { FS='\t'; OFS='\n' }; { print "@"$2,$4,"+",$3 }'\
  | pigz -c > #{t.name} 2> #{t.name}.log
 EOF
 end
@@ -30,7 +30,7 @@ rule '.samUniqSortedByAcc' => '.bam' do |t|
   sh <<EOF
 samtools view #{t.source}\
 | grep -E 'NH:i:1(\\s|$)'\
-| gsort --parallel=#{PROCS} -S 75% -k 1,1 \
+| gsort --parallel=#{PROCS} -S 75% -t '\t' -k 1,1 \
 | pigz -c > #{t.name} 2> #{t.name}.log
 EOF
 end

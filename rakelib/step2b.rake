@@ -9,7 +9,7 @@ file 'tmp/step2b' => 'tmp/step2a' do |t|
   pids.push(spawn "cat #{outfifopath} | pigz -c > #{t.name}")
 
   tracefifopath = mymkfifo('step2b-trace-')
-  pids.push(spawn "gsort --parallel=#{PROCS} -S 75% -k 1,1 #{tracefifopath} | pigz -c > #{t.name}.trace")
+  pids.push(spawn "gsort --parallel=#{PROCS} -S 75% -t '\t' -k 1,1 #{tracefifopath} | pigz -c > #{t.name}.trace")
 
   outfp = open(outfifopath, 'w')
   tracefp = open(tracefifopath, 'w')
@@ -45,8 +45,3 @@ file 'tmp/step2b' => 'tmp/step2a' do |t|
 end
 
 file 'tmp/step2b.trace' => 'tmp/step2b'
-
-task :clean_step2b do
-  rm_rf "tmp/step2b"
-  rm_rf "tmp/step2b.trace"
-end

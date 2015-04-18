@@ -15,8 +15,8 @@ if DEFAULTS['PHYX'].nil?
     len = conf['UMI']+conf['BARCODE']+conf['GAP']+conf['CDNA']
     sh <<EOF
 (unpigz -c #{t.source} \
- | ruby -e 'while l=gets; m=gets.rstrip; o=gets; n=gets.rstrip[0, #{len}]; puts ["#{libid}", l.rstrip[1..-1]+":1-#{len}", n, m[0, #{len}]].join("\t") if n.index(/[!-#]/).nil?; end' \
- | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 4,4 -k 3,3r \
+ | ruby -e 'while l=gets; m=gets.rstrip; o=gets; n=gets.rstrip[0, #{len}]; puts "#{libid}\t\#{l.rstrip[1..-1]}:1-#{len}\t\#{n}\t\#{m[0, #{len}]}" if n.index(/[!-#]/).nil?; end' \
+ | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
   end
@@ -28,17 +28,9 @@ else
     sh <<EOF
 (samtools view -f 4 -F 256 #{t.source}\
  | gcut -f 1,10,11 \
- | gawk 'BEGIN { OFS="\t" }; match(substr($3, 1, #{len}), /[!-#]/) == 0 { print "#{libid}",$1":1-#{len}",substr($3, 1, #{len}),substr($2, 1, #{len}) }' \
- | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -k 4,4 -k 3,3r \
+ | gawk 'BEGIN { FS='\t'; OFS='\t' }; match(substr($3, 1, #{len}), /[!-#]/) == 0 { print "#{libid}",$1":1-#{len}",substr($3, 1, #{len}),substr($2, 1, #{len}) }' \
+ | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
-  end
-end
-
-task :clean_step1b do 
-  LIBIDS.each do |libid|
-    CONF[libid]['FASTQS'].each_index do |runid|
-      rm_rf "tmp/#{libid}.#{runid}.step1b"
-    end
   end
 end

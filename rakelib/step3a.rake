@@ -99,7 +99,7 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
 
   acc2sym = load_acc2sym(t.source)
 
-  outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
+  outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
     
   infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
   while line = infp.gets
@@ -138,7 +138,7 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
 
   acc2sym = load_acc2sym(t.source)
   
-  outfp = open("| gsort -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | gzip -c > #{t.name}", 'w')
+  outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | gzip -c > #{t.name}", 'w')
 
   infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
   while line = infp.gets
@@ -151,11 +151,4 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   extract_exon(acc2sym, outfp, tbl, ofs)
   extract_proxup(acc2sym, outfp, tbl, ofs)
   outfp.close
-end
-
-#
-
-task :clean_step3a do
-  sh 'rm out/byGene/regions.bed.gz'
-  sh 'rm tmp/byGene/regions_forQC.bed.gz'
 end

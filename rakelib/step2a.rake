@@ -40,14 +40,14 @@ file 'tmp/step2a' => step2a_sources do |t|
   end
 
   tracefifopath = mymkfifo('step2a-trace-')
-  pids.push(spawn "gsort --parallel=#{PROCS} -S 25% #{tracefifopath} | pigz -c > #{t.name}.trace")
+  pids.push(spawn "gsort --parallel=#{PROCS} -S 25% -t '\t' #{tracefifopath} | pigz -c > #{t.name}.trace")
   
   pid = fork do
     fifos = Array.new
     infifopaths.each { |fifopath| fifos.push(open(fifopath, 'w')) }
     fifoidx = 0
     tracefp = open(tracefifopath, 'w')
-    infp = open("| unpigz -c #{t.sources[0..-2].join(' ')} | gsort --parallel=#{PROCS} -S 25% -k 4,4 -k 3,3r -m")
+    infp = open("| unpigz -c #{t.sources[0..-2].join(' ')} | gsort --parallel=#{PROCS} -S 25% -t '\t' -k 4,4 -k 3,3r -m")
     line = infp.gets
     prelibid, tmpacc, preqv, preseq = line.rstrip.split(/\t/)
     preacc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
@@ -58,7 +58,7 @@ file 'tmp/step2a' => step2a_sources do |t|
       libid, tmpacc, qv, seq = line.rstrip.split(/\t/)
       acc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
       unless preseq == seq
-        if pres[fifoidx].length > 4096
+        if pres[fifoidx].length > 65536
           fifos[fifoidx].write pres[fifoidx]
           pres[fifoidx] = ''
         end
@@ -109,7 +109,7 @@ file 'tmp/step2a' => step2a_sources do |t|
     pids.push(pid)
   end
 
-  outfp = open("| gsort --parallel=#{PROCS} -S 25% -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
+  outfp = open("| gsort --parallel=#{PROCS} -S 25% -t '\t' -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
   fifos = Array.new
   outfifopaths.each { |fifopath| fifos.push(open(fifopath, 'r')) }
   fifodones = Hash.new
@@ -134,8 +134,3 @@ file 'tmp/step2a' => step2a_sources do |t|
 end
 
 file 'tmp/step2a.trace' => 'tmp/step2a'
-
-task :clean_step2a do
-  rm_rf "tmp/step2a"
-  rm_rf "tmp/step2a.trace"
-end

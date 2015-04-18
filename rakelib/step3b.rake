@@ -56,12 +56,3 @@ end
 rule '.step3b_cnt' => '.step3b' do |t|
   step3b_cnt_job(t)
 end
-
-#
-
-task :clean_step3b do
-  LIBIDS.each do |libid|
-    sh "rm -rf tmp/byGene/#{libid}.*.step3b"
-    sh "rm -rf tmp/byGene/#{libid}.*.step3b_cnt"
-  end
-end
