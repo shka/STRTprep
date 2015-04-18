@@ -35,3 +35,12 @@ task :clean_step2f do |t|
     sh "rm tmp/#{libid}.*.step2f_cnt"
   end
 end
+
+#
+
+targets_step2f = Array.new
+LIBWELLIDS.each do |libwellid|
+  targets_step2f.push("tmp/#{libwellid}.step2f_cnt")
+end
+
+task :step2f => targets_step2f

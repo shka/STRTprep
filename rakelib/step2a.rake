@@ -40,7 +40,7 @@ file 'tmp/step2a' => step2a_sources do |t|
   end
 
   tracefifopath = mymkfifo('step2a-trace-')
-  pids.push(spawn "gsort --parallel=#{PROCS} #{tracefifopath} | pigz -c > #{t.name}.trace")
+  pids.push(spawn "gsort --parallel=#{PROCS} -S 25% #{tracefifopath} | pigz -c > #{t.name}.trace")
   
   pid = fork do
     fifos = Array.new
@@ -109,7 +109,7 @@ file 'tmp/step2a' => step2a_sources do |t|
     pids.push(pid)
   end
 
-  outfp = open("| gsort --parallel=#{PROCS} -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
+  outfp = open("| gsort --parallel=#{PROCS} -S 25% -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
   fifos = Array.new
   outfifopaths.each { |fifopath| fifos.push(open(fifopath, 'r')) }
   fifodones = Hash.new
