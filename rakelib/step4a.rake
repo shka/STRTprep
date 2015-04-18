@@ -129,7 +129,7 @@ file 'out/byTFE/peaks.bed.gz' => ['out/byTFE/regions.bed.gz',
   sh <<EOF
 intersectBed -wa -wb -s -a #{t.source} -b #{t.sources[1]} \
 | gcut -f 4,7,8,9,11,12 \
-| gawk 'BEGIN{ FS='\t'; OFS='\t' }{p=$6=="+"?$3:-$4;print $2,$3,$4,$1,$5,$6,p,$1}' \
+| gawk 'BEGIN{ FS="\t"; OFS="\t" }{p=$6=="+"?$3:-$4;print $2,$3,$4,$1,$5,$6,p,$1}' \
 | gsort --parallel=#{PROCS} -S #{50/(PROCS+1)}% -t '\t' -k 8,8 -k 5,5gr -k 7,7g \
 | guniq -f 7 \
 | gcut -f 1-6 \
