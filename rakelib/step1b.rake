@@ -15,7 +15,7 @@ if DEFAULTS['PHYX'].nil?
     len = conf['UMI']+conf['BARCODE']+conf['GAP']+conf['CDNA']
     sh <<EOF
 (unpigz -c #{t.source} \
- | ruby -e 'while l=gets; m=gets.rstrip; o=gets; n=gets.rstrip[0, #{len}]; puts "#{libid}\t\#{l.rstrip[1..-1]}:1-#{len}\t\#{n}\t\#{m[0, #{len}]}" if n.index(/[!-#]/).nil?; end' \
+ | ruby -e 'while l=gets; m=gets.rstrip; o=gets; n=gets.rstrip[0, #{len}]; puts "#{libid}\t\#{l.rstrip.split(/\s/)[0][1..-1]}:1-#{len}\t\#{n}\t\#{m[0, #{len}]}" if n.index(/[!-#]/).nil?; end' \
  | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
