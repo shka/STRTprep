@@ -39,9 +39,6 @@ file 'tmp/step2a' => step2a_sources do |t|
     outfifopaths.push(mymkfifo('step2a-output-'))
   end
 
-  # tracefifopath = mymkfifo('step2a-trace-')
-  # pids.push(spawn "gsort --parallel=#{PROCS} -S 25% -t '\t' #{tracefifopath} | pigz -c > #{t.name}.trace")
-  
   pid = fork do
     fifos = Array.new
     infifopaths.each { |fifopath| fifos.push(open(fifopath, 'w')) }
@@ -51,40 +48,23 @@ file 'tmp/step2a' => step2a_sources do |t|
     line = infp.gets
     prelibid, tmpacc, preqv, preseq = line.rstrip.split(/\t/)
     preacc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
-    # pres = Array.new(PROCS, '')
-    # pres[0] = "#{prelibid}\t#{preacc}\t#{preqv}\t#{preseq}\n"
     fifos[fifoidx].puts "#{prelibid}\t#{preacc}\t#{preqv}\t#{preseq}"
-    # buf = "#{preacc}\t#{preacc}\n"
     tracefp.puts "#{preacc}\t#{preacc}"
     while line = infp.gets
       libid, tmpacc, qv, seq = line.rstrip.split(/\t/)
       acc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
       unless preseq == seq
-        # if pres[fifoidx].length > 65536
-        #   fifos[fifoidx].write pres[fifoidx]
-        #   pres[fifoidx] = ''
-        # end
         fifoidx += 1
         fifoidx = 0 if fifoidx == PROCS
-        # pres[fifoidx] << "#{libid}\t#{acc}\t#{qv}\t#{seq}\n"
         fifos[fifoidx].puts "#{libid}\t#{acc}\t#{qv}\t#{seq}"
         preacc = acc
         preseq = seq
       end
-      # buf << "#{preacc}\t#{acc}\n"
-      # if buf.length > 65536
-      #   tracefp.write buf
-      #   buf = ''
-      # end
       tracefp.puts "#{preacc}\t#{acc}"
     end
     infp.close
-    # tracefp.write buf if buf != ''
     tracefp.close
-    fifos.each_index do |i|
-      # fifos[i].write pres[i] if pres[i] != ''
-      fifos[i].close
-    end
+    fifos.each_index { |i| fifos[i].close }
     Kernel.exit!
   end
   pids.push(pid)

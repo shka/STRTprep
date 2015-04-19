@@ -31,11 +31,13 @@ LIBIDS.each do |libid|
   end
 end
 LIBWELLIDS.each do |libwellid|
-  qc_targets.push("tmp/#{libwellid}.step2g")
+  qc_targets.push("tmp/#{libwellid}.step2f")
 end
 LIBWELLIDS.each do |libwellid|
-  qc_targets.push("tmp/byGene/#{libwellid}.step3b",
-                     "tmp/byGene/#{libwellid}.step3c")
+  qc_targets.push("tmp/byGene/#{libwellid}.step3b")
+end
+LIBWELLIDS.each do |libwellid|
+  qc_targets.push("tmp/byGene/#{libwellid}.step3c")
 end
 
 task :qc => qc_targets + ['out/byGene/fluctuation.txt.gz', 'out/byGene/samples.csv']
