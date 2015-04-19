@@ -7,19 +7,11 @@ def step2e_sources(path)
 end
 
 rule /.step2e$/ => [->(path){ step2e_sources(path) }] do |t|
-  outfp = open("| pigz -c > #{t.name}", 'w')
-  infp = open("| bamToBed -i #{t.source}")
-  while line = infp.gets
-    cols = line.rstrip.split(/\t/)
-    acc = "#{cols[3]}:5end"
-    if cols[5] == '+'
-      outfp.puts [cols[0], cols[1], cols[1].to_i+1, acc, cols[4], cols[5]].join("\t")
-    else
-      outfp.puts [cols[0], cols[2].to_i-1, cols[2], acc, cols[4], cols[5]].join("\t")
-    end
-  end
-  infp.close
-  outfp.close
+  sh <<EOF
+bamToBed -i #{t.source} \
+| ruby -anle 'puts "\#{$F[0]}\t\#{$F[5]=="+"?$F[1]:$F[2].to_i-1}\t\#{$F[5]=="+"?$F[1].to_i+1:$F[2]}\t\#{$F[3]}:5end\t\#{$F[4]}\t\#{$F[5]}"' \
+| pigz -c > #{t.name}
+EOF
 end
 
 #
