@@ -75,8 +75,12 @@ distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)
 clustfun <- function(d) hclust(d, method='ward.D2')
 tmp.nreads.pre <- nreads.fluctuated+min(nreads[which(nreads>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
-hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-pdf(sprintf('%s/fig_heatmap_global.pdf', dir), width=6.69, height=6.69, pointsize=6)
+hm <- annHeatmap2(log10(tmp.nreads), scale='none', col=heat.colors, legend=2,
+                  dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5),
+                  label=list(
+                      Col=list(nrow=max(nchar(colnames(tmp.nreads)))/2.25),
+                      Row=list(nrow=max(nchar(rownames(tmp.nreads)))/2.25)))
+pdf(sprintf('%s/fig_heatmap_global.pdf', dir), width=6.69, height=6.69)
 plot(hm)
 dev.off()
 

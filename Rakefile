@@ -44,9 +44,13 @@ task :qc => qc_targets + ['out/byGene/fluctuation.txt.gz', 'out/byGene/samples.c
 
 ##
 
+task :gene => qc_targets + ['out/byGene/diffexp.csv', 'out/byGene/samples.csv']
+
+##
+
 full_targets = Array.new
 LIBWELLIDS.each do |libwellid|
-  full_targets.push("tmp/byGene/#{libwellid}.step4b")
+  full_targets.push("tmp/byTFE/#{libwellid}.step4b")
 end
 
-task :default => qc_targets + full_targets + ['out/byGene/diffexp.csv', 'out/byTFE/diffexp.csv', :web]
+task :default => qc_targets + full_targets + ['out/byGene/diffexp.csv', 'out/byGene/samples.csv', 'out/byTFE/diffexp.csv', 'out/byTFE/samples.csv', :web]

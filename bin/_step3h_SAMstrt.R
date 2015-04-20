@@ -6,7 +6,7 @@ path_nreads <- ifelse(is.na(args[3]), 'out/byGene/nreads.RData', args[4])
 path_diffexp <- ifelse(is.na(args[5]), sprintf('out/byGene/diffexp%d.txt.gz', idx), args[5])
 q.diffexp <- ifelse(is.na(args[6]), 0.05, as.numeric(args[6]))
 p.fluctuation <- ifelse(is.na(args[7]), 0.05, as.numeric(args[7]))
-dir <- ifelse(is.na(args[8]), 'out/byTFE', args[8])
+dir <- ifelse(is.na(args[8]), 'out/byGene', args[8])
 
 samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F)
 tmp.classes <- samples[, sprintf('CLASS.%d', idx)]
@@ -85,6 +85,20 @@ gz <- gzfile(sprintf('%s/fluctuation_diffexp%d.txt.gz', dir, idx), 'w')
 write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)
 
+classes.uniq <- sort(unique(classes))
+blocks.uniq <- sort(unique(blocks))
+ann <- data.frame(class1=classes == 1, class2=classes==2)
+if(length(classes.uniq) > 2) {
+    for(n in seq(3, length(classes.uniq))) {
+        cls = classes.uniq[n]
+        ann[, sprintf('class%d', cls)] <- classes == cls
+    }
+}
+for(n in seq(1, length(blocks.uniq))) {
+    blk = blocks.uniq[n]
+    ann[, sprintf('block%d', blk)] <- blocks == blk
+}
+
 library(Heatplus)
 distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)
 clustfun <- function(d) hclust(d, method='ward.D2')
@@ -93,8 +107,15 @@ nreads.diffexp <- nreads[row.diffexp, ]
 tmp.nreads.pre <- nreads.diffexp+min(nreads.org[which(nreads.org>0)])
 tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
 if(nrow(tmp.nreads)>1 & ncol(tmp.nreads)>1) {
-    hm <- annHeatmap2(log10(tmp.nreads), scale='none', dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5), col=function(n) g2r.colors(n, min.tinge=0), labels=list(nrow=10))
-    pdf(sprintf('%s/fig_heatmap_diffexp%d.pdf', dir, idx), width=6.69, height=6.69, pointsize=6)
+    hm <- annHeatmap2(log10(tmp.nreads),
+                      dendrogram=list(
+                          clustfun=clustfun, distfun=distfun, lwd=.5),
+                      annotation=list(inclRef=F, Col=list(data=ann)),
+                      label=list(
+                          Col=list(nrow=max(nchar(colnames(tmp.nreads)))/2.25),
+                          Row=list(nrow=max(nchar(rownames(tmp.nreads)))/2.25)),
+                      col=heat.colors, legend=2, scale='none')
+    pdf(sprintf('%s/fig_heatmap_diffexp%d.pdf', dir, idx), width=6.69, height=6.69)
     plot(hm)
     dev.off()
 }
