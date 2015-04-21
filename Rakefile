@@ -30,6 +30,9 @@ LIBIDS.each do |libid|
     qc_targets.push("tmp/#{libid}.#{runid}.step1b")
   end
 end
+LIBIDS.each do |libid|
+  qc_targets.push("tmp/#{libid}.step2a")
+end
 LIBWELLIDS.each do |libwellid|
   qc_targets.push("tmp/#{libwellid}.step2f")
 end

@@ -4,27 +4,26 @@
 
 require 'damerau-levenshtein'
 
-step2a_sources = [File.expand_path(CONF[LIBIDS[0]]['LAYOUT'])]
-LIBIDS.each do |libid|
+def step2a_byLibraries_sources(path)
+  tmp = [File.expand_path(DEFAULTS['LAYOUT'])]
+  libid = path.pathmap('%X').pathmap('%f')
   CONF[libid]['FASTQS'].each_index do |runid|
-    step2a_sources.unshift("tmp/#{libid}.#{runid}.step1b")
+    tmp.push("tmp/#{libid}.#{runid}.step1b")
   end
+  return tmp
 end
 
-file 'tmp/step2a' => step2a_sources do |t|
-  pids = Array.new
-  
-  conf = CONF[LIBIDS[0]]
-  umi = conf['UMI']
-  barcode = conf['BARCODE']
-  gap = conf['GAP']
-  cdna = conf['CDNA']
+rule '.step2a' => [->(path){ step2a_byLibraries_sources(path) }] do |t|
+  umi = DEFAULTS['UMI']
+  barcode = DEFAULTS['BARCODE']
+  gap = DEFAULTS['GAP']
+  cdna = DEFAULTS['CDNA']
   end5 = umi+barcode+gap+1
   end3 = umi+barcode+gap+cdna
 
   wells = Array.new
   barcodegaps = Array.new
-  infp = open(t.sources[-1])
+  infp = open(t.source)
   while line = infp.gets
     well, barcodegap = line.rstrip.split(/\t/)
     wells.push(well)
@@ -32,89 +31,62 @@ file 'tmp/step2a' => step2a_sources do |t|
   end
   infp.close
 
-  infifopaths = Array.new
-  outfifopaths = Array.new
-  PROCS.times do |i|
-    infifopaths.push(mymkfifo('step2a-input-'))
-    outfifopaths.push(mymkfifo('step2a-output-'))
-  end
-
-  pid = fork do
-    fifos = Array.new
-    infifopaths.each { |fifopath| fifos.push(open(fifopath, 'w')) }
-    fifoidx = 0
-    tracefp = open("| gsort --parallel=#{PROCS} -S 25% -t '\t' | pigz -c > #{t.name}.trace", 'w')
-    infp = open("| unpigz -c #{t.sources[0..-2].join(' ')} | gsort --parallel=#{PROCS} -S 25% -t '\t' -k 4,4 -k 3,3r -m")
-    line = infp.gets
-    prelibid, tmpacc, preqv, preseq = line.rstrip.split(/\t/)
-    preacc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
-    fifos[fifoidx].puts "#{prelibid}\t#{preacc}\t#{preqv}\t#{preseq}"
-    tracefp.puts "#{preacc}\t#{preacc}"
+  pid = fork do 
+    outfp = open("| gsort --parallel=#{PROCS} -S #{33/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
+    tracefp = open("| gsort --parallel=#{PROCS} -S #{33/(PROCS+1)}% -t '\t' | pigz -c > #{t.name}.trace", 'w')
+    infp = open("| unpigz -c #{t.sources[1..-1].join(' ')} | gsort --parallel=#{PROCS} -S #{33/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r -m")
+    preseq = ''
+    preacc = ''
+    out = ''
+    trace = ''
     while line = infp.gets
       libid, tmpacc, qv, seq = line.rstrip.split(/\t/)
       acc = "#{tmp=tmpacc.split(/:/); tmp[0..-2].join(':')}:#{end5}-#{end3}"
-      unless preseq == seq
-        fifoidx += 1
-        fifoidx = 0 if fifoidx == PROCS
-        fifos[fifoidx].puts "#{libid}\t#{acc}\t#{qv}\t#{seq}"
+      if preseq != seq
+        bcidx = nil
+        bcseq = seq[umi, barcode+gap]
+        barcodegaps.each_index do |idx|
+          dist = DamerauLevenshtein.distance(barcodegaps[idx], bcseq, 0, max_distance=2)
+          if !dist.nil? && dist < 2
+            bcidx = idx
+            break
+          end
+        end
+        out << "#{libid}.#{bcidx.nil? ? 'nobc' : wells[bcidx]}\t#{acc}\t#{qv[end5-1, cdna]}\t#{seq[end5-1, cdna]}\n"
+        while 0 < out.bytesize
+          begin
+            written = outfp.write_nonblock(out)
+            out = out.byteslice(written..-1)
+          rescue IO::WaitWritable
+            if 1048576 < out.bytesize
+              IO.select(nil, [outfp])
+              retry
+            end
+          end
+        end
         preacc = acc
         preseq = seq
       end
-      tracefp.puts "#{preacc}\t#{acc}"
+      trace << "#{preacc}\t#{acc}\n"
+      while 0 < trace.bytesize
+        begin
+          written = tracefp.write_nonblock(trace)
+          trace = trace.byteslice(written..-1)
+        rescue IO::WaitWritable
+          if 1048576 < trace.bytesize
+            IO.select(nil, [tracefp])
+            retry
+          end
+        end
+      end
     end
     infp.close
+    tracefp.write(trace) if 0 < trace.bytesize
     tracefp.close
-    fifos.each_index { |i| fifos[i].close }
-    Kernel.exit!
-  end
-  pids.push(pid)
-
-  PROCS.times do |i|
-    pid = fork do
-      infp = open(infifopaths[i], 'r')
-      outfp = open(outfifopaths[i], 'w')
-      while line = infp.gets
-        libid, acc, qv, seq = line.rstrip.split(/\t/)
-        tmpdists = Hash.new
-        barcodegaps.each_index do |idx|
-          tmpdist = DamerauLevenshtein.distance(barcodegaps[idx], seq[umi, barcode+gap], 0, max_distance=2)
-          dist = tmpdist.nil? ? 2 : tmpdist
-          tmpdists[wells[idx]] = dist
-          break if dist < 2
-        end
-        dists = tmpdists.sort { |a, b| a[1] <=> b[1] }
-        well = dists[0][1] < 2 ? dists[0][0] : 'nobc'
-        outfp.puts(["#{libid}.#{well}", acc, qv[end5-1, cdna], seq[end5-1, cdna]].join("\t"))
-      end
-      outfp.close
-      infp.close
-      Kernel.exit!
-    end
-    pids.push(pid)
+    outfp.write(out) if 0 < out.bytesize
+    outfp.close
   end
 
-  outfp = open("| gsort --parallel=#{PROCS} -S 25% -t '\t' -k 4,4 -k 3,3r | pigz -c > #{t.name}", 'w')
-  fifos = Array.new
-  outfifopaths.each { |fifopath| fifos.push(open(fifopath, 'r')) }
-  fifodones = Hash.new
-  fifos.cycle do |fifo|
-    unless fifodones.key?(fifo)
-      line = fifo.gets
-      if line.nil?
-        fifodones[fifo] = ''
-        break if fifodones.keys.length == fifos.length
-      else
-        outfp.puts line.rstrip
-      end
-    end
-  end
-  fifos.each { |fifo| fifo.close }
-  outfp.close
-
-  pids.each do |pid|
-    Process.waitpid(pid)
-  end
+  Process.waitpid(pid)
   sh "touch #{t.name}.trace"
 end
-
-file 'tmp/step2a.trace' => 'tmp/step2a'

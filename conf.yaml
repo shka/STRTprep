@@ -20,3 +20,13 @@ LIBS:
   FASTQS:
    - src/test2-1.fq.gz
    - src/test2-2.fq.gz
+ TEST3:
+  <<: *defaults
+  FASTQS:
+   - src/test3-1.fq.gz
+   - src/test3-2.fq.gz
+ TEST4:
+  <<: *defaults
+  FASTQS:
+   - src/test4-1.fq.gz
+   - src/test4-2.fq.gz

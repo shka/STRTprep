@@ -3,7 +3,8 @@
 ##
 
 def step2f_sources(path)
-  return [path.sub(/\.step2f$/, '.step2d'), 'tmp/step2a.trace']
+  return [path.sub(/\.step2f$/, '.step2d'),
+          "tmp/#{path.pathmap('%n').pathmap('%n')}.step2a.trace"]
 end
 
 rule /\.step2f$/ => [->(path){ step2f_sources(path) }] do |t|

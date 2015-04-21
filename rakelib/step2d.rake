@@ -2,7 +2,11 @@
 ## Step 2d - Decollapse sequences & alignments
 ##
 
-rule /.step2d$/ => ['tmp/step2a', 'tmp/step2b.trace'] do |t|
+def step2d_sources(path)
+  return ["tmp/#{path.pathmap('%n').pathmap('%n')}.step2a", 'tmp/step2b.trace']
+end
+
+rule /.step2d$/ => [->(path){ step2d_sources(path) }] do |t|
   repacc2accpath = mymkfifo('step2d-')
   pid1 = spawn "unpigz -c #{t.sources[1]} > #{repacc2accpath}"
 
@@ -10,14 +14,14 @@ rule /.step2d$/ => ['tmp/step2a', 'tmp/step2b.trace'] do |t|
   bcaccpath = mymkfifo('step2d-')
   pid2 = spawn <<EOF
 unpigz -c #{t.source} \
-| grep '^#{libwellid}\t'\
+| grep '^#{libwellid}\t' \
 | gcut -f 2-4 \
 | gsort -S #{50/(PROCS+1)}% -t '\t' -k 1,1 > #{bcaccpath}
 EOF
 
   sh <<EOF
-gjoin -t '\t' -j 1 -o 1.2,2.1,2.2,2.3 #{repacc2accpath} #{bcaccpath}\
-| gsort -S #{50/(PROCS+1)}% -t '\t' -k 1,1\
+gjoin -t '\t' -j 1 -o 1.2,2.1,2.2,2.3 #{repacc2accpath} #{bcaccpath} \
+| gsort -S #{50/(PROCS+1)}% -t '\t' -k 1,1 \
 | pigz -c > #{t.name}
 EOF
 
