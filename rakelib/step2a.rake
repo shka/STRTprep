@@ -90,3 +90,5 @@ rule '.step2a' => [->(path){ step2a_byLibraries_sources(path) }] do |t|
   Process.waitpid(pid)
   sh "touch #{t.name}.trace"
 end
+
+rule /\.step2a\.trace$/ => [->(path){ path.pathmap("%X") }]
