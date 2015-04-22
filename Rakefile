@@ -24,6 +24,28 @@ end
 
 ##
 
+require 'csv'
+require 'spreadsheet'
+
+rule '.xls' => '.csv' do |t|
+  book = Spreadsheet::Workbook.new
+  sheet = book.create_worksheet
+  
+  csv = CSV.read(t.source)
+  sheet.row(0).replace csv.first
+  
+  table = CSV.table(t.source)
+  rowidx = 1
+  table.each do |row|
+    sheet.row(rowidx).replace row.fields
+    rowidx += 1
+  end
+  
+  book.write(t.name)
+end
+
+##
+
 qc_targets = Array.new
 LIBIDS.each do |libid|
   CONF[libid]['FASTQS'].each_index do |runid|
@@ -43,11 +65,14 @@ LIBWELLIDS.each do |libwellid|
   qc_targets.push("tmp/byGene/#{libwellid}.step3c")
 end
 
-task :qc => qc_targets + ['out/byGene/fluctuation.txt.gz', 'out/byGene/samples.csv']
+task :qc => qc_targets + ['out/byGene/fluctuation.txt.gz',
+                          'out/byGene/samples.xls']
 
 ##
 
-task :gene => qc_targets + ['out/byGene/diffexp.csv', 'out/byGene/samples.csv']
+task :gene => qc_targets + ['out/byGene/diffexp.xls',
+                            'out/byGene/samples.xls',
+                            'out/web/regions_byGene.bed.gz']
 
 ##
 
@@ -56,4 +81,6 @@ LIBWELLIDS.each do |libwellid|
   full_targets.push("tmp/byTFE/#{libwellid}.step4b")
 end
 
-task :default => qc_targets + full_targets + ['out/byGene/diffexp.csv', 'out/byGene/samples.csv', 'out/byTFE/diffexp.csv', :web]
+task :default => qc_targets + full_targets + ['out/byGene/diffexp.xls',
+                                              'out/byGene/samples.xls',
+                                              'out/byTFE/diffexp.xls', :web]
