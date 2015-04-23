@@ -20,6 +20,8 @@ extract_outliers <- function(x, y, stat) {
 ###
 
 samples.all <- read.table('tmp/byGene/samples.csv', header=T, sep=',', quote='', check.names=F)
+if(!is.element('FORCE_APPROVAL', colnames(samples.all)))
+    samples.all[, 'FORCE_APPROVAL'] <- FALSE 
 libwellids <- sprintf('%s.%s', samples.all[, 'LIBRARY'], samples.all[, 'WELL'])
 samples <- samples.all[which(!is.na(samples.all[, 'NAME'])), ]
 
@@ -115,11 +117,14 @@ samples.all[, 'CODING_5END_RATE.OUTLIER'] <-
 
 write.table(samples.all, 'out/byGene/samples_all.csv', quote=F, sep=',', row.names=F, col.names=T)
 
-samples <- samples.all[which(!is.na(samples.all[, 'NAME'])
-                             & !samples.all[, 'SPIKEIN_READS.OUTLIER']
-                             & !samples.all[, 'MAPPED/SPIKEIN.OUTLIER']
-                             & !samples.all[, 'SPIKEIN_5END_RATE.OUTLIER']
-                             & !samples.all[, 'CODING_5END_RATE.OUTLIER']), ]
+samples <-
+    samples.all[which(!is.na(samples.all[, 'NAME'])
+                      & (samples.all[, 'FORCE_APPROVAL']
+                         | (!samples.all[, 'FORCE_APPROVAL']
+                            & !samples.all[, 'SPIKEIN_READS.OUTLIER']
+                            & !samples.all[, 'MAPPED/SPIKEIN.OUTLIER']
+                            & !samples.all[, 'SPIKEIN_5END_RATE.OUTLIER']
+                            & !samples.all[, 'CODING_5END_RATE.OUTLIER']))), ]
 write.table(samples, 'out/byGene/samples.csv', quote=F, sep=',', row.names=F, col.names=T)
 
 ###
