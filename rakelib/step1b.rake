@@ -13,6 +13,7 @@ if DEFAULTS['PHYX'].nil?
     libid, runid = parse_librunid(t.name)
     conf = CONF[libid]
     len = conf['UMI']+conf['BARCODE']+conf['GAP']+conf['CDNA']
+    mkdir_p t.name.pathmap('%d')
     sh <<EOF
 (unpigz -c #{t.source} \
  | ruby -e 'while l=gets; m=gets.rstrip; o=gets; n=gets.rstrip[0, #{len}]; puts "#{libid}\t\#{l.rstrip.split(/\s/)[0][1..-1]}:1-#{len}\t\#{n}\t\#{m[0, #{len}]}" if n.index(/[!-#]/).nil?; end' \
