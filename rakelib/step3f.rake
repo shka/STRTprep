@@ -47,7 +47,7 @@ end
 
 rule /\/reads\.RData$/ => [->(path){ path.sub(/\.RData$/, '.txt.gz') }] do |t|
   sh <<EOF
-echo "reads <- as.matrix(read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F)); save(reads, file='#{t.name}', compress='gzip')"\
+echo "tmp.reads <- as.matrix(read.table('#{t.source}', header=T, sep='\\t', quote='', row.names=1, check.names=F)); reads <- tmp.reads[order(rownames(tmp.reads)), order(colnames(tmp.reads))]; save(reads, file='#{t.name}', compress='gzip')"\
 | R --vanilla --quiet > #{t.name}.log 2>&1
 EOF
 end

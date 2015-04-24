@@ -2,15 +2,45 @@
 ## Step 3h - differential expression analysis
 ##
 
-def step3h_diffexpN_sources(path)
-  root = path.pathmap('%d')
-  return ["out/byGene/samples.csv", "#{root}/reads.RData", "#{root}/nreads.RData"]
+##
+
+def step3h_readsN_sources(path)
+  return ["out/byGene/samples.csv", "#{path.pathmap('%d')}/reads.RData"]
 end
 
-rule /diffexp[\d+]\.txt\.gz$/ =>
-                         [->(path){ step3h_diffexpN_sources(path) }] do |t|
+rule /\/reads[\d+]\.RData$/ => [->(p){ step3h_readsN_sources(p) }] do |t|
+  idx = /reads([\d+])\.RData$/.match(t.name).to_a[1]
+  sh <<EOF
+R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} \
+< bin/_step3h_extract_reads.R > #{t.name}.log 2>&1
+EOF
+end
+
+##
+
+def step3h_diffexpN_sources(path)
+  root = path.pathmap('%d')
+  idx = /diffexp([\d+])\.txt\.gz$/.match(path).to_a[1]
+  return ["out/byGene/samples.csv", "#{root}/reads#{idx}.RData", "#{root}/nreads.RData"]
+end
+
+require 'csv'
+
+rule /\/diffexp[\d+]\.txt\.gz$/ =>
+                           [->(path){ step3h_diffexpN_sources(path) }] do |t|
   idx = /diffexp([\d+])\.txt\.gz$/.match(t.name).to_a[1]
-  sh "R --vanilla --quiet --args #{idx} #{t.source} #{t.sources[1]} #{t.sources[2]} #{t.name} #{DEFAULTS['DIFFEXP']} #{DEFAULTS['FLUCTUATION']} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1"
+  tmp = "#{t.name.pathmap('%d').sub(/^out/, 'tmp')}/reads#{idx}.RData"
+  if (!File.exist?(t.name) ||
+      !File.exist?(tmp) ||
+      `md5sum #{t.sources[1]} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
+    sh <<EOF
+R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} #{DEFAULTS['DIFFEXP']} #{DEFAULTS['FLUCTUATION']} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1
+EOF
+    sh "cp -p #{t.sources[1]} #{tmp}"
+  else
+    puts "... skipped #{t.name}, since the target samples were identical with the previous run"
+    sh "touch #{t.name}"
+  end
 end
 
 ##
@@ -121,9 +151,3 @@ end
 file 'out/byGene/diffexp.csv' => step3h_sources do |t|
   step3h_job(t)
 end
-
-task :clean_step3h do
-  sh "rm out/byGene/diffexp.csv"
-end
-
-task :diffexp => 'out/byGene/diffexp.csv'

@@ -19,9 +19,20 @@ end
 rule /\.step4a\/transcripts\.gtf$/ => [->(path){ step4a_transcripts_sources(path) }] do |t|
   dir = t.name.pathmap("%d")
   mkdir_p dir
-  cls = t.name.pathmap("%d").pathmap("%f").pathmap("%X")
-  sh "samtools merge -f #{dir}/merged.bam #{t.sources[1..-1].join(' ')} > #{t.name}.log 2>&1"
-  sh "(cufflinks -o #{dir} -p #{PROCS} --library-type fr-secondstrand -L #{cls} #{dir}/merged.bam) >> #{t.name}.log 2>&1"
+  bam = "#{dir}/merged.bam"
+  bams = t.sources[1..-1].sort.join(' ')
+  sh "samtools merge -f #{bam} #{bams} > #{t.name}.log 2>&1"
+  tmp = "#{dir}/merged.bam.bak"
+  if (!File.exist?(t.name) ||
+      !File.exist?(tmp) ||
+      `md5sum #{bam} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
+    cls = t.name.pathmap("%d").pathmap("%f").pathmap("%X")
+    sh "(cufflinks -o #{dir} -p #{PROCS} --library-type fr-secondstrand -L #{cls} #{bam}) >> #{t.name}.log 2>&1"
+    sh "cp -p #{bam} #{tmp}"
+  else
+    puts "... skipped #{t.name}, since the qualified samples were identical with the previous run"
+    sh "touch #{t.name}"
+  end
 end
 
 ##
