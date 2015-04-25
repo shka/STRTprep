@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 source('bin/_fluctuation.R')
 
 draw_fluctuation <- function(fluctuation, sig=0.01) {

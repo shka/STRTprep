@@ -43,7 +43,7 @@ bundle
 
 R --vanilla --quiet <<EOF
 source("http://bioconductor.org/biocLite.R")
-biocLite(c('Heatplus', 'devtools', 'samr'), ask=F)
+biocLite(c('Heatplus', 'devtools', 'samr', 'yaml'), ask=F)
 library(devtools)
 install_github('shka/samr', ref='test_multblock')
 install_github('shka/R-SAMstrt')

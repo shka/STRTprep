@@ -72,7 +72,8 @@ task :qc => qc_targets + ['out/byGene/fluctuation.txt.gz',
 
 task :gene => qc_targets + ['out/byGene/diffexp.xls',
                             'out/byGene/samples.xls',
-                            'out/web/regions_byGene.bed.gz']
+                            'out/web/regions_byGene.bed.gz',
+                            :step3g]
 
 ##
 
