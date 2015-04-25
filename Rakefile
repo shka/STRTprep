@@ -93,7 +93,7 @@ Dir.glob('plugins/*') do |script|
       end
       target = "out/byTFE/plugin_#{plugin}_#{cls}.log"
       plugin_byTFE_targets.push(target)
-      file target => ['out/byTFE/diffexp.csv', 'out/byTFE/samples.csv'] do |t|
+      file target => ['out/byTFE/diffexp.csv', 'out/byGene/samples.csv'] do |t|
         sh "#{script} byTFE #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name} 2>&1"
       end
     end

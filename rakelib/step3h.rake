@@ -45,6 +45,11 @@ end
 
 ##
 
+rule /\/fluctuation_diffexp\d+\.txt\.gz$/ =>
+                                     [->(p){ p.sub(/\/fluctuation_/, '') }]
+
+##
+
 step3h_sources = ['out/byGene/reads.txt.gz',
                   'out/byGene/nreads.txt.gz',
                   'out/byGene/fluctuation.txt.gz']

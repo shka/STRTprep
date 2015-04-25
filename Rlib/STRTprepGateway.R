@@ -17,7 +17,7 @@ STRTprepGateway <-
           initialize = function() {
             args <- commandArgs(trailingOnly=T)
             self$quantificationType <- ifelse(is.na(args[1]), 'byGene', args[1])
-            self$comparisonClass <- ifelse(is.na(args[2]), 'global', args[2])
+            self$comparisonClass <- ifelse(is.na(args[2]), '0', args[2])
             self$expressionsPath <-
               ifelse(is.na(args[3]),
                      sprintf("out/%s/diffexp.csv", self$quantificationType),
@@ -42,9 +42,10 @@ STRTprepGateway <-
           getFluctuations = function() {
             if(!is.data.frame(private$fluctuations)) {
               e <- self$getExpressions()
-              private$fluctuations <-
+              tmp <- 
                 e[, c(sprintf('fluctuation.%s', self$comparisonClass),
                       sprintf('fluctuationScore.%s', self$comparisonClass))]
+              private$fluctuations <- tmp[which(!is.na(tmp[, 1])), ]
               colnames(private$fluctuations) <- c('pvalue', 'score')
             }
             private$fluctuations
