@@ -7,21 +7,20 @@ STRTprepGateway <-
       
       public = list(
           
-          analysisType = NA,
           quantificationType = NA,
           expressionsPath = NA,
+          comparisonClass = NA,
           samplesPath = NA,
           configurationPath = NA,
           configuration = NA,
           
           initialize = function() {
             args <- commandArgs(trailingOnly=T)
-            self$analysisType <- ifelse(is.na(args[1]), 'fluctuation', args[1])
-            self$quantificationType <- ifelse(is.na(args[2]), 'byGene', args[2])
+            self$quantificationType <- ifelse(is.na(args[1]), 'byGene', args[1])
+            self$comparisonClass <- ifelse(is.na(args[2]), 'global', args[2])
             self$expressionsPath <-
               ifelse(is.na(args[3]),
-                     sprintf("out/%s/%s.csv",
-                             self$quantificationType, self$analysisType),
+                     sprintf("out/%s/diffexp.csv", self$quantificationType),
                      args[3])
             self$samplesPath <-
               ifelse(is.na(args[4]),
@@ -33,7 +32,7 @@ STRTprepGateway <-
           },
 
           getExpressions = function() {
-            if(is.na(private$expressions))
+            if(!is.data.frame(private$expressions))
               private$expressions <-
                 read.table(self$expressionsPath, header=T, check.names=F,
                            sep=',', quote='', row.names=1)
@@ -41,10 +40,12 @@ STRTprepGateway <-
           },
           
           getFluctuations = function() {
-            if(is.na(private$fluctuations)) {
+            if(!is.data.frame(private$fluctuations)) {
               e <- self$getExpressions()
-              private$fluctuations <- e[, 'fluctuation']
-              names(private$fluctuations) <- rownames(e)
+              private$fluctuations <-
+                e[, c(sprintf('fluctuation.%s', self$comparisonClass),
+                      sprintf('fluctuationScore.%s', self$comparisonClass))]
+              colnames(private$fluctuations) <- c('pvalue', 'score')
             }
             private$fluctuations
           }

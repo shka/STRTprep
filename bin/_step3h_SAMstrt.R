@@ -69,7 +69,7 @@ close(gz)
 
 ###
 
-source('bin/_fluctuation.R')
+source('Rlib/fluctuation.R')
 
 load(path_nreads)
 nreads.org <- nreads
@@ -80,7 +80,7 @@ errormodel <- merge_errormodels(errormodels)
 save(errormodel, file=sprintf('%s/errormodel_diffexp%d.RData', dir, idx), compress='gzip')
 fluctuation <- estimate_fluctuation(errormodel)
 save(fluctuation, file=sprintf('%s/fluctuation_diffexp%d.RData', dir, idx), compress='gzip')
-tmp <- data.frame(Gene=names(fluctuation$p.adj), pvalue=fluctuation$p.adj)
+tmp <- data.frame(Gene=names(fluctuation$p.adj), pvalue=fluctuation$p.adj, score=fluctuation$score)
 gz <- gzfile(sprintf('%s/fluctuation_diffexp%d.txt.gz', dir, idx), 'w')
 write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)

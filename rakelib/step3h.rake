@@ -51,12 +51,12 @@ step3h_sources = ['out/byGene/reads.txt.gz',
 begin
   infp = open('src/samples.csv', 'rt')
   colnames = infp.gets.rstrip.split(',')
-  classes = colnames.select { |colname| /^CLASS\.\d+$/.match(colname) }
-  classes.each do |cls|
-    idx = /^CLASS\.(\d+)$/.match(cls).to_a[1]
-    step3h_sources.push("out/byGene/diffexp#{idx}.txt.gz")
-  end
+  tmp = colnames.select { |colname| /^CLASS\.\d+$/.match(colname) }
+  classes = tmp.map { |cls| /^CLASS\.(\d+)$/.match(cls).to_a[1] }
   infp.close
+  classes.each do |cls|
+    step3h_sources.push("out/byGene/diffexp#{cls}.txt.gz")
+  end
 end
 
 def step3h_job(t)
@@ -97,22 +97,23 @@ def step3h_job(t)
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
-      tmp[cols[0]] = "#{tmp[cols[0]]},#{cols[1] != 'NA' ? cols[1] : 1}" if tmp.key?(cols[0])
+      tmp[cols[0]] = [tmp[cols[0]]] + (cols[1] != 'NA' ? [cols[1], cols[2]] : [1, 'NA']) if tmp.key?(cols[0])
     end
     infp.close
     diffexps[idx] = tmp
-    header_diffexps.push("Score.#{idx}")
+    header_diffexps.push("diffexpScore.#{idx}")
     header_diffexps.push("pvalue.#{idx}")
     header_diffexps.push("qvalue.#{idx}")
     header_diffexps.push("fluctuation.#{idx}")
+    header_diffexps.push("fluctuationScore.#{idx}")
   end
 
   fluctuation = Hash.new
   infp = open("| gunzip -c #{t.sources[2]}")
   header_fluctuation = infp.gets
   while line = infp.gets
-    gene, pvalue = line.rstrip.split(/\t/)
-    fluctuation[gene] = pvalue != 'NA' ? pvalue : 1
+    gene, pvalue, score = line.rstrip.split(/\t/)
+    fluctuation[gene] = pvalue != 'NA' ? [pvalue, score] : [1, 'NA']
   end
   infp.close
   
@@ -134,15 +135,15 @@ def step3h_job(t)
   1.upto(header_reads.length-1) do |i|
     header_reads[i] = "R|#{header_reads[i]}"
   end
-  outfp.puts ([header_reads[0]] + (annotation.nil? ? [] : ['Gene', 'Location', 'Region', 'Str', 'Chr', 'Start', 'Stop', 'Peak', 'Transcript']) + ['fluctuation.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
+  outfp.puts ([header_reads[0]] + (annotation.nil? ? [] : ['Gene', 'Location', 'Region', 'Str', 'Chr', 'Start', 'Stop', 'Peak', 'Transcript']) + ['fluctuation.global', 'fluctuationScore.global'] + header_diffexps + header_nreads[1..-1] + header_reads[1..-1]).join(',')
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     row_diffexps = Array.new
     diffexps.keys.sort.each do |idx|
       tmp = diffexps[idx]
-      row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : ",,,")
+      row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : ",,,,")
     end
-    outfp.puts ([cols[0]] + (annotation.nil? ? [] : [annotation[cols[0]]]) + [fluctuation[cols[0]]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
+    outfp.puts ([cols[0]] + (annotation.nil? ? [] : [annotation[cols[0]]]) + fluctuation[cols[0]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
   end
   infp.close
   outfp.close

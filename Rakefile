@@ -65,23 +65,54 @@ LIBWELLIDS.each do |libwellid|
   qc_targets.push("tmp/byGene/#{libwellid}.step3c")
 end
 
-task :qc => qc_targets + ['out/byGene/fluctuation.txt.gz',
-                          'out/byGene/samples.xls']
+task :qc => qc_targets + ['out/byGene/samples.xls']
 
 ##
 
-task :gene => qc_targets + ['out/byGene/diffexp.xls',
-                            'out/byGene/samples.xls',
-                            'out/web/regions_byGene.bed.gz',
-                            :step3g]
-
-##
-
-full_targets = Array.new
-LIBWELLIDS.each do |libwellid|
-  full_targets.push("tmp/byTFE/#{libwellid}.step4b")
+classes = ['global']
+begin
+  infp = open('src/samples.csv', 'rt')
+  colnames = infp.gets.rstrip.split(',')
+  infp.close
+  (colnames.select { |colname| /^CLASS\.\d+$/.match(colname) }).each do |cls|
+    classes.push(/^CLASS\.(\d+)$/.match(cls).to_a[1])
+  end
 end
 
-task :default => qc_targets + full_targets + ['out/byGene/diffexp.xls',
-                                              'out/byGene/samples.xls',
-                                              'out/byTFE/diffexp.xls', :web]
+plugin_byGene_targets = Array.new
+plugin_byTFE_targets = Array.new
+
+Dir.glob('plugins/*') do |script|
+  if /~$/ !~ script
+    plugin = script.pathmap('%n')
+    classes.each do |cls|
+      target = "out/byGene/plugin_#{plugin}_#{cls}.log"
+      plugin_byGene_targets.push(target)
+      file target => ['out/byGene/diffexp.csv', 'out/byGene/samples.csv'] do |t|
+        sh "#{script} byGene #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name} 2>&1"
+      end
+      target = "out/byTFE/plugin_#{plugin}_#{cls}.log"
+      plugin_byTFE_targets.push(target)
+      file target => ['out/byTFE/diffexp.csv', 'out/byTFE/samples.csv'] do |t|
+        sh "#{script} byTFE #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name} 2>&1"
+      end
+    end
+  end
+end
+
+
+task :gene => qc_targets +
+              plugin_byGene_targets +
+              ['out/byGene/samples.xls',
+               'out/byGene/diffexp.xls',
+               'out/web/regions_byGene.bed.gz']
+
+##
+
+task :default => qc_targets +
+                 plugin_byGene_targets +
+                 plugin_byTFE_targets +
+                 ['out/byGene/samples.xls',
+                  'out/byGene/diffexp.xls',
+                  'out/byTFE/diffexp.xls',
+                  :web]
