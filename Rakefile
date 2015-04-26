@@ -86,20 +86,21 @@ Dir.glob('plugins/*') do |script|
   if /~$/ !~ script
     plugin = script.pathmap('%n')
     classes.each do |cls|
-      target = "out/byGene/plugin_#{plugin}_#{cls}.log"
+      target = "out/byGene/plugin_#{plugin}_#{cls}.timestamp"
       plugin_byGene_targets.push(target)
       file target => ['out/byGene/diffexp.csv', 'out/byGene/samples.csv'] do |t|
-        sh "#{script} byGene #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name} 2>&1"
+        sh "#{script} byGene #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name.pathmap("%X")}.log 2>&1"
+        sh "touch #{t.name}"
       end
-      target = "out/byTFE/plugin_#{plugin}_#{cls}.log"
+      target = "out/byTFE/plugin_#{plugin}_#{cls}.timestamp"
       plugin_byTFE_targets.push(target)
       file target => ['out/byTFE/diffexp.csv', 'out/byGene/samples.csv'] do |t|
-        sh "#{script} byTFE #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name} 2>&1"
+        sh "#{script} byTFE #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name.pathmap("%X")}.log 2>&1"
+        sh "touch #{t.name}"
       end
     end
   end
 end
-
 
 task :gene => qc_targets +
               plugin_byGene_targets +

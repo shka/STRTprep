@@ -45,12 +45,10 @@ draw_fluctuation <- function(fluctuation, sig=0.01, qt='byGene') {
 }
 
 source('Rlib/STRTprepGateway.R')
-gw <- STRTprepGateway$new()
-qt <- gw$quantificationType
-fl <- gw$getFluctuations()
+gw <- STRTprepGateway$new('flucuationSummary')
 
-pdf(sprintf('out/%s/plugin_fluctuationSummary_%s.pdf',
-            qt, gw$comparisonClass),
-    width=3.34, height=3.34)
-draw_fluctuation(fl, sig=gw$configuration$DEFAULT$FLUCTUATION, qt=qt)
+pdf(sprintf('%s.pdf', gw$outputPrefix), width=3.34, height=3.34)
+draw_fluctuation(gw$getFluctuations(),
+                 sig=gw$configuration$DEFAULT$FLUCTUATION,
+                 qt=gw$quantificationType)
 dev.off()

@@ -12,9 +12,10 @@ STRTprepGateway <-
           comparisonClass = NA,
           samplesPath = NA,
           configurationPath = NA,
+          outputPrefix = NA,
           configuration = NA,
           
-          initialize = function() {
+          initialize = function(pluginName) {
             args <- commandArgs(trailingOnly=T)
             self$quantificationType <- ifelse(is.na(args[1]), 'byGene', args[1])
             self$comparisonClass <- ifelse(is.na(args[2]), '0', args[2])
@@ -28,6 +29,13 @@ STRTprepGateway <-
                      args[4])
             self$configurationPath <-
               ifelse(is.na(args[5]), 'conf.yaml', args[5])
+            self$outputPrefix <-
+              ifelse(is.na(args[6]),
+                     sprintf('out/%s/plugin_%s_%s.pdf',
+                             self$quantificationType,
+                             pluginName,
+                             self$comparisonClass),
+                     args[6])
             self$configuration <- yaml.load_file(self$configurationPath)
           },
 
