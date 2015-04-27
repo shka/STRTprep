@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
-draw_fluctuation <- function(fluctuation, sig=0.01, qt='byGene') {
-    ord <- order(fluctuation$score, decreasing=T)
-    score <- fluctuation$score[ord]
-    p.adj <- -log10(fluctuation$pvalue[ord])
+draw_fluctuation <- function(fluctuations, sig=0.01, qt='byGene') {
+    ord <- order(fluctuations$fluctuationScore, decreasing=T)
+    score <- fluctuations$fluctuationScore[ord]
+    p.adj <- -log10(fluctuations$fluctuation[ord])
     prop <- (1:length(score))/length(score)
 
     unit <- ifelse(qt == 'byGene', 'genes', 'TFEs')
@@ -48,7 +48,7 @@ source('Rlib/STRTprepGateway.R')
 gw <- STRTprepGateway$new('flucuationSummary')
 
 pdf(sprintf('%s.pdf', gw$outputPrefix), width=3.34, height=3.34)
-draw_fluctuation(gw$getFluctuations(),
+draw_fluctuation(gw$getExpressions()$getFluctuations(),
                  sig=gw$configuration$DEFAULT$FLUCTUATION,
                  qt=gw$quantificationType)
 dev.off()

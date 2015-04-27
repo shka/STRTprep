@@ -85,41 +85,6 @@ gz <- gzfile(sprintf('%s/fluctuation_diffexp%d.txt.gz', dir, idx), 'w')
 write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)
 
-classes.uniq <- sort(unique(classes))
-blocks.uniq <- sort(unique(blocks))
-ann <- data.frame(class1=classes == 1, class2=classes==2)
-if(length(classes.uniq) > 2) {
-    for(n in seq(3, length(classes.uniq))) {
-        cls = classes.uniq[n]
-        ann[, sprintf('class%d', cls)] <- classes == cls
-    }
-}
-for(n in seq(1, length(blocks.uniq))) {
-    blk = blocks.uniq[n]
-    ann[, sprintf('block%d', blk)] <- blocks == blk
-}
-
-library(Heatplus)
-distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)
-clustfun <- function(d) hclust(d, method='ward.D2')
-row.diffexp <- intersect(diffexp[which(diffexp[, 'qvalue'] < q.diffexp), 'Gene'], names(fluctuation$p.adj)[which(fluctuation$p.adj < p.fluctuation)])
-nreads.diffexp <- nreads[row.diffexp, ]
-tmp.nreads.pre <- nreads.diffexp+min(nreads.org[which(nreads.org>0)])
-tmp.nreads <- tmp.nreads.pre[setdiff(rownames(tmp.nreads.pre), rownames(extract_spikein_reads(tmp.nreads.pre))), ]
-if(nrow(tmp.nreads)>1 & ncol(tmp.nreads)>1) {
-    hm <- annHeatmap2(log10(tmp.nreads),
-                      dendrogram=list(
-                          clustfun=clustfun, distfun=distfun, lwd=.5),
-                      annotation=list(inclRef=F, Col=list(data=ann)),
-                      label=list(
-                          Col=list(nrow=max(nchar(colnames(tmp.nreads)))/2.25),
-                          Row=list(nrow=max(nchar(rownames(tmp.nreads)))/2.25)),
-                      col=heat.colors, legend=2, scale='none')
-    pdf(sprintf('%s/fig_heatmap_diffexp%d.pdf', dir, idx), width=6.69, height=6.69)
-    plot(hm)
-    dev.off()
-}
-
 ###
 
 ### Local Variables:

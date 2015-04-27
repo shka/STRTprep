@@ -83,7 +83,7 @@ plugin_byGene_targets = Array.new
 plugin_byTFE_targets = Array.new
 
 Dir.glob('plugins/*') do |script|
-  if /~$/ !~ script
+  if /[\#~]$/ !~ script
     plugin = script.pathmap('%n')
     classes.each do |cls|
       target = "out/byGene/plugin_#{plugin}_#{cls}.timestamp"
