@@ -32,7 +32,7 @@ rule /\/diffexp[\d+]\.txt\.gz$/ =>
   tmp = "#{t.name.pathmap('%d').sub(/^out/, 'tmp')}/reads#{idx}.RData"
   if (!File.exist?(t.name) ||
       !File.exist?(tmp) ||
-      `md5sum #{t.sources[1]} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
+      `gmd5sum #{t.sources[1]} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     sh <<EOF
 R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} #{DEFAULTS['DIFFEXP']} #{DEFAULTS['FLUCTUATION']} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1
 EOF

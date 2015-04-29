@@ -36,7 +36,6 @@ brew install samtools-0.1
 brew install bowtie
 brew install tophat --with-bowtie
 brew install kent-tools
-brew install md5sha1sum
 
 gem install bundler
 bundle

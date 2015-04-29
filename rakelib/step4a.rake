@@ -25,7 +25,7 @@ rule /\.step4a\/transcripts\.gtf$/ => [->(path){ step4a_transcripts_sources(path
   tmp = "#{dir}/merged.bam.bak"
   if (!File.exist?(t.name) ||
       !File.exist?(tmp) ||
-      `md5sum #{bam} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
+      `gmd5sum #{bam} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     cls = t.name.pathmap("%d").pathmap("%f").pathmap("%X")
     sh "(cufflinks -o #{dir} -p #{PROCS} --library-type fr-secondstrand -L #{cls} #{bam}) >> #{t.name}.log 2>&1"
     sh "cp -p #{bam} #{tmp}"
