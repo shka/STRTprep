@@ -82,7 +82,7 @@ def step3h_job(t)
     infp = open("| gunzip -c #{t.sources[4]}")
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
-      annotation[cols[0]] = ([cols[4], cols[6]] + annotation[cols[0]] + [cols[2], cols[5]]).join(',')
+      annotation[cols[0]] = [cols[4], cols[6]] + annotation[cols[0]] + [cols[2], cols[5]]
     end
     infp.close
   end
@@ -148,7 +148,11 @@ def step3h_job(t)
       tmp = diffexps[idx]
       row_diffexps.push(tmp.key?(cols[0]) ? tmp[cols[0]] : ",,,,")
     end
-    outfp.puts ([cols[0]] + (annotation.nil? ? [] : [annotation[cols[0]]]) + fluctuation[cols[0]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
+    if annotation.nil?
+      outfp.puts ([cols[0]] + fluctuation[cols[0]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
+    elsif annotation[cols[0]].length == 9
+      outfp.puts ([cols[0]] + annotation[cols[0]] + fluctuation[cols[0]] + row_diffexps + nreads[cols[0]] + cols[1..-1]).join(',')
+    end
   end
   infp.close
   outfp.close
