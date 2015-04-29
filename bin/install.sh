@@ -20,6 +20,7 @@ fi
 
 brew update
 brew tap homebrew/science
+brew install curl  # for hidden dependency in R 3.2.0
 brew install R --with-openblas --without-tcltk --without-x11
 
 # bedtools, not later than 2.22.0
