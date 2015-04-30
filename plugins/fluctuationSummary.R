@@ -35,13 +35,16 @@ draw_fluctuation <- function(fluctuations, sig=0.01, qt='byGene') {
     axis(4, col='red')
     mtext(sprintf('Proportion (%d %s)', length(score), unit),
           side=4, line=2.5, col='red')
-    
-    tmp <- score[length(which(p.adj > -log10(sig)))]
-    abline(v=tmp, col='blue', lty=3)
-    mtext(sprintf(' score=%.2f', tmp), line=-1, at=tmp, adj=0, col='blue')
-    mtext(sprintf(' adj.p=%s', sig), line=-2, at=tmp, adj=0, col='blue')
-    mtext(sprintf(' %d %s', length(which(score>=tmp)), unit),
-          line=-3, at=tmp, adj=0, col='blue')
+
+    tmp.sig <- length(which(p.adj > -log10(sig)))
+    if(tmp.sig > 0) {
+      tmp <- score[tmp.sig]
+      abline(v=tmp, col='blue', lty=3)
+      mtext(sprintf(' score=%.2f', tmp), line=-1, at=tmp, adj=0, col='blue')
+      mtext(sprintf(' adj.p=%s', sig), line=-2, at=tmp, adj=0, col='blue')
+      mtext(sprintf(' %d %s', length(which(score>=tmp)), unit),
+            line=-3, at=tmp, adj=0, col='blue')
+    }
 }
 
 source('Rlib/STRTprepGateway.R')
