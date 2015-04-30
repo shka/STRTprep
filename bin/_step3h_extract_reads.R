@@ -14,6 +14,12 @@ blocks <- tmp.blocks[which(!is.na(tmp.classes))]
 load(path_reads)
 tmp.reads <- reads[, names(classes)]
 tmp.reads2 <- tmp.reads[which(rowSums(tmp.reads) > 0), ]
-reads <- tmp.reads2[order(rownames(tmp.reads2)), order(colnames(tmp.reads2))]
+
+if(regexpr('/byTFE/', path_reads)) {
+  tmp <- apply(tmp.reads2, 1, function(row) { length(which(row>0)) > 2 })
+  tmp.reads3 <- tmp.reads2[which(tmp), ]
+  reads <- tmp.reads3[order(rownames(tmp.reads3)), order(colnames(tmp.reads3))]
+} else
+  reads <- tmp.reads2[order(rownames(tmp.reads2)), order(colnames(tmp.reads2))]
 
 save(reads, file=path_output, compress='gzip')

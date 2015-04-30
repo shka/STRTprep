@@ -27,13 +27,20 @@ def step3f_job(t, colname)
     else
       tmp = [cols[0]]
       sum = 0
+      nonzero = 0
       1.upto(header.length-1) do |i|
         if header[i]
-          tmp.push(cols[i])
-          sum += cols[i].to_i
+          cnt = cols[i].to_i
+          tmp.push(cnt)
+          sum += cnt
+          nonzero += 1 if cnt > 0
         end
       end
-      outfp.puts tmp.join("\t") if sum > 0
+      if colname == 'Gene'
+        outfp.puts tmp.join("\t") if sum > 0
+      else
+        outfp.puts tmp.join("\t") if sum > 0 && nonzero > 2
+      end
     end
   end
   infp.close
