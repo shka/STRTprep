@@ -2,35 +2,51 @@
 
 set -e
 
-if [ `uname` = 'Linux' ]; then
-    git clone https://github.com/Homebrew/linuxbrew.git .homebrew
-else
-    mkdir .homebrew
-    curl -L https://github.com/Homebrew/homebrew/tarball/master | tar xz --strip 1 -C .homebrew
+mkdir -p bin/cufflinks-2.1.1
+if ! [ -d '.homebrew' ]; then
+    if [ `uname` = 'Linux' ]; then
+	git clone https://github.com/Homebrew/linuxbrew.git .homebrew
+	# cufflinks 2.1.1; 2.2.1 was unstable
+	curl -s http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.1.1.Linux_x86_64.tar.gz | tar -C ./bin/cufflinks-2.1.1 --strip-component 1 -zxvf -
+    else
+	mkdir .homebrew
+	curl -L https://github.com/Homebrew/homebrew/tarball/master | tar xz --strip 1 -C .homebrew
+	# cufflinks 2.1.1; 2.2.1 was unstable
+	curl -s http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.1.1.OSX_x86_64.tar.gz | tar -C ./bin/cufflinks-2.1.1 --strip-component 1 -zxvf -
+    fi
 fi
 
 . bin/setup.sh
 
 brew update
-
 brew tap homebrew/science
-
-brew install ruby
-brew install samtools
-brew install bowtie
-brew install tophat --without-bowtie2
-brew install bedtools
-# brew install edirect
-brew install https://raw.githubusercontent.com/Homebrew/homebrew-science/fbf8b1f20c27baa29c24431a03cf30868d6cc933/kent-tools.rb
-brew install mpich2
+brew install curl --build-from-source # for hidden dependency in R 3.2.0
 brew install R --with-openblas --without-tcltk --without-x11
 
-R CMD javareconf
+# bedtools, not later than 2.22.0
+rm .homebrew/Library/Taps/homebrew/homebrew-science/bedtools.rb
+git --work-tree .homebrew/Library/Taps/homebrew/homebrew-science --git-dir .homebrew/Library/Taps/homebrew/homebrew-science/.git checkout 5392a9e bedtools.rb
+brew install bedtools
+
+brew install ruby
+brew install coreutils
+brew install parallel
+brew install pigz
+brew install gawk
+brew install samtools-0.1
+brew install bowtie
+brew install tophat --with-bowtie
+brew install kent-tools
 
 gem install bundler
 bundle
 
 R --vanilla --quiet <<EOF
-install.packages('Rmpi', repos='http://cran.r-project.org', configure.args=sprintf("--with-mpi=%s/.homebrew --with-Rmpi-type=MPICH2", getwd()))
-install.packages(c('maptools', 'pvclust', 'xlsx', 'snow'), repos='http://cran.r-project.org')
+source("http://bioconductor.org/biocLite.R")
+biocLite(c('Heatplus', 'devtools', 'samr', 'yaml'), ask=F)
+library(devtools)
+install_github('shka/samr', ref='test_multblock')
+install_github('shka/R-SAMstrt')
 EOF
+
+

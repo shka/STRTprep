@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 gem 'bio-faster'
-gem 'levenshtein'
+gem 'damerau-levenshtein'
 gem 'mkfifo'
-gem 'parallel'
+gem 'spreadsheet'

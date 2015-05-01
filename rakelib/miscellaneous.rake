@@ -18,3 +18,8 @@ def mymkfifo(basename, tmpdir = Dir::tmpdir)
   File.mkfifo(path)
   path
 end
+
+def parse_librunid(path)
+  librunid = path.pathmap('%n')
+  return librunid.pathmap('%n'), librunid.pathmap('%x')[1..-1].to_i
+end
