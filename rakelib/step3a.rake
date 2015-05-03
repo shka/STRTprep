@@ -10,15 +10,16 @@ def extract_5utr(acc2sym, outfp, tbl, ofs=1)
     if cols[5] != cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
+      sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
       if cols[2] == '+'
         cdsleft = cols[5].to_i
         0.upto(lefts.length-1) do |i|
           left = lefts[i].to_i
           right = rights[i].to_i
           if right < cdsleft
-            outfp.puts [cols[1], left, right, acc2sym[cols[0]], 0, '+'].join("\t")
+            outfp.puts [cols[1], left, right, sym, 0, '+'].join("\t")
           elsif left < cdsleft
-            outfp.puts [cols[1], left, cdsleft, acc2sym[cols[0]], 0, '+'].join("\t")
+            outfp.puts [cols[1], left, cdsleft, sym, 0, '+'].join("\t")
           end
         end
       else
@@ -27,9 +28,9 @@ def extract_5utr(acc2sym, outfp, tbl, ofs=1)
           left = lefts[i].to_i
           right = rights[i].to_i
           if cdsright < left
-            outfp.puts [cols[1], left, right, acc2sym[cols[0]], 0, '-'].join("\t")
+            outfp.puts [cols[1], left, right, sym, 0, '-'].join("\t")
           elsif cdsright < right
-            outfp.puts [cols[1], cdsright, right, acc2sym[cols[0]], 0, '-'].join("\t")
+            outfp.puts [cols[1], cdsright, right, sym, 0, '-'].join("\t")
           end
         end
       end
@@ -38,7 +39,7 @@ def extract_5utr(acc2sym, outfp, tbl, ofs=1)
   infp.close
 end
 
-def extract_proxup(acc2sym, outfp, tbl, ofs=1)
+def extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs=1)
   infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
@@ -46,12 +47,13 @@ def extract_proxup(acc2sym, outfp, tbl, ofs=1)
     if cols[5] != cols[6]
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
+      sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
       if cols[2] == '+'
         left = lefts[0].to_i
-        outfp.puts [cols[1], left-500, left, acc2sym[cols[0]], 0, '+'].join("\t")
+        outfp.puts [cols[1], (left-500 > 0 ? left-500: 0), left, sym, 0, '+'].join("\t")
       else
         right = rights[-1].to_i
-        outfp.puts [cols[1], right, right+500, acc2sym[cols[0]], 0, '-'].join("\t")
+        outfp.puts [cols[1], right, (right+500 > chrEnds[cols[1]] ? chrEnds[cols[1]] : right+500), sym, 0, '-'].join("\t")
       end
     end
   end
@@ -100,17 +102,20 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
   acc2sym = load_acc2sym(t.source)
 
   outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
-    
-  infp = open("| grep ^RNA_SPIKE_ #{t.sources[1]} | gcut -f 1")
+
+  chrEnds = Hash.new
+  infp = open(t.sources[1])
   while line = infp.gets
-    outfp.puts [line.rstrip, 0, 50, line.rstrip, 0, '+'].join("\t")
+    cols = line.rstrip.split(/\t/)
+    outfp.puts [cols[0], 0, 50, cols[0], 0, '+'].join("\t") if /^RNA_SPIKE_/ =~ cols[0]
+    chrEnds[cols[0]] = cols[1].to_i
   end
   infp.close
 
   tbl = t.sources[t.sources.length == 2 ? 0 : 2]
   ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
   extract_5utr(acc2sym, outfp, tbl, ofs)
-  extract_proxup(acc2sym, outfp, tbl, ofs)
+  extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs)
   outfp.close
 end
 
@@ -126,7 +131,8 @@ def extract_exon(acc2sym, outfp, tbl, ofs=1)
       0.upto(lefts.length-1) do |i|
         left = lefts[i].to_i
         right = rights[i].to_i
-        outfp.puts [cols[1], left, right, acc2sym[cols[0]], 0, cols[2]].join("\t")
+        sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
+        outfp.puts [cols[1], left, right, sym, 0, cols[2]].join("\t")
       end
     end
   end

@@ -24,12 +24,6 @@ close(gz)
 
 ###
 
-row.fluctuated <- names(fluctuation$p.adj)[which(fluctuation$p.adj < p.fluctuation)]
-row.spikes <- rownames(extract_spikein_reads(nreads))
-nreads.fluctuated <- nreads[union(row.fluctuated, row.spikes), ]
-
-###
-
 ### Local Variables:
 ### eval: (setq tmppath (file-name-directory (buffer-file-name)))
 ### eval: (add-to-list 'exec-path (concat tmppath "../.homebrew/bin"))

@@ -149,7 +149,7 @@ def preprocess_annotation_class2(acc2sym, tbl, base, ofs=1)
       rights = cols[9].split(/,/)
       if cols[2] == '+'
         left = lefts[0].to_i
-        fp.puts [cols[1], left-500, left, "#{a2s(acc2sym, cols[0])}|#{cols[0]}", 0, '+'].join("\t")
+        fp.puts [cols[1], (left-500 < 0 ? 0 : left-500), left, "#{a2s(acc2sym, cols[0])}|#{cols[0]}", 0, '+'].join("\t")
       else
         right = rights[-1].to_i
         fp.puts [cols[1], right, right+500, "#{a2s(acc2sym, cols[0])}|#{cols[0]}", 0, '-'].join("\t")

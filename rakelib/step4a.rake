@@ -103,7 +103,6 @@ end
 
 file 'out/byTFE/regions.bed.gz' => step4a_firstExons do |t|
   mkdir_p t.name.pathmap('%d')
-  
   outfp = open("| gzip -c > #{t.name}", 'w')
   infp = open("| gunzip -c #{t.sources.join(' ')} | gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -c 6 -o distinct -i -")
   spikes = Hash.new
@@ -125,6 +124,7 @@ end
 ##
 
 file 'tmp/byTFE/fivePrimes.bed.gz' => step4a_fivePrimes do |t|
+  mkdir_p t.name.pathmap('%d')
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
 | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \

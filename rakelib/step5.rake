@@ -57,7 +57,7 @@ end
 
 require 'csv'
 
-step5_targets = ['out/web/regions_byGene.bed.gz']
+step5_targets = ['out/web/regions_byTFE.bed.gz']
 begin
   tmp = Hash.new
   samples = CSV.table('src/samples.csv')
