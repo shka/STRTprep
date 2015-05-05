@@ -20,7 +20,7 @@ estimate_errormodels <- function(nreads) {
         nreads.spike <- extract_spikein_reads(nreads.tmp)
         x.spike <- 1/rowMeans(nreads.spike)
         y.spike <- rowCV2s(nreads.spike)
-        model <- glm(y.spike ~ x.spike, family=Gamma(link='identity'))
+        model <- glm(y.spike ~ x.spike, family=Gamma(link='identity'), start=c(1, 1))
         shape <- gamma.shape(model, it.lim=1000)$alpha
         scales <- (model$coefficients[1]+model$coefficients[2]/rowMeans(nreads.tmp))/shape
         responses <- rowCV2s(nreads.tmp)
