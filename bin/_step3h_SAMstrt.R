@@ -2,9 +2,9 @@ args <- commandArgs(trailingOnly=T)
 idx <- ifelse(is.na(args[1]), 0, as.numeric(args[1]))
 path_samples <- ifelse(is.na(args[2]), 'out/byGene/samples.csv', args[2])
 path_reads <- ifelse(is.na(args[3]), 'out/byGene/reads.RData', args[3])
-path_nreads <- ifelse(is.na(args[3]), 'out/byGene/nreads.RData', args[4])
+path_nreads <- ifelse(is.na(args[4]), 'out/byGene/nreads.RData', args[4])
 path_diffexp <- ifelse(is.na(args[5]), sprintf('out/byGene/diffexp%d.txt.gz', idx), args[5])
-dir <- ifelse(is.na(args[8]), 'out/byGene', args[6])
+dir <- ifelse(is.na(args[6]), 'out/byGene', args[6])
 
 samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F)
 tmp.classes <- samples[, sprintf('CLASS.%d', idx)]
