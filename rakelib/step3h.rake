@@ -34,7 +34,7 @@ rule /\/diffexp\d+\.txt\.gz$/ =>
       !File.exist?(tmp) ||
       `gmd5sum #{t.sources[1]} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     sh <<EOF
-R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} #{DEFAULTS['DIFFEXP']} #{DEFAULTS['FLUCTUATION']} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1
+R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1
 EOF
     sh "cp -p #{t.sources[1]} #{tmp}"
   else

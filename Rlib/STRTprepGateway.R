@@ -94,11 +94,18 @@ STRTprepExpressions <-
           significant = function() {
             tmp <- STRTprepExpressions$new(self$path, self$samples)
             if(self$comparisonClass != 'global')
-              tmp$content <-
-                self$content[which(self$content[, 'fluctuation'] <
-                                       self$configuration$DEFAULT$FLUCTUATION
-                                   & self$content[, 'qvalue'] <
-                                       self$configuration$DEFAULT$DIFFEXP), ]
+              if(self$configuration$DEFAULT$DIFFEXPTYPE == 'p') 
+                tmp$content <-
+                  self$content[which(self$content[, 'fluctuation'] <
+                                         self$configuration$DEFAULT$FLUCTUATION
+                                     & self$content[, 'pvalue'] <
+                                         self$configuration$DEFAULT$DIFFEXP), ]
+              else
+                tmp$content <-
+                  self$content[which(self$content[, 'fluctuation'] <
+                                         self$configuration$DEFAULT$FLUCTUATION
+                                     & self$content[, 'qvalue'] <
+                                         self$configuration$DEFAULT$DIFFEXP), ]
             else
               tmp$content <- 
                 self$content[which(self$content[, 'fluctuation'] <
