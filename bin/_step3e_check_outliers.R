@@ -113,9 +113,10 @@ dev.off()
 samples.all[, 'CODING_5END_RATE.OUTLIER'] <-
     is.element(libwellids, extract_outliers_codingCapture(samples, tmp))
 
-###
-
+samples.all <- samples.all[order(samples.all[, 'LIBRARY'], samples.all[, 'WELL']), ]
 write.table(samples.all, 'out/byGene/samples_all.csv', quote=F, sep=',', row.names=F, col.names=T)
+
+###
 
 samples <-
     samples.all[which(!is.na(samples.all[, 'NAME'])
