@@ -121,7 +121,7 @@ end
 
 #
 
-def extract_exon(acc2sym, outfp, tbl, ofs=1)
+def extract_exon(acc2sym, outfp, tbl, chrEnds, ofs=1)
   infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
@@ -150,14 +150,14 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   infp = open(t.sources[1])
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
-    outfp.puts [cols[0], 0, 50, cols[0], 0, '+'].join("\t")
+    outfp.puts [cols[0], 0, 50, cols[0], 0, '+'].join("\t") if /^RNA_SPIKE_/ =~ cols[0]
     chrEnds[cols[0]] = cols[1].to_i
   end
   infp.close
 
   tbl = t.sources[t.sources.length == 2 ? 0 : 2]
   ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
-  extract_exon(acc2sym, outfp, tbl, ofs)
-  extract_proxup(acc2sym, outfp, tbl, ofs)
+  extract_exon(acc2sym, outfp, tbl, chrEnds, ofs)
+  extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs)
   outfp.close
 end
