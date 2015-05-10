@@ -91,6 +91,17 @@ STRTprepExpressions <-
                                               self$samples$getNames()))])
           },
 
+          getNormalizedReadsOfSignificantWithOffset =
+              function(excludeSpikeins=TRUE) {
+                nreads <- self$getNormalizedReads(excludeSpikeins)
+                nreads.fluctuated <-
+                  self$significant()$getNormalizedReads(excludeSpikeins)
+                if(nrow(nreads.fluctuated) == 0)
+                  nreads.fluctuated
+                else
+                  nreads.fluctuated + min(nreads[which(nreads > 0)])
+              },
+          
           significant = function() {
             tmp <- STRTprepExpressions$new(self$path, self$samples)
             if(self$comparisonClass != 'global')
@@ -139,7 +150,7 @@ STRTprepGateway <-
           configuration = NA,
           
           initialize = function(
-              pluginName,
+              pluginName='dummy',
               requiredPackages=c(),
               quantificationType='byGene',
               comparisonClass='global') {

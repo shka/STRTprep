@@ -4,11 +4,10 @@ source('Rlib/STRTprepGateway.R')
 gw <- STRTprepGateway$new('pca')
 
 ex <- gw$getExpressions()
-nreads <- ex$getNormalizedReads()
-nreads.fluctuated <- ex$significant()$getNormalizedReads()
-
+tmp.nreads <- ex$getNormalizedReadsOfSignificantWithOffset()
 prefix <- gw$outputPrefix
-if(nrow(nreads.fluctuated) == 0) {
+
+if(nrow(tmp.nreads) == 0) {
   message("No significant ones.")
   system(sprintf("rm -f %s.pdf", prefix))
   quit(save='no')
@@ -36,7 +35,6 @@ pca_by_spearman <- function(dat) {
     return(structure(list(mean=heikin, variance=bunsan, standard.deviation=sd, r=r, factor.loadings=fl, eva=eva, contribution=contr, cum.contribution=cum.contr, factor.scores=fs), class="pca"))
 }
 
-tmp.nreads <- nreads.fluctuated+min(nreads[which(nreads>0)])
 pca <- pca_by_spearman(t(tmp.nreads))
 
 pdf(sprintf('%s.pdf', prefix), width=6.69, height=6.69)
