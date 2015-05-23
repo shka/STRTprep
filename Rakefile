@@ -53,6 +53,9 @@ LIBIDS.each do |libid|
   end
 end
 LIBIDS.each do |libid|
+  qc_targets.push("out/fig.#{libid}.qualifiedReads.pdf")
+end
+LIBIDS.each do |libid|
   qc_targets.push("tmp/#{libid}.step2a")
 end
 LIBWELLIDS.each do |libwellid|
