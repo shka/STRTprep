@@ -24,9 +24,9 @@ for(j in 1:length(seqs)) {
 
 pdf(sprintf('out/fig.%s.qualifiedReads.pdf', libid), width=3.34, height=3.34)
 par(mar=c(3.5, 3.5, 2.5, .5)+.1, mgp=c(2.5, 1, 0))
-plot(mat[, 1], mat[, 2]*100, type='l', ylim=range(mat[, 2:3]*100, na.rm=T), 
-     xlab='Low quality base position', ylab='Qualified reads (%)', col='white',
-     main=libid)
+plot(mat[, 1], mat[, 2]*100,
+     type='l', ylim=range(mat[, 2:ncol(mat)]*100, na.rm=T), col='white',
+     xlab='Low quality base position', ylab='Qualified reads (%)', main=libid)
 abline(v=th, col='red')
 for(i in 2:ncol(mat))
   lines(mat[, 1], mat[, i]*100, lty=i-1)
