@@ -16,11 +16,11 @@ if ! [ -d '.homebrew' ]; then
     ## Issue: Unable to bootstrap gcc
     ##   https://github.com/Homebrew/linuxbrew/issues/137
     ln -s `which gcc` \
-       `brew --prefix`/bin/gcc-`gcc -dumpversion | cut -d. -f1,2`
+       `brew --prefix`/bin/gcc-`gcc -dumpversion | cut -d. -f1,2` && true
     ln -s `which g++` \
-       `brew --prefix`/bin/g++-`g++ -dumpversion | cut -d. -f1,2`
+       `brew --prefix`/bin/g++-`g++ -dumpversion | cut -d. -f1,2` && true
     ln -s `which gfortran` \
-       `brew --prefix`/bin/gfortran-`gfortran -dumpversion | cut -d. -f1,2`
+       `brew --prefix`/bin/gfortran-`gfortran -dumpversion | cut -d. -f1,2` && true
 fi
 
 brew update
@@ -35,7 +35,7 @@ if ! [ -d 'bin/bedtools-2.22.0' ]; then
     curl -s https://codeload.github.com/arq5x/bedtools2/tar.gz/v2.22.0 | tar -C $base --strip-component 1 -zxvf -
     cd $base
     make -j `gnproc`
-    cd ..
+    cd ../..
 fi
 
 ## Issue: Hidden dependency in R 3.2.0
