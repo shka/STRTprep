@@ -9,7 +9,7 @@ end
 
 def step3b_job(t)
   sym2cnt = Hash.new
-  infp = open("| intersectBed -c -s -a #{t.source} -b #{t.sources[1]} | gcut -f 4,7")
+  infp = open("| gunzip -c #{t.sources[1]} | intersectBed -c -s -a #{t.source} -b - | gcut -f 4,7")
   while line = infp.gets
     sym, cnt = line.rstrip.split(/\t/)
     if sym2cnt.key?(sym)
