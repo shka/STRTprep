@@ -23,9 +23,12 @@ clustfun <- function(d) hclust(d, method='ward.D2')
 pdf(sprintf('%s.pdf', prefix), width=6.69, height=6.69)
 
 if(ex$comparisonClass == 'global') {
-  hp <- annHeatmap2(log10(tmp.nreads), scale='none', col=heat.colors, legend=2,
-                    dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5))
-  plot(hp)
+
+  hp <- try(annHeatmap2(
+      log10(tmp.nreads), scale='none', col=heat.colors, legend=2,
+      dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5)))
+  if (class(hp) != 'try-error')
+    plot(hp)
 } else {
   samples <- gw$getSamples()
   classes <- samples$getClasses()
@@ -44,12 +47,12 @@ if(ex$comparisonClass == 'global') {
     blk = blocks.uniq[n]
     ann[, sprintf('block%d', blk)] <- blocks == blk
   }
-  hp <- annHeatmap2(log10(tmp.nreads),
-                    dendrogram=list(
-                        clustfun=clustfun, distfun=distfun, lwd=.5),
-                    annotation=list(inclRef=F, Col=list(data=ann)),
-                    col=heat.colors, legend=2, scale='none')
-  plot(hp)
+  hp <- try(annHeatmap2(
+      log10(tmp.nreads), scale='none', col=heat.colors, legend=2,
+      dendrogram=list(clustfun=clustfun, distfun=distfun, lwd=.5),
+      annotation=list(inclRef=F, Col=list(data=ann))))
+  if (class(hp) != 'try-error')
+    plot(hp)
 }
 
 dev.off()
