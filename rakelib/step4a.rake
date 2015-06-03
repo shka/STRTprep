@@ -94,8 +94,8 @@ begin
   classes = Array.new
   samples.each { |row| classes.push(row[:classtfe]) if row[:classtfe] != 'NA' }
   classes.uniq.each do |cls|
-    step4a_firstExons.push("tmp/#{cls}.step4a/firstExons.bed.gz")
-    step4a_fivePrimes.push("tmp/#{cls}.step4a/fivePrimes.bed.gz")
+    step4a_firstExons.push("tmp/byTFE/#{cls}.step4a/firstExons.bed.gz")
+    step4a_fivePrimes.push("tmp/byTFE/#{cls}.step4a/fivePrimes.bed.gz")
   end
 end
 

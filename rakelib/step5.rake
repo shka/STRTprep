@@ -15,7 +15,7 @@ end
 
 ##
 
-rule /_transcripts\.gtf\.gz$/ => [->(path){ path.sub(/^out\/web/, 'tmp/').sub(/_transcripts\.gtf\.gz$/, '.step4a/transcripts.gtf') }] do |t|
+rule /_transcripts\.gtf\.gz$/ => [->(path){ path.sub(/^out\/web/, 'tmp/byTFE/').sub(/_transcripts\.gtf\.gz$/, '.step4a/transcripts.gtf') }] do |t|
   mkdir_p t.name.pathmap('%d')
   pre = t.name.pathmap('%X')
   cls = /\/([^\/]+)_transcripts\.gtf\.gz$/.match(t.name).to_a[1]

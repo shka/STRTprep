@@ -20,7 +20,6 @@ def step3b_job(t)
   end
   infp.close
 
-  mkdir_p t.name.pathmap('%d')
   outfp = open(t.name, 'w')
   sym2cnt.keys.sort.each do |sym|
     outfp.puts [sym, sym2cnt[sym]].join("\t")
