@@ -148,30 +148,36 @@ STRTprepGateway <-
           configurationPath = NA,
           outputPrefix = NA,
           configuration = NA,
+          basePath = NA,
           
           initialize = function(
               pluginName='dummy',
               requiredPackages=c(),
               quantificationType='byGene',
-              comparisonClass='global') {
+              comparisonClass='global',
+              basePath='.') {
             args <- commandArgs(trailingOnly=T)
             self$quantificationType <-
               ifelse(is.na(args[1]), quantificationType, args[1])
             self$comparisonClass <-
               ifelse(is.na(args[2]), comparisonClass, args[2])
+            self$basePath <- basePath
             self$expressionsPath <-
               ifelse(is.na(args[3]),
-                     sprintf("out/%s/diffexp.csv", self$quantificationType),
+                     sprintf("%s/out/%s/diffexp.csv",
+                             basePath, self$quantificationType),
                      args[3])
             self$samplesPath <-
               ifelse(is.na(args[4]),
-                     sprintf("out/byGene/samples.csv", self$quantificationType),
+                     sprintf("%s/out/byGene/samples.csv",
+                             basePath, self$quantificationType),
                      args[4])
             self$configurationPath <-
-              ifelse(is.na(args[5]), 'conf.yaml', args[5])
+              ifelse(is.na(args[5]), sprintf("%s/conf.yaml", basePath), args[5])
             self$outputPrefix <-
               ifelse(is.na(args[6]),
-                     sprintf('out/%s/plugin_%s_%s',
+                     sprintf('%s/out/%s/plugin_%s_%s',
+                             basePath,
                              self$quantificationType,
                              pluginName,
                              self$comparisonClass),
