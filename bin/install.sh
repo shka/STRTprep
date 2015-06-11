@@ -50,6 +50,8 @@ brew install samtools-0.1
 brew install bowtie
 brew install tophat --with-bowtie
 brew install kent-tools
+## Issue: devtools R package requires libxml-2.9.2?
+brew install libxml2
 
 ## Issue: Cufflinks 2.2.1 is unstable
 ##   https://github.com/Homebrew/homebrew-science/issues/2254
