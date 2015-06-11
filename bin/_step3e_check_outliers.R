@@ -13,8 +13,10 @@ draw_outliers <- function(x, y, ylab) {
     tmp.stats
 }
 
-extract_outliers <- function(x, y, stat) {
-    which(is.element(x, stat$names) & is.element(y, stat$out))
+extract_outliers <- function(x, y, stat, lowerOnly=T) {
+  which(x == stat$names[stat$group]
+        & is.element(y, stat$out)
+        & (lowerOnly == FALSE | stat$out < stat$stats[3, stat$group]))
 }
 
 ###
@@ -58,7 +60,7 @@ draw_outliers_mappedPerSpikein <- function(samples) {
 extract_outliers_mappedPerSpikein <- function(samples, stat) {
     tmp <- extract_outliers(samples[, 'LIBRARY'],
                             log10(as.numeric(samples[, 'MAPPED/SPIKEIN'])),
-                            stat)
+                            stat, lowerOnly=F)
     sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
 
@@ -78,10 +80,10 @@ draw_outliers_spikeinCapture <- function(samples) {
 }
 
 extract_outliers_spikeinCapture <- function(samples, stat) {
-    tmp <- extract_outliers(samples[, 'LIBRARY'],
-                            as.numeric(samples[, 'SPIKEIN_5END_RATE']),
-                            stat)
-    sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
+  tmp <- extract_outliers(samples[, 'LIBRARY'],
+                          as.numeric(samples[, 'SPIKEIN_5END_RATE']),
+                          stat)
+  sprintf("%s.%s", samples[tmp, 'LIBRARY'], samples[tmp, 'WELL'])
 }
 
 pdf('out/byGene/fig_outliers_spikeinCapture.pdf', width=1.13, height=2.26, pointsize=6)
@@ -89,7 +91,9 @@ tmp <- draw_outliers_spikeinCapture(samples)
 dev.off()
 
 samples.all[, 'SPIKEIN_5END_RATE.OUTLIER'] <-
-    is.element(libwellids, extract_outliers_spikeinCapture(samples, tmp))
+  is.element(libwellids, extract_outliers_spikeinCapture(samples, tmp))
+
+samples.all[, 'SPIKEIN_5END_RATE.OUTLIER']
 
 ###
 
