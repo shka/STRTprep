@@ -8,6 +8,8 @@ def step3b_sources(path)
 end
 
 def step3b_job(t)
+  mkdir_p t.name.pathmap('%d')
+
   sym2cnt = Hash.new
   infp = open("| gunzip -c #{t.sources[1]} | intersectBed -c -s -a #{t.source} -b - | gcut -f 4,7")
   while line = infp.gets
