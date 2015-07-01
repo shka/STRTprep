@@ -1,12 +1,14 @@
 require 'yaml'
+require 'pp'
 
 PROCS = `gnproc`.to_i
 
-tmp = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'conf.yaml')
-CONF = tmp['LIBS']
-DEFAULTS = tmp['DEFAULTS']
+conf = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'src/conf.yaml')
+LIBRARIES = conf['LIBRARIES']
+PLUGINS = conf['PLUGINS']
+PREPROCESS = conf['PREPROCESS']
 
-LIBIDS = ENV.key?('LIBS') ? ENV['LIBS'].split(',') : CONF.keys
+LIBIDS = ENV.key?('LIBS') ? ENV['LIBS'].split(',') : LIBRARIES.keys
 
 WELLIDS = Array.new
 ['A', 'B', 'C', 'D', 'E', 'F'].each do |col|
@@ -48,7 +50,7 @@ end
 
 qc_targets = Array.new
 LIBIDS.each do |libid|
-  CONF[libid]['FASTQS'].each_index do |runid|
+  LIBRARIES[libid]['FASTQS'].each_index do |runid|
     qc_targets.push("tmp/#{libid}.#{runid}.step1b")
   end
 end
@@ -78,28 +80,34 @@ begin
   colnames = infp.gets.rstrip.split(',')
   infp.close
   (colnames.select { |colname| /^CLASS\.\d+$/.match(colname) }).each do |cls|
-    classes.push(/^CLASS\.(\d+)$/.match(cls).to_a[1])
+    classes.push(/^CLASS\.(\d+)$/.match(cls).to_a[1].to_i)
   end
 end
 
 plugin_byGene_targets = Array.new
 plugin_byTFE_targets = Array.new
 
-Dir.glob('plugins/*') do |script|
-  if /[\#~]$/ !~ script
-    plugin = script.pathmap('%n')
+PLUGINS.each_key do |plugin|
+  script = "plugins/#{plugin}.R"
+  if File.exist?(script)
     classes.each do |cls|
-      target = "out/byGene/plugin_#{plugin}_#{cls}.timestamp"
-      plugin_byGene_targets.push(target)
-      file target => ['out/byGene/diffexp.csv', 'out/byGene/samples.csv'] do |t|
-        sh "#{script} byGene #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name.pathmap("%X")}.log 2>&1"
-        sh "touch #{t.name}"
-      end
-      target = "out/byTFE/plugin_#{plugin}_#{cls}.timestamp"
-      plugin_byTFE_targets.push(target)
-      file target => ['out/byTFE/diffexp.csv', 'out/byGene/samples.csv'] do |t|
-        sh "#{script} byTFE #{cls} #{t.sources.join(' ')} conf.yaml > #{t.name.pathmap("%X")}.log 2>&1"
-        sh "touch #{t.name}"
+      if PLUGINS[plugin].key?(cls)
+        target = "out/byGene/plugin_#{plugin}_#{cls}.timestamp"
+        plugin_byGene_targets.push(target)
+        file target => ['out/byGene/diffexp.csv',
+                        'out/byGene/samples.csv',
+                        'src/conf.yaml'] do |t|
+          sh "#{script} byGene #{cls} #{t.sources.join(' ')} > #{t.name.pathmap("%X")}.log 2>&1"
+          sh "touch #{t.name}"
+        end
+        target = "out/byTFE/plugin_#{plugin}_#{cls}.timestamp"
+        plugin_byTFE_targets.push(target)
+        file target => ['out/byTFE/diffexp.csv',
+                        'out/byGene/samples.csv',
+                        'src/conf.yaml'] do |t|
+          sh "#{script} byTFE #{cls} #{t.sources.join(' ')} > #{t.name.pathmap("%X")}.log 2>&1"
+          sh "touch #{t.name}"
+        end
       end
     end
   end
@@ -120,3 +128,9 @@ task :default => qc_targets +
                   'out/byGene/diffexp.xls',
                   'out/byTFE/diffexp.xls',
                   :web]
+
+##
+
+task :check do
+  pp conf
+end

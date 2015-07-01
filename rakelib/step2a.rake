@@ -5,19 +5,19 @@
 require 'damerau-levenshtein'
 
 def step2a_byLibraries_sources(path)
-  tmp = [File.expand_path(DEFAULTS['LAYOUT'])]
+  tmp = [File.expand_path(PREPROCESS['LAYOUT'])]
   libid = path.pathmap('%X').pathmap('%f')
-  CONF[libid]['FASTQS'].each_index do |runid|
+  LIBRARIES[libid]['FASTQS'].each_index do |runid|
     tmp.push("tmp/#{libid}.#{runid}.step1b")
   end
   return tmp
 end
 
 rule '.step2a' => [->(path){ step2a_byLibraries_sources(path) }] do |t|
-  umi = DEFAULTS['UMI']
-  barcode = DEFAULTS['BARCODE']
-  gap = DEFAULTS['GAP']
-  cdna = DEFAULTS['CDNA']
+  umi = PREPROCESS['UMI']
+  barcode = PREPROCESS['BARCODE']
+  gap = PREPROCESS['GAP']
+  cdna = PREPROCESS['CDNA']
   end5 = umi+barcode+gap+1
   end3 = umi+barcode+gap+cdna
 

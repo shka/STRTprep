@@ -1,6 +1,6 @@
 # Installation of STRTprep
 
-To run STRTprep, you need (i) OSX or Linux, (ii) at least 8GB RAM, and (iii) enough storage space - for example, 100GB for processing of two 48-plex STRT libraries and three lanes of HiSeq sequencing per library.
+To run STRTprep, you need (i) OSX or Linux, (ii) at least 16GB RAM, and (iii) enough storage space - for example, 100GB for processing of two 48-plex STRT libraries and three lanes of HiSeq sequencing per library.
 
 ## Installation of prerequisite softwares
 

@@ -4,13 +4,12 @@
 
 1. [Quality check](#quality-check)
 2. [Differential expression tests](#differential-expression-tests)
-3. [For Genome Browsers](#for-genome-browsers) to understand the results
+3. High resolution analysis
+4. [For Genome Browsers](#for-genome-browsers) to understand the results
 
 ## Quality check
 
 There are four important files about the quality check report, (i) `out/byGene/samples_all.csv`, (ii) `out/byGene/samples.xls` (or `out/byGene/samples.csv`, which is identical content but different format), (iii) `out/byGene/plugin_heatmap_global.pdf` and (iv) `out/byGene/plugin_pca_global.pdf`.
-
-> `out/byGene/fig_heatmap_global.pdf` or `out/byGene/fig_pca.pdf` instead of `out/byGene/plugin_*_global.pdf` in case of processing by version 2-beta
 
 The former table is the statistical report about the qualities by samples on the rows, and the the latter one is the report only about the qualified samples. You must check whether there are enough number of qualified samples for your study.
 
@@ -43,19 +42,15 @@ The outlier wells are not used for further statistics, for example differential 
 
 ### `out/byGene/samples.xls`
 
-This is also quality check report, but it contains only the qualified samples in `out/byGene/samples_all.xls` - all samples must be that (i) `NAME` is not `NA`, and (ii) all '*.OUTLIER' values are FALSE.
+This is also quality check report, but it contains only the qualified samples in `out/byGene/samples_all.xls` - all samples must be that (i) `NAME` is not `NA`, and (ii) all `*.OUTLIER` values are FALSE.
 
 ### `out/byGene/plugin_heatmap_global.pdf`
 
 This is heatmap and clustering of fluctuated gene expression in the qualified samples. The pipeline selects fluctuated genes automatically by significance of coefficient of variance between the qualified samples; the significance is estimated by comparison with the expected technical variation in the spike-in RNAs.
 
-> The figure file name might be `out/byGene/fig_heatmap_global.pdf` if processed by version 2-beta.
-
 ### `out/byGene/plugin_pca_global.pdf`
 
 This is PCA plot in the qualified samples with the fluctuated gene expression.
-
-> The figure file name might be `out/byGene/fig_pca.pdf` if processed by version 2-beta.
 
 ## Differential expression tests
 
@@ -65,9 +60,7 @@ The table `out/byGene/diffexp.xls` (or `out/byGene/diffexp.csv`, which is identi
 2. You can find the normalized expression levels in your genes of interest, and draw the figure by any your favorite tool, for example R or Microsoft Excel.
 3. You can apply the other statistics using the other third-party tools with the raw read counts or the normalized expression levels (and we are grateful if you could provide the analysis code!).
 
-Also, there are several heatmaps `out/byGene/plugin_heatmap_*.pdf` automatically (where `*` is the test number given in `src/samples.csv`) if there are significantly regulated genes. The pipeline selects significantly regulated genes automatically by both of `qvalue` and `fluctuation` thresholds given in `conf.yaml`.
-
-> The figure file name might be `out/byGene/fig_heatmap_diffexp*.pdf` if processed by version 2-beta.
+Also, there are several heatmaps `out/byGene/plugin_heatmap_*.pdf` automatically (where `*` is the test number given in `src/samples.csv`) if there are significantly regulated genes. The pipeline selects significantly regulated genes automatically by both of `qvalue` and `fluctuation` thresholds given in `src/conf.yaml`.
 
 ### `out/byGene/diffexp.xls`
 
@@ -84,8 +77,6 @@ This is very big table containing expression levels and statistical results of t
 - `N|*library.well*|*name*`: Spike-in based normalized expression level
 - `R|*library.well*|*name*`: Raw aligned read count within 5'-UTR of the gene, or the proximal (500 nt) upstream; such transcripts starting these regions would be intact mRNAs as template for translation into proteins. You can find the regions [[by Genome Browsers|Results#for-genome-browsers]] with file `out/web/regions_byGene.bed.gz`.
 
-> No `fluctuationScore.*` columns, and `Score.n` instead of `diffexpScore.n`, if processed by version 2-beta.
-
 > `diffexpScore.n`, `pvalue.n` and `qvalue.n` are calculated by SAMstrt [[Katayama et al. 2013](http://www.ncbi.nlm.nih.gov/pubmed/?term=23995393)]; the `diffexpScore.n` by STRTprep is `Score(d)` by SAMstrt. Briefly, in case of two class comparison, the score is average of Wilcoxon statistics with multiple Poisson resampling. In contrast, the score in multiple class comparison is average of Kruskal-Wallis statistic. See also SAMseq [[Li and Tibshirani 2013](http://www.ncbi.nlm.nih.gov/pubmed?term=22127579)] and the manual in the [official web page](http://statweb.stanford.edu/~tibs/SAM/) to understand the statistical background and the outputs.
 
 > `fluctuationScore.*` and `fluctuation.*` are calculated by this pipeline [Krjutškov and Katayama et al., submitted].
@@ -99,3 +90,11 @@ Files in a folder `out/web` are appendix for understanding of the results on Gen
 ### `out/web/regions_byGene.bed.gz`
 
 The bands in this track are 5'-UTR of protein coding genes, or the proximal (500 nt) upstream. Aligned reads within the bands were used for the `byGene` analysis.
+
+### `out/web/regions_byTFE.bed.gz`
+
+The bands in this track are putative first exon according to assembling of STRT reads. Thick position in each band represents most frequent site of 5'-end of STRT reads, which would be major transcription start site. Aligned reads within the bands were used for the `byTFE` analysis.
+
+### `out/web/*_transcripts.gff.gz`
+
+These tracks are the putative transcripts by assembling of STRT reads.

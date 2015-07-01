@@ -22,43 +22,43 @@ reads <- tmp.reads[which(rowSums(tmp.reads) > 0), ]
 library(SAMstrt)
 
 test_twoClasses <- function(reads, classes, blocks, dir, idx) {
-    samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
-                     random.seed=1, resp.type='Two class unpaired', nperms=1000)
-    save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
-    tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
-                                           samfit$samr.obj, samfit$delta.table,
-                                           all.genes=TRUE)
-    tmp.pv <-
-        samr.pvalues.from.perms(samfit$samr.obj$tt, samfit$samr.obj$ttstar)
-    tmp2 <- rbind(tmp.sig$genes.up, tmp.sig$genes.lo)
-    rowidxs <- as.numeric(tmp2[, 1])-1
-    data.frame(Gene=rownames(reads)[rowidxs],
-               Score=as.numeric(tmp2[, 'Score(d)']),
-               pvalue=tmp.pv[rowidxs],
-               qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
+  samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
+                   random.seed=1, resp.type='Two class unpaired', nperms=1000)
+  save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
+  tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
+                                         samfit$samr.obj, samfit$delta.table,
+                                         all.genes=TRUE)
+  tmp.pv <-
+    samr.pvalues.from.perms(samfit$samr.obj$tt, samfit$samr.obj$ttstar)
+  tmp2 <- rbind(tmp.sig$genes.up, tmp.sig$genes.lo)
+  rowidxs <- as.numeric(tmp2[, 1])-1
+  data.frame(Gene=rownames(reads)[rowidxs],
+             Score=as.numeric(tmp2[, 'Score(d)']),
+             pvalue=p.adjust(tmp.pv[rowidxs], method='BH'),
+             qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
 }
 
 test_multiClasses <- function(reads, classes, blocks, dir, idx) {
-    samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
-                     random.seed=1, resp.type='Multiclass', nperms=1000)
-    save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
-    tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
-                                           samfit$samr.obj, samfit$delta.table,
-                                           all.genes=TRUE)
-    tmp.pv <-
-        samr.pvalues.from.perms(samfit$samr.obj$tt, samfit$samr.obj$ttstar)
-    tmp2 <- tmp.sig$genes.up
-    rowidxs <- as.numeric(tmp2[, 1])-1
-    data.frame(Gene=rownames(reads)[rowidxs],
-               Score=as.numeric(tmp2[, 'Score(d)']),
-               pvalue=tmp.pv[rowidxs],
-               qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
+  samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
+                   random.seed=1, resp.type='Multiclass', nperms=1000)
+  save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
+  tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
+                                         samfit$samr.obj, samfit$delta.table,
+                                         all.genes=TRUE)
+  tmp.pv <-
+    samr.pvalues.from.perms(samfit$samr.obj$tt, samfit$samr.obj$ttstar)
+  tmp2 <- tmp.sig$genes.up
+  rowidxs <- as.numeric(tmp2[, 1])-1
+  data.frame(Gene=rownames(reads)[rowidxs],
+             Score=as.numeric(tmp2[, 'Score(d)']),
+             pvalue=p.adjust(tmp.pv[rowidxs], method='BH'),
+             qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
 }
 
 if(setequal(unique(classes), c(1, 2))) {
-    diffexp <- test_twoClasses(reads, classes, blocks, dir, idx)
+  diffexp <- test_twoClasses(reads, classes, blocks, dir, idx)
 } else {
-    diffexp <- test_multiClasses(reads, classes, blocks, dir, idx)
+  diffexp <- test_multiClasses(reads, classes, blocks, dir, idx)
 }
 
 gz <- gzfile(path_diffexp, 'w')

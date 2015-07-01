@@ -3,8 +3,7 @@
 source('Rlib/fluctuation.R')
 
 args <- commandArgs(trailingOnly=T)
-p.fluctuation <- as.numeric(args[1])
-dir <- args[2]
+dir <- args[1]
 
 load(sprintf("%s/nreads.RData", dir))
 

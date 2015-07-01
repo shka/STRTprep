@@ -13,14 +13,14 @@ end
 
 file 'tmp/step2c/accepted_hits.bam' =>
      ['tmp/step2c/reads.fq.gz',
-      File.expand_path(CONF[LIBIDS[0]]['GENOMESPIKERIBO'])+'.1.ebwt',
-      File.expand_path(CONF[LIBIDS[0]]['TRANSCRIPT'])+'.1.ebwt'] do |t|
+      File.expand_path(PREPROCESS['GENOMESPIKERIBO'])+'.1.ebwt',
+      File.expand_path(PREPROCESS['TRANSCRIPT'])+'.1.ebwt'] do |t|
   sh <<EOF
 (tophat\
    --transcriptome-index #{t.sources[2].pathmap('%X').pathmap('%X')}\
    --library-type fr-secondstrand --min-anchor 5 --coverage-search\
    --output-dir #{t.name.pathmap('%d')} --num-threads #{PROCS} --bowtie1\
-   --segment-length #{(CONF[LIBIDS[0]]['CDNA'].to_f/2.0).floor}\
+   --segment-length #{(PREPROCESS['CDNA'].to_f/2.0).floor}\
    #{t.sources[1].pathmap('%X').pathmap('%X')} #{t.source})\
    > #{t.name}.log 2>&1
 EOF

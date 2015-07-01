@@ -170,7 +170,7 @@ step4a_class2location = ['',
 
 def step4a_peakClass_sources(t)
   cls = /lass(\d+)\.(txt|bed)\.gz$/.match(t).to_a[1].to_i
-  return ["#{DEFAULTS['TRANSCRIPT']}.class#{cls}.bed.gz",
+  return ["#{PREPROCESS['TRANSCRIPT']}.class#{cls}.bed.gz",
           t.sub(/_(nonC|c)lass\d+\.(txt|bed)\.gz$/, "_nonClass#{cls-1}.bed.gz")]
 end
 

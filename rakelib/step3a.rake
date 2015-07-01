@@ -62,8 +62,8 @@ end
 
 step3a_bed_sources = Array.new
 begin
-  tdbpath = File.expand_path(DEFAULTS['TRANSCRIPT'].pathmap('%d'))
-  ref = File.expand_path(DEFAULTS['GENOMESPIKERIBO']+'.fa.fai')
+  tdbpath = File.expand_path(PREPROCESS['TRANSCRIPT'].pathmap('%d'))
+  ref = File.expand_path(PREPROCESS['GENOMESPIKERIBO']+'.fa.fai')
   if File.exist?("#{tdbpath}/kgXref.txt.gz")
     step3a_bed_sources.push("#{tdbpath}/kgXref.txt.gz")
     step3a_bed_sources.push(ref)

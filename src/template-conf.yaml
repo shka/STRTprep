@@ -1,0 +1,70 @@
+---
+PREPROCESS:
+  UMI: 4
+  BARCODE: 6
+  GAP: 3
+  CDNA: 37
+  LAYOUT: src/barcodes-May2015.txt
+  PHYX:
+  GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
+  TRANSCRIPT: src/ebwt/hg19_refGene/ref
+LIBRARIES:
+  TEST1:
+    FASTQS:
+    - src/test1-1.fq.gz
+    - src/test1-2.fq.gz
+  TEST2:
+    FASTQS:
+    - src/test2-1.fq.gz
+    - src/test2-2.fq.gz
+  TEST3:
+    FASTQS:
+    - src/test3-1.fq.gz
+    - src/test3-2.fq.gz
+  TEST4:
+    FASTQS:
+    - src/test4-1.fq.gz
+    - src/test4-2.fq.gz
+PLUGINS:
+  THRESHOLDS: &default_thresholds
+    FLUCTUATIONP: 0.05
+    DIFFEXPQ: 0.05
+    # DIFFEXPP: 0.05
+  transcripts:
+    global:
+      <<: *default_thresholds
+      COLOR: LIBRARY
+      CLASSES:
+      - LIBRARY
+    0:
+      <<: *default_thresholds
+      COLOR: LIBRARY
+  correlation_samples:
+    global:
+      <<: *default_thresholds
+      ANNOTATIONS:
+      - LIBRARY
+    0:
+      <<: *default_thresholds
+      ANNOTATIONS:
+      - LIBRARY
+  pca:
+    global:
+      <<: *default_thresholds
+      COLOR: LIBRARY
+      POINT: LIBRARY
+      COMPONENTS: 3
+    0:
+      <<: *default_thresholds
+      COLOR: LIBRARY
+      POINT: LIBRARY
+      COMPONENTS: 3
+    heatmap_diffexp:
+    global:
+      <<: *default_thresholds
+      ANNOTATIONS:
+      - LIBRARY
+    0:
+      <<: *default_thresholds
+      ANNOTATIONS:
+      - LIBRARY
