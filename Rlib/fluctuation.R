@@ -10,9 +10,10 @@ rowCV2s <- function(reads) {
 extract_spikein_reads <- function(reads)
     reads[which(substr(rownames(reads), 1, 10) == 'RNA_SPIKE_'), ]
 
-estimate_errormodels <- function(nreads) {
-    libids <- unique(sapply(colnames(nreads), parse_libid))
-    tmp <- lapply(libids, function(libid) {
+estimate_errormodels <- function(nreads, blocks=NA) {
+    if(is.na(blocks)) {
+      libids <- unique(sapply(colnames(nreads), parse_libid))
+      tmp <- lapply(libids, function(libid) {
         cat(sprintf('estimate_errormodels : %s\n', libid))
         targets <- sapply(colnames(nreads),
                           function(colname) { parse_libid(colname) == libid })
@@ -25,8 +26,27 @@ estimate_errormodels <- function(nreads) {
         scales <- (model$coefficients[1]+model$coefficients[2]/rowMeans(nreads.tmp))/shape
         responses <- rowCV2s(nreads.tmp)
         list(model=model, shape=shape, scales=scales, responses=responses)
-    })
-    names(tmp) <- libids
+      })
+      names(tmp) <- libids
+    } else {
+      tmp <- lapply(unique(blocks), function(block) {
+        cat(sprintf('estimate_errormodels : block %s\n', block))
+        nreads.tmp <- nreads[, which(blocks == block)]
+        if(ncol(nreads.tmp) < 3) {
+          warning("Design errror: number of samples per block must be more than 2.")
+          quit(save='no')
+        }
+        nreads.spike <- extract_spikein_reads(nreads.tmp)
+        x.spike <- 1/rowMeans(nreads.spike)
+        y.spike <- rowCV2s(nreads.spike)
+        model <- glm(y.spike ~ x.spike, family=Gamma(link='identity'), start=c(1, 1))
+        shape <- gamma.shape(model, it.lim=1000)$alpha
+        scales <- (model$coefficients[1]+model$coefficients[2]/rowMeans(nreads.tmp))/shape
+        responses <- rowCV2s(nreads.tmp)
+        list(model=model, shape=shape, scales=scales, responses=responses)
+      })
+      names(tmp) <- sprintf('Block%d', unique(blocks))
+    }
     tmp
 }
 

@@ -1,8 +1,11 @@
+#!/usr/bin/env Rscript
+
 args <- commandArgs(trailingOnly=T)
 idx <- ifelse(is.na(args[1]), 0, as.numeric(args[1]))
 path_samples <- ifelse(is.na(args[2]), 'out/byGene/samples.csv', args[2])
 path_reads <- ifelse(is.na(args[3]), 'out/byGene/reads.RData', args[3])
-path_output <- ifelse(is.na(args[4]), 'out/byGene/reads0.txt.gz', args[4])
+path_nreads <- ifelse(is.na(args[4]), 'out/byGene/nreads.RData', args[4])
+path_output <- ifelse(is.na(args[5]), 'out/byGene/sources0.RData', args[5])
 
 samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F)
 tmp.classes <- samples[, sprintf('CLASS.%d', idx)]
@@ -22,4 +25,7 @@ if(regexpr('/byTFE/', path_reads)) {
 } else
   reads <- tmp.reads2[order(rownames(tmp.reads2)), order(colnames(tmp.reads2))]
 
-save(reads, file=path_output, compress='gzip')
+load(path_nreads)
+nreads <- nreads[rownames(reads), colnames(reads)]
+
+save(reads, nreads, classes, blocks, file=path_output, compress='gzip')

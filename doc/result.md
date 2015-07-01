@@ -70,8 +70,8 @@ This is very big table containing expression levels and statistical results of t
 - `fluctuationScore.global`: Statistical score in degree of variation of the normalized expression levels between the qualified wells towards expected technical noise levels
 - `fluctuation.global`: Adjusted p-value of the degree of variation between the qualified wells
 - `diffexpScore.n` (n=0, 1, ...): Statistical score of differential expression in comparison n; n is the test number given in `src/samples.csv`. Positive score in two class comparison is up-regulation of the class 2 samples than the class 1, and negative is down-regulation. In case of multiclass comparison, the score is all positive. Larger absolute score is more significant.
-- `pvalue.n` (n=0, 1, ...): P-value of differential expression in comparison n
-- `qvalue.n` (n=0, 1, ...): Q-value (a.k.a. FDR) of differential expression in comparison n
+- `pvalue.n` (n=0, 1, ...): P-value of differential expression in comparison n; corrected by Benjamini & Hochberg method.
+- `qvalue.n` (n=0, 1, ...): Q-value (a.k.a. FDR) of differential expression in comparison n; corrected by Storey and Tibshirani method.
 - `fluctuationScore.n` (n=0, 1, ...): Statistical score in degree of variation of the normalized expression levels between targets of the comparison n towards expected technical noise levels
 - `fluctuation.n` (n=0, 1, ...): Adjusted p-value of the degree of variation between the targets of the comparison n
 - `N|*library.well*|*name*`: Spike-in based normalized expression level
@@ -79,7 +79,7 @@ This is very big table containing expression levels and statistical results of t
 
 > `diffexpScore.n`, `pvalue.n` and `qvalue.n` are calculated by SAMstrt [[Katayama et al. 2013](http://www.ncbi.nlm.nih.gov/pubmed/?term=23995393)]; the `diffexpScore.n` by STRTprep is `Score(d)` by SAMstrt. Briefly, in case of two class comparison, the score is average of Wilcoxon statistics with multiple Poisson resampling. In contrast, the score in multiple class comparison is average of Kruskal-Wallis statistic. See also SAMseq [[Li and Tibshirani 2013](http://www.ncbi.nlm.nih.gov/pubmed?term=22127579)] and the manual in the [official web page](http://statweb.stanford.edu/~tibs/SAM/) to understand the statistical background and the outputs.
 
-> `fluctuationScore.*` and `fluctuation.*` are calculated by this pipeline [Krjutškov and Katayama et al., submitted].
+> `fluctuationScore.*` and `fluctuation.*` are calculated by this pipeline [Krjutškov and Katayama et al., submitted]. Currently it was calculated by libraries or blocks, then merged.
 
 > [AutoFilter](https://support.office.com/en-ca/article/Quick-start-Filter-data-by-using-an-AutoFilter-08647e19-11d1-42f6-b376-27b932e186e0?ui=en-US&rs=en-CA&ad=CA) by Microsoft Excel is very useful to select the significantly fluctuated genes. After the filtering, copy the gene names, then paste them into your favorite analysis tools!
 

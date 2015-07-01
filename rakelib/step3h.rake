@@ -4,16 +4,15 @@
 
 ##
 
-def step3h_readsN_sources(path)
-  return ["out/byGene/samples.csv", "#{path.pathmap('%d')}/reads.RData"]
+def step3h_testN_sources(path)
+  return ["out/byGene/samples.csv",
+          "#{path.pathmap('%d')}/reads.RData",
+          "#{path.pathmap('%d')}/nreads.RData"]
 end
 
-rule /\/reads\d+\.RData$/ => [->(p){ step3h_readsN_sources(p) }] do |t|
-  idx = /reads(\d+)\.RData$/.match(t.name).to_a[1]
-  sh <<EOF
-R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} \
-< bin/_step3h_extract_reads.R > #{t.name}.log 2>&1
-EOF
+rule /\/sources\d+\.RData$/ => [->(p){ step3h_testN_sources(p) }] do |t|
+  idx = /sources(\d+)\.RData$/.match(t.name).to_a[1]
+  sh "bin/_step3h_extract_sources.R #{idx} #{t.sources.join(' ')} #{t.name} > #{t.name}.log 2>&1"
 end
 
 ##
@@ -21,22 +20,20 @@ end
 def step3h_diffexpN_sources(path)
   root = path.pathmap('%d')
   idx = /diffexp(\d+)\.txt\.gz$/.match(path).to_a[1]
-  return ["out/byGene/samples.csv", "#{root}/reads#{idx}.RData", "#{root}/nreads.RData"]
+  return ["#{root}/sources#{idx}.RData"]
 end
 
 require 'csv'
 
 rule /\/diffexp\d+\.txt\.gz$/ =>
-                           [->(path){ step3h_diffexpN_sources(path) }] do |t|
+                         [->(path){ step3h_diffexpN_sources(path) }] do |t|
   idx = /diffexp(\d+)\.txt\.gz$/.match(t.name).to_a[1]
-  tmp = "#{t.name.pathmap('%d').sub(/^out/, 'tmp')}/reads#{idx}.RData"
+  tmp = t.source.sub(/^out/, 'tmp')
   if (!File.exist?(t.name) ||
       !File.exist?(tmp) ||
-      `gmd5sum #{t.sources[1]} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
-    sh <<EOF
-R --vanilla --quiet --args #{idx} #{t.sources.join(' ')} #{t.name} #{t.name.pathmap('%d')} < bin/_step3h_SAMstrt.R > #{t.name}.log 2>&1
-EOF
-    sh "cp -p #{t.sources[1]} #{tmp}"
+      `gmd5sum #{t.source} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
+    sh "bin/_step3h_test_diffexp.R #{idx} #{t.source} #{t.name} #{t.name.pathmap('%d')} > #{t.name}.log 2>&1"
+    sh "cp -p #{t.source} #{tmp}"
   else
     puts "... skipped #{t.name}, since the target samples were identical with the previous run"
     sh "touch #{t.name}"
@@ -45,8 +42,8 @@ end
 
 ##
 
-rule /\/fluctuation_diffexp\d+\.txt\.gz$/ =>
-                                     [->(p){ p.sub(/\/fluctuation_/, '') }]
+rule /\/fluctuation\d+\.txt\.gz$/ =>
+                             [->(p){ p.sub('/fluctuation', '/diffexp') }]
 
 ##
 
@@ -98,7 +95,7 @@ def step3h_job(t)
       tmp[cols[0]] = cols[1..-1].join(',')
     end
     infp.close
-    infp = open("| gunzip -c #{t.sources[idx+ofs].sub('/diffexp', '/fluctuation_diffexp')}")
+    infp = open("| gunzip -c #{t.sources[idx+ofs].sub('/diffexp', '/fluctuation')}")
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)

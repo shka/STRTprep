@@ -1,21 +1,14 @@
+#!/usr/bin/env Rscript
+
 args <- commandArgs(trailingOnly=T)
 idx <- ifelse(is.na(args[1]), 0, as.numeric(args[1]))
-path_samples <- ifelse(is.na(args[2]), 'out/byGene/samples.csv', args[2])
-path_reads <- ifelse(is.na(args[3]), 'out/byGene/reads.RData', args[3])
-path_nreads <- ifelse(is.na(args[4]), 'out/byGene/nreads.RData', args[4])
-path_diffexp <- ifelse(is.na(args[5]), sprintf('out/byGene/diffexp%d.txt.gz', idx), args[5])
-dir <- ifelse(is.na(args[6]), 'out/byGene', args[6])
+path_sources <-
+  ifelse(is.na(args[2]), sprintf('out/byGene/sources%d.RData', idx), args[2])
+path_diffexp <-
+  ifelse(is.na(args[3]), sprintf('out/byGene/diffexp%d.txt.gz', idx), args[3])
+dir <- ifelse(is.na(args[4]), 'out/byGene', args[4])
 
-samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F)
-tmp.classes <- samples[, sprintf('CLASS.%d', idx)]
-tmp.blocks <- samples [, sprintf('BLOCK.%d', idx)]
-names(tmp.classes) <- names(tmp.blocks) <- sprintf('%s.%s|%s', samples[, 'LIBRARY'], samples[, 'WELL'], samples[, 'NAME'])
-classes <- tmp.classes[which(!is.na(tmp.classes))]
-blocks <- tmp.blocks[which(!is.na(tmp.classes))]
-
-load(path_reads)
-tmp.reads <- reads[, names(classes)]
-reads <- tmp.reads[which(rowSums(tmp.reads) > 0), ]
+load(path_sources)
 
 ##
 
@@ -65,21 +58,17 @@ gz <- gzfile(path_diffexp, 'w')
 write.table(diffexp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)
 
-###
+##
 
 source('Rlib/fluctuation.R')
 
-load(path_nreads)
-nreads.org <- nreads
-nreads <- nreads[rownames(reads), colnames(reads)]
-errormodels <- estimate_errormodels(nreads)
-save(errormodels, file=sprintf('%s/errormodels_diffexp%d.RData', dir, idx), compress='gzip')
+errormodels <- estimate_errormodels(nreads, blocks=blocks)
 errormodel <- merge_errormodels(errormodels)
-save(errormodel, file=sprintf('%s/errormodel_diffexp%d.RData', dir, idx), compress='gzip')
 fluctuation <- estimate_fluctuation(errormodel)
-save(fluctuation, file=sprintf('%s/fluctuation_diffexp%d.RData', dir, idx), compress='gzip')
+save(errormodels, errormodel, fluctuation,
+     file=sprintf('%s/fluctuation%d.RData.RData', dir, idx), compress='gzip')
 tmp <- data.frame(Gene=names(fluctuation$p.adj), pvalue=fluctuation$p.adj, score=fluctuation$score)
-gz <- gzfile(sprintf('%s/fluctuation_diffexp%d.txt.gz', dir, idx), 'w')
+gz <- gzfile(sprintf('%s/fluctuation%d.txt.gz', dir, idx), 'w')
 write.table(tmp, file=gz, quote=F, sep="\t", row.names=F, col.names=T)
 close(gz)
 
