@@ -1,9 +1,9 @@
 ---
 PREPROCESS:
-  UMI: 4
+  UMI: 6
   BARCODE: 6
   GAP: 3
-  CDNA: 37
+  CDNA: 44
   LAYOUT: src/barcodes-May2015.txt
   PHYX:
   GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
