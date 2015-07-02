@@ -5,7 +5,7 @@ helper <- STRTprepHelper$new(name='correlation_samples',
                              required_packages=c('renozao/pkgmaker@develop',
                                                  'renozao/NMF'))
 annotations <- helper$samples$annotations[, helper$options$ANNOTATIONS]
-nreads <- helper$expressions$significant$mask$normalized_levels
+nreads <- helper$expressions$fluctuated$mask$normalized_levels
 
 if(nrow(nreads) > 3) {
   correlations <- cor(nreads, use='pairwise.complete.obs', method='spearman')

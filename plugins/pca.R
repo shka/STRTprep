@@ -26,7 +26,7 @@ pca_by_spearman <- function(dat) {
 }
 
 annotations <- helper$samples$annotations
-nreads <- helper$expressions$significant$normalized_levels
+nreads <- helper$expressions$fluctuated$normalized_levels
 options <- helper$options
 components <- options$COMPONENTS
 

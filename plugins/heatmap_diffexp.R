@@ -4,12 +4,11 @@ source('Rlib/STRTprepHelper.R', chdir=T)
 helper <- STRTprepHelper$new(name='heatmap_diffexp',
                              required_packages=c('renozao/pkgmaker@develop',
                                                  'renozao/NMF'))
-if(helper$comparison == 'global') {
-  annotations <- helper$samples$annotations[, helper$options$ANNOTATIONS]
-} else {
-  annotations <-
-    helper$samples$annotations[, c(helper$options$ANNOTATIONS, 'CLASS')]
-}
+options <- helper$options
+annotations <- helper$samples$annotations[, options$ANNOTATIONS]
+if(helper$comparison != 'global')
+  annotations[, 'CLASS'] <-
+    factor(helper$samples$annotations[, 'CLASS'], labels=options$LABELS)
 nreads <- helper$expressions$offset$significant$normalized_levels
 
 distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)

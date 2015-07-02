@@ -51,26 +51,6 @@ STRTprepExpressions <- R6Class(
         private$content[which(rowSums(private$content[, tmp]) > 0), ]
     }),
   
-  ## getFluctuations = function() {
-  ##   if(!is.data.frame(private$fluctuations)) {
-  ##     tmp <- private$content[, c('fluctuation', 'fluctuationScore')]
-  ##     private$fluctuations <- tmp[which(!is.na(tmp[, 1])), ]
-  ##   }
-  ##   private$fluctuations
-  ## },
-  
-  ## getNormalizedReadsOfSignificantWithOffset =
-  ##     function(excludeSpikeins=TRUE) {
-  ##       nreads <- self$getNormalizedReads(excludeSpikeins)
-  ##       nreads.fluctuated <-
-  ##         self$significant()$getNormalizedReads(excludeSpikeins)
-  ##       if(nrow(nreads.fluctuated) == 0)
-  ##         nreads.fluctuated
-  ##       else
-  ##         nreads.fluctuated + min(nreads[which(nreads > 0)])
-  ##     }
-  
-  
   active = list(
     mask = function() {
       for(i in private$columns_of_level()) {
@@ -80,7 +60,17 @@ STRTprepExpressions <- R6Class(
       }
       self
     },
-
+    
+    fluctuated = function() {
+      tmp <- private$content
+      options <- helper$options
+      targets <- 1:nrow(tmp)
+      if(!is.null(options$FLUCTUATIONP))
+        targets <- which(tmp[, 'fluctuation'] < options$FLUCTUATIONP)
+      private$content <- tmp[targets, ]
+      self
+    },
+    
     normalized_levels = function() {
       tmp <- as.matrix(private$content[, private$columns_of_normalized_level()])
       colnames(tmp) <-

@@ -10,10 +10,14 @@ library(RColorBrewer)
 annotations <- helper$samples$annotations
 options <- helper$options
 
-if(helper$comparison == 'global')
+if(helper$comparison == 'global') {
   annotations[, 'CLASS'] <-
     apply(annotations, 1,
           function(r) paste(r[options$CLASSES], collapse='.'))
+} else {
+  annotations[, 'CLASS'] <-
+    factor(annotations[, 'CLASS'], labels=options$LABELS)
+}
 
 pdf(sprintf("%s.pdf", helper$output_prefix), pointsize=6)
 ppar <- par()
