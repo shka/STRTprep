@@ -50,10 +50,12 @@ def extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs=1)
       sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
       if cols[2] == '+'
         left = lefts[0].to_i
-        outfp.puts [cols[1], (left-500 > 0 ? left-500: 0), left, sym, 0, '+'].join("\t")
+        tmp = (left-500 > 0 ? left-500: 0)
+        outfp.puts [cols[1], tmp, left, sym, 0, '+'].join("\t") if tmp < left
       else
         right = rights[-1].to_i
-        outfp.puts [cols[1], right, (right+500 > chrEnds[cols[1]] ? chrEnds[cols[1]] : right+500), sym, 0, '-'].join("\t")
+        tmp = (right+500 > chrEnds[cols[1]] ? chrEnds[cols[1]] : right+500)
+        outfp.puts [cols[1], right, tmp, sym, 0, '-'].join("\t") if right < tmp
       end
     end
   end
