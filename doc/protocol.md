@@ -24,21 +24,26 @@ bin/index_refGene.sh hg19 src/ebwt/hg19_ercc92_ynbA_u13369/ref
 
 - **Step 2: [Design of your experiments](#design-of-experiments).** Edit `src/conf.yaml` and `src/samples.csv`.
 
-- **Step 3: Preprocessing and quality-check.** Run as follows, then check `out/byGene/samples.xls`; see also [a section in "Interpretation of the results"](result.md#quality-check).
+> At first, you should specify only the three required columns for `src/samples.csv` and go through until step 4. Then you repeat from the step 2 again.
+
+- **Step 3: Preprocessing and quality-check.** Run as follows, then check `out/byGene/samples.xls`; see also "[Quality check](result.md#quality-check)".
 ```bash
 rake -m -j `gnproc` qc > qc.log 2>&1
 ```
-- **Step 4: Differential expression tests.** Run as follows, and check `out/byGene/diffexp.xls` and `out/byGene/plugin_*`, then go back to the step 2 if any changes or problems; see also [a section in "Interpretation of the results"](result.md#differential-expression-tests).
+
+> Since many intermediate tasks in the step 3 are skipped, it would finish quickly in the second round or later.
+
+> You need `. bin/setup.sh` again before the steps 3, 4 and 5, when you restert after logout/exit.
+
+- **Step 4: Differential expression tests.** Run as follows, and check `out/byGene/diffexp.xls` and reports by plugins, then go back to the step 2 if you add or change the test designs; see also "[Differential expression tests](result.md#differential-expression-tests)".
 ```bash
 rake gene > gene.log 2>&1
 ```
 
-- **Step 5: High resolution analysis.** Run as follows, and check `out/byTFE/diffexp.xls` and `out/byTFE/plugin_*`, then enjoy further downstream analysis! See also [a section in "Interpretation of the results"](results.md#high-resolution-analysis).
+- **Step 5: High resolution analysis.** Run as follows, and check `out/byTFE/diffexp.xls` and reports by plugins, then enjoy further downstream analysis!
 ```bash
 rake > tfe.log 2>&1
 ```
-
-> You need `. bin/setup.sh` again before the steps 3, 4 and 5, when you logout/exit before the step.
 
 ## Protocol details
 
@@ -70,11 +75,9 @@ bin/index_hg19_ercc92_ynbA_u13369.sh
 bin/index_refGene.sh hg19 src/ebwt/hg19_ercc92_ynbA_u13369/ref
 ```
 
-> These indexes are for bowtie version 1 and tophat, so you can build index as you want.
-
 #### Index of reference genome and spike-in
 
-There are several scripts to prepare index of the reference genome and the spike-ins.
+This is bowtie version 1 index containing reference genomes, spike-ins, and any other sequences of your interest. There are several scripts to prepare index for major species.
 
 Script | Genome | Spike-ins | Ribosomal DNA unit | Created index location
 -------|--------|-----------|--------------------|---------
@@ -86,7 +89,7 @@ Script | Genome | Spike-ins | Ribosomal DNA unit | Created index location
 
 #### Index of reference transcriptome
 
-Currently there are three scripts to prepare index of the reference transcriptome. It requires two options, (i) genome version, and (ii) location of genome+spike-in index.
+This is index for tophat. Currently there are three scripts to prepare index of the reference transcriptome. It requires two options, (i) genome version, and (ii) location of genome+spike-in index.
 
 Script | Transcriptome | Created index location
 -------|---------------|-----------------------
@@ -104,41 +107,95 @@ You need to build the third index when you need to exclude PhyX control sequence
 
 ### Design of experiments
 
-There are two configuration files in your STRTprep project folder, (i) `conf.yaml`, and (ii) `src/samples.csv`.
+There are two important configuration files in your STRTprep project folder, (i) `src/conf.yaml`, and (ii) `src/samples.csv`. And sometimes you may need to edit/change a barcode layout file.
 
-#### [`src/conf.yaml`](https://github.com/shka/STRTprep/blob/v3dev/src/conf.yaml); STRT library information
+#### `src/conf.yaml`; STRT library information and study design
 
-This is information about your libraries, written by [YAML](http://www.yaml.org/start.html) format. You can edit it by any text editor.
+This is information about your libraries and your study, written by [YAML](http://www.yaml.org/start.html) format, so you can edit it by any text editor. You can use [`src/template-conf.yaml`](https://github.com/shka/STRTprep/blob/v3dev/src/template-conf.yaml) for a template. It consists three sections as below.
 
-- Keys `UMI`, `BARCODE`, `GAP`, `CDNA`: Lengths of UMI, barcode, gap and cDNA in each STRT read.
-- `LAYOUT`: Barcode layout file with barcode+gap sequences and well names; although there are two predefined mapping for 48-plex STRT with 6 bp barcodes (and 3 bp gap), (i) `src/barcodes.old.txt`, and (ii) `src/barcodes.txt`, but you can specify your own layout.
-- `PHYX`: PhyX index; you need to specify if you need to exclude phyX sequences from the raw sequences.
-- `GENOMESPIKERIBO`: Genome index
-- `TRANSCRIPT`: Transcriptome index
-- `FLUCTUATION`: Fluctuation p-value threshold for plugins
-- `DIFFEXP`: Differential expression q-value threshold for plugins
-- `DIFFEXPTYPE: p` (optional):
+```yaml
+---
+PREPROCESS:
+  # parameters for preprocessing
+LIBRARIES:
+  # description of your libraries and the raw sequences
+PLUGINS:
+  # parameters for plugins
+```
 
-After the `LIBS` key, you need give library name, and location of the raw sequence files. In the example,
+##### `PREPROCESS` section
 
-- `TEST1`: `TEST1` itself is name of the first library; you can give any name as you want.
-- `FASTQS`: Raw sequences (fastq format) for the first library; you must give at least one, and you can give more sequences.
-- ... and there are descriptions of from the second to the fourth libraries; you must give at least one, and you can give more libraries.
+This section contains preprocessing parameters. All key-value pairs below are essential.
 
-#### [`src/samples.csv`](https://github.com/shka/STRTprep/blob/v3dev/src/samples.csv); sample information and study design
+Key | Value
+----|------
+`UMI` | Length of UMI
+`BARCODE` | Length of barcode
+`GAP` | Length of gap
+`CDNA` | Length of cDNA part
+`LAYOUT` | Path of [barcode layout file](#barcode-layout-file)
+`PHYX` | Path of PhyX index
+`GENOMESPIKERIBO` | Path of genome index
+`TRANSCRIPT` | Path of transcriptome index
 
-This is sample information and the study design, written by [CSV](https://tools.ietf.org/html/rfc4180) format. You can edit it by various spreadsheet editor, for example Microsoft Excel.
+> You can give empty `PHYX` value when the exclusion is unnecessary.
 
-> Microsoft Office uses ";" (semicolon) instead of "," (colon) as column separater, when you your computer with European environment. In case of OSX, please change the primary "Language" of your OSX at System Preferences to, for example, US.
+```yaml
+# Example of PREPROCESS section
+PREPROCESS:
+  UMI: 6
+  BARCODE: 6
+  GAP: 3
+  CDNA: 44
+  LAYOUT: src/barcodes-May2015.txt
+  PHYX:
+  GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
+  TRANSCRIPT: src/ebwt/hg19_refGene/ref
+```
 
-- Column `LIBRARY`: Library name, given in `conf.yaml`
-- `WELL`: Well name, based on the barcode layout, specified in `conf.yaml`
-- `NAME`: Sample name; "NA" in case of empty or ignore; " " (space) characters at the end of the name values are prohibited.
-- `CLASS.n` (n=0, 1, ...; optional): Sample class number for differential expression test; 1 or 2 for two class comparison; 1, 2, 3, … for multiclass comparison; "NA" in case of empty or ignore
-- `BLOCK.n` (n=0, 1, ...; optional): Permutation block number for the differential expression test; 1, 2, … ; identical number is assigned to a pair for the paired comparison, to a same gender, and/or to a library for canceling of library bias, for example; "NA" in case of empty or ignore
-- `FORCE_APPROVAL` (optional): If `TRUE` as for inter-library control samples etc., we can ignore the automatic outlier check for the samples. The other samples to be checked must be `FALSE`, when you use this column.
-- `CLASS.TFE`: Class name for transcript assembly and TFE definition; "NA" in case of empty or ignore.
+##### `LIBRARIES` section
+
+This section defines your library names, and location of the raw sequence files. In the example, `TEST1` and `TEST2` at the second level are the library names themselves, and `FASTQS` key was followed by locations of the raw sequences.
+
+```yaml
+# Example of LIBRARIES section
+LIBRARIES:
+  TEST1:
+    FASTQS:
+    - src/test1-1.fq.gz
+    - src/test1-2.fq.gz
+  TEST2:
+    FASTQS:
+    - src/test2-1.fq.gz
+    - src/test2-2.fq.gz
+```
+
+##### `PLUGINS` section
+
+Plugin for STRTprep is a script that adds a proximal downstream analysis. And the `PLUGINS` section if for choice of the pulgins, and to give parameters for the plugins. You can find all registered plugins and the parameters at "[Plugin framework](plugin.md)".
+
+#### `src/samples.csv`; sample information and study design
+
+This is sample information and the study design, written by [CSV](https://tools.ietf.org/html/rfc4180) format. You can edit it by various text or spreadsheet editor, for example Microsoft Excel. You can use [`src/template-samples.csv`](https://github.com/shka/STRTprep/blob/v3dev/src/template-samples.csv) as a template.
+
+> Microsoft Office uses ";" (semicolon) instead of "," (colon) as column separater, when you use your computer with European environment. If so, you can split it appropriately after loading into Excel by "[Convert Text to Columns Wizard](https://support.office.com/en-gb/article/Split-names-by-using-the-Convert-Text-to-Columns-Wizard-39f7b055-6b39-4cb5-9512-13cc19b3a807)".
+
+Important columns are as below, and you can add the other columns for description of sample properties, which would be referred by plugins.
+
+Column | Type | Value
+-------|------|------
+`LIBRARY` | Word | Library name, given by `src/conf.yaml`
+`WELL` | Word | Well name, based on the barcode layout, specified in `src/conf.yaml`
+`NAME` | Word | Sample name; `NA` in case of empty well or ignoring
+`CLASS.TFE` | Word | (Required only for the step 5) Class name for transcript assembly as TFE definition; "NA" in case of empty or ignore
+`CLASS.n` (n=0, 1, ...) | Integer | (Optional) Sample class number for differential expression test `n`; 1 or 2 for two class comparison; 1, 2, 3, ... for multiclass comparison; "NA" in case of empty well or ignoring
+`BLOCK.n` (n=0, 1, ...) | Integer | (Optional) Permutation block number (1, 2, ...) for the differential expression test `n`; identical number is assigned (i) to a pair for the paired comparison, (ii) to a same gender, or (iii) to a library for canceling of library bias, for example; "NA" in case of empty or ignore
+`FORCE_APPROVAL` | Boolean | (Optional) If `TRUE` as for inter-library control samples etc., we can ignore the automatic outlier check for the samples. The other samples to be checked must be `FALSE`, when you use this column.
+
+> Especially in use of Excel, there could be " " (space) characters at the end of the values unexpectedly, but these are prohibited.
 
 > `CLASS.n`, and `BLOCK.n` for design of the differential expression tests are used by SAMstrt [[Katayama et al. 2013](http://www.ncbi.nlm.nih.gov/pubmed/?term=23995393)]. See also SAMseq [[Li and Tibshirani 2013](http://www.ncbi.nlm.nih.gov/pubmed?term=22127579)] and the manual in the [official web page](http://statweb.stanford.edu/~tibs/SAM/) to understand the statistical background and the usage.
 
-The `src/samples.csv` file can contain any other columns about the sample/layout information.
+#### Barcode layout file
+
+This is tab-delimited text file linking between well names and barcode+gap sequence. Although you can specify your own layout and sequence, there are three predefined mapping for 48-plex STRT with 6 bp barcodes and 3 bp gap, (i) [`src/barcodes.old.txt`](https://github.com/shka/STRTprep/blob/v3dev/src/barcodes.old.txt),  (ii) [`src/barcodes.txt`](https://github.com/shka/STRTprep/blob/v3dev/src/barcodes.txt), and (iii) [`src/barcodes-May2015.txt`](https://github.com/shka/STRTprep/blob/v3dev/src/barcodes-May2015.txt).
