@@ -64,7 +64,18 @@ if(nrow(nreads) > 3) {
         col=color_palette[color_indexes],
         pch=point_palette[point_indexes],
         oma=c(2, 2, 2, 2+6+width_label/ppar$csi), gap=1)
-  legend(1, 1, legend=c(levels(color_indexes), levels(point_indexes)), pch=c(rep(1, nlevels(color_indexes)), point_palette), col=c(color_palette[1:nlevels(color_indexes)], rep('black', nlevels(point_indexes))), xpd=T, bty='n', ncol=1, xjust=1, yjust=1, x.intersp=1)
+  if(is.null(options$POINT)) {
+    legend(1, 1, xpd=T, bty='n', ncol=1, xjust=1, yjust=1, x.intersp=1,
+           legend=levels(color_indexes),
+           pch=rep(1, nlevels(color_indexes)),
+           col=color_palette[1:nlevels(color_indexes)])
+  } else {
+    legend(1, 1, xpd=T, bty='n', ncol=1, xjust=1, yjust=1, x.intersp=1,
+           legend=c(levels(color_indexes), levels(point_indexes)),
+           pch=c(rep(1, nlevels(color_indexes)), point_palette),
+           col=c(color_palette[1:nlevels(color_indexes)],
+                 rep('black', nlevels(point_indexes))))
+  }
   message(width_label)
   dev.off()
   save(pca, file=sprintf('%s.RData', helper$output_prefix), compress='gzip')

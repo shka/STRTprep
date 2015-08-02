@@ -175,7 +175,7 @@ Parameter key | Type | Value
 --------------|------|------
 `FLUCTUATIONP` | Real, 0~1 | Threshold of fluctuation p-value
 `COLOR` | Word | Column name of `src/samples.csv` to be distinguished by point colors
-`POINT` | Word | Column name of `src/samples.csv` to be distinguished by point characters
+`POINT` | Word | (Optional) Column name of `src/samples.csv` to be distinguished by point characters
 `COMPONENTS` | Integer | Number of principal components to be drawn
 
 ```yaml
