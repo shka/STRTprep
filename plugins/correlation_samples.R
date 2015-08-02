@@ -4,7 +4,12 @@ source('Rlib/STRTprepHelper.R', chdir=T)
 helper <- STRTprepHelper$new(name='correlation_samples',
                              required_packages=c('renozao/pkgmaker@develop',
                                                  'renozao/NMF'))
-annotations <- helper$samples$annotations[, helper$options$ANNOTATIONS]
+if(length(helper$options$ANNOTATIONS) == 1) {
+  annotations <- list(helper$samples$annotations[, helper$options$ANNOTATIONS])
+  names(annotations) <- helper$options$ANNOTATIONS
+} else {
+  annotations <- helper$samples$annotations[, helper$options$ANNOTATIONS]
+}
 nreads <- helper$expressions$fluctuated$mask$normalized_levels
 
 if(nrow(nreads) > 3) {
