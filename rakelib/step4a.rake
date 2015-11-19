@@ -80,7 +80,7 @@ rule /\.step4a\/fivePrimes.bed.gz$/ => [->(path){ step4a_fivePrimes_sources(path
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
 | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
-| mergeBed -s -c 4,5,6 -o distinct,mean,distinct -d -1 -i - \
+| mergeBed -s -c 4,5,6 -o distinct,sum,distinct -d -1 -i - \
 | gzip -c > #{t.name}
 EOF
 end
@@ -128,7 +128,7 @@ file 'tmp/byTFE/fivePrimes.bed.gz' => step4a_fivePrimes do |t|
   sh <<EOF
 gunzip -c #{t.sources.join(' ')} \
 | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
-| mergeBed -s -c 4,5,6 -o distinct,mean,distinct -d -1 -i - \
+| mergeBed -s -c 4,5,6 -o distinct,sum,distinct -d -1 -i - \
 | gzip -c > #{t.name}
 EOF
 end
