@@ -3,10 +3,15 @@
 ##
 
 def step2d_sources(path)
-  return ["tmp/#{path.pathmap('%n').pathmap('%n')}.step2a", 'tmp/step2b.trace']
+  return ["tmp/#{path.pathmap('%n').pathmap('%n')}.step2a",
+          'tmp/step2b.trace',
+          "tmp/#{path.pathmap('%n').pathmap('%n')}.step2a.trace"]
 end
 
 rule /.step2d$/ => [->(path){ step2d_sources(path) }] do |t|
+  repacc2accpath2 = mymkfifo('step2d-')
+  pid0 = spawn "unpigz -c #{t.sources[2]} > #{repacc2accpath2}"
+
   repacc2accpath = mymkfifo('step2d-')
   pid1 = spawn "unpigz -c #{t.sources[1]} > #{repacc2accpath}"
 
@@ -16,15 +21,18 @@ rule /.step2d$/ => [->(path){ step2d_sources(path) }] do |t|
 unpigz -c #{t.source} \
 | grep '^#{libwellid}\t' \
 | gcut -f 2-4 \
-| gsort -S #{50/(PROCS+1)}% -t '\t' -k 1,1 > #{bcaccpath}
+| gsort -S #{33/(PROCS+1)}% -t '\t' -k 1,1 > #{bcaccpath}
 EOF
 
   sh <<EOF
 gjoin -t '\t' -j 1 -o 1.2,2.1,2.2,2.3 #{repacc2accpath} #{bcaccpath} \
-| gsort -S #{50/(PROCS+1)}% -t '\t' -k 1,1 \
+| gsort -S #{33/(PROCS+1)}% -t '\t' -k 2,2 \
+| gjoin -t '\t' -1 1 -2 2 -o 2.1,1.2,2.3,2.4 #{repacc2accpath2} - \
+| gsort -S #{33/(PROCS+1)}% -t '\t' -k 1,1 \
 | pigz -c > #{t.name}
 EOF
 
+  Process.waitpid(pid0)
   Process.waitpid(pid1)
   Process.waitpid(pid2)
 end
