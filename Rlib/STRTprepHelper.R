@@ -54,7 +54,7 @@ STRTprepHelper <- R6Class(
             }
           } else if(!is.element(package, rownames(installed.packages()))) {
             library(BiocInstaller)
-            biocLite(package, ask=F)
+            biocLite(package, ask=F, lib.loc=.libPaths()[1], lib=.libPaths()[1])
           }})
       self$options <-
         private$configuration[['PLUGINS']][[name]][[self$comparison]]

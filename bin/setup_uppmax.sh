@@ -17,5 +17,5 @@ module load samtools/0.1.19
 module load bowtie/1.1.0
 module load tophat/2.0.12
 module load ucsc-utilities/v287
-module load R/3.1.1
+module load R/3.2.3
 module load cufflinks/2.1.1

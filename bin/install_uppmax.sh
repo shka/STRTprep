@@ -27,7 +27,7 @@ gem install rake
 
 R --vanilla --quiet <<EOF
 source("http://bioconductor.org/biocLite.R")
-biocLite(c('devtools', 'samr', 'yaml'), ask=F)
+biocLite(c('devtools', 'samr', 'yaml'), ask=F, lib.loc=.libPaths()[1], lib=.libPaths()[1])
 library(devtools)
 install_github('shka/samr', ref='test_multblock')
 install_github('shka/R-SAMstrt')
