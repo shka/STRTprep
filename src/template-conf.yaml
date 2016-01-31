@@ -4,7 +4,7 @@ PREPROCESS:
   BARCODE: 6
   GAP: 3
   CDNA: 44
-  LAYOUT: src/barcodes-May2015.txt
+  LAYOUT: src/barcodes-Sep2015.txt
   PHYX:
   GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
   TRANSCRIPT: src/ebwt/hg19_refGene/ref
