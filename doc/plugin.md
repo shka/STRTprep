@@ -24,6 +24,7 @@ A list below is available plugins and the help documents.
 - [`correlation_samples`](#plugin-correlation_samples)
 - [`heatmap_diffexp`](#plugin-heatmap_diffexp)
 - [`pca`](#plugin-pca)
+- [`simple_diffexp`](#plugin-simple_diffexp)
 - [`transcripts`](#plugin-transcripts)
 
 Moreover,  you can add your plugins into STRTprep; see "[Extension of STRTprep](#extension-of-strtprep)".
@@ -192,6 +193,27 @@ PLUGINS:
       COLOR: LIBRARY
       POINT: TREATMENT
       COMPONENTS: 3
+```
+
+## Plugin `simple_diffexp`
+
+This plugin creates a subset of diffexp.csv, which contains only target samples and the significant features (ex. genes). It will provide all features if no specification of the significance thresholds.
+
+Parameter key | Type | Value
+--------------|------|------
+`FLUCTUATIONP` | Real, 0~1 | (Optional) Threshold of fluctuation p-value
+`DIFFEXPQ` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression q-value
+`DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
+
+```yaml
+# Example of "simple_diffexp" plugin parameters
+PLUGINS:
+  heatmap_diffexp:
+    global:
+      FLUCTUATIONP: 0.05
+    0:
+      FLUCTUATIONP: 0.05
+      DIFFEXPQ: 0.05
 ```
 
 ## Plugin `transcripts`

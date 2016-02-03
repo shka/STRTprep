@@ -85,7 +85,14 @@ STRTprepExpressions <- R6Class(
         private$content[, i] <- private$content[, i]+ofs
       self
     },
-  
+
+    raw_levels = function() {
+      tmp <- as.matrix(private$content[, private$columns_of_raw_level()])
+      colnames(tmp) <-
+        sapply(colnames(tmp), function(n) strsplit(n, '\\|')[[1]][3])
+      tmp
+    },
+    
     significant = function() {
       tmp <- private$content
       options <- helper$options
@@ -99,7 +106,7 @@ STRTprepExpressions <- R6Class(
         targets3 <- 1:nrow(tmp)
         if(!is.null(options$FLUCTUATIONP))
           targets3 <- which(tmp[, 'fluctuation'] < options$FLUCTUATIONP)
-        targets <- intersect(targets1, intersect(targets2, targets2))
+        targets <- intersect(targets1, intersect(targets2, targets3))
       } else {
         targets <- 1:nrow(tmp)
         if(!is.null(options$FLUCTUATIONP))
@@ -107,5 +114,24 @@ STRTprepExpressions <- R6Class(
       }
       private$content <- tmp[targets, ]
       self
-    }))
+    },
+
+    table = function() {
+      tmp <- private$content
+      tmp <- tmp[, which(substr(colnames(tmp), 1, 7)    != 'pvalue.'
+                         & substr(colnames(tmp), 1, 7)  != 'qvalue.'
+                         & substr(colnames(tmp), 1, 13) != 'diffexpScore.'
+                         & substr(colnames(tmp), 1, 17) != 'fluctuationScore.'
+                         & substr(colnames(tmp), 1, 12) != 'fluctuation.')]
+      tmp <- tmp[, which(sapply(colnames(tmp),
+                                function(n) {
+                                  tmpId <- strsplit(n, '\\|')[[1]]
+                                  (!is.element(tmpId[1], c('N', 'R'))
+                                   | (is.element(tmpId[1], c('N', 'R'))
+                                      & is.element(tmpId[3],
+                                                   private$samples$names)))
+                                }))]
+    }
+    
+  ))
   
