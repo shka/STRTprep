@@ -145,7 +145,7 @@ Parameter key | Type | Value
 `DIFFEXPQ` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression q-value
 `DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
 `ANNOTATIONS` | Words | Column name(s) of `src/samples.csv` to be annotated
-`LABELS` | Words | (Ignored in test `global`) Class labels
+`LABELS` | Words | (Optional; ignored in test `global`) Class labels
 
 ```yaml
 # Example of "heatmap_diffexp" plugin parameters

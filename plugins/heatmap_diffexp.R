@@ -8,8 +8,12 @@ options <- helper$options
 if(helper$comparison != 'global') {
   annotations <-
     helper$samples$annotations[, union(options$ANNOTATIONS, 'CLASS')]
-  annotations[, 'CLASS'] <-
-    factor(helper$samples$annotations[, 'CLASS'], labels=options$LABELS)
+  if(is.null(options$LABELS)) {
+    annotations[, 'CLASS'] <- helper$samples$annotations[, 'CLASS']
+  } else {
+    annotations[, 'CLASS'] <-
+      factor(helper$samples$annotations[, 'CLASS'], labels=options$LABELS)
+  }
 } else {
   annotations <- helper$samples$annotations[, options$ANNOTATIONS]
 }
