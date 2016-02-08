@@ -69,6 +69,9 @@ end
 LIBWELLIDS.each do |libwellid|
   qc_targets.push("tmp/byGene/#{libwellid}.step3c")
 end
+LIBWELLIDS.each do |libwellid|
+  qc_targets.push("out/seq/#{libwellid}.fq.gz")
+end
 
 task :qc => qc_targets + ['out/byGene/samples.xls']
 
