@@ -9,14 +9,14 @@ STRTprepHelper <- R6Class(
   
   private = list(
     base_path = NA,
-    configuration = NA,
-    quantification = NA),
+    configuration = NA),
   
   public = list(
     comparison = NA,
     expressions_path = NA,
     options = NA,
     output_prefix = NA,
+    quantification = NA,
     samples_path = NA,
     
     initialize = function(name = 'dummy',
@@ -25,12 +25,12 @@ STRTprepHelper <- R6Class(
                           base_path = '.',
                           required_packages = c()) {
       args <- commandArgs(trailingOnly = T)
-      private$quantification <- ifelse(is.na(args[1]), quantification, args[1])
+      self$quantification <- ifelse(is.na(args[1]), quantification, args[1])
       self$comparison <- ifelse(is.na(args[2]), comparison, args[2])
       private$base_path <- base_path
       self$expressions_path <- ifelse(
         is.na(args[3]),
-        sprintf("%s/out/%s/diffexp.csv", base_path, private$quantification),
+        sprintf("%s/out/%s/diffexp.csv", base_path, self$quantification),
         args[3])
       self$samples_path <- ifelse(
         is.na(args[4]),
@@ -41,7 +41,7 @@ STRTprepHelper <- R6Class(
       self$output_prefix <- ifelse(
         is.na(args[6]),
         sprintf('%s/out/%s/plugin_%s_%s',
-                base_path, private$quantification, name, self$comparison),
+                base_path, self$quantification, name, self$comparison),
         args[6])
       sapply(
         required_packages,
@@ -62,4 +62,7 @@ STRTprepHelper <- R6Class(
   
   active = list(
     expressions = function() STRTprepExpressions$new(self),
-    samples = function() STRTprepSamples$new(self)))
+    samples = function() STRTprepSamples$new(self),
+    reference_genome =
+      function() private$configuration$PREPROCESS$GENOMESPIKERIBO
+  ))
