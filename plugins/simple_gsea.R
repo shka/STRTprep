@@ -79,7 +79,7 @@ write.csv(tbl[, c('CATEGORY', 'SUBCATEGORY', 'GENESET', 'RESULT', 'ENRICHMENTP',
                   'OBS1', 'OBS2', 'OBS3', 'OBS4',
                   'EXP1', 'EXP2', 'EXP3', 'EXP4',
                   'CHISQP')],
-          sprintf('%s.csv', prefix), quote=F)
+          sprintf('%s.csv', prefix))
 
 ##
 
@@ -103,9 +103,10 @@ plot_heatmaps <- function(id) {
       hclustfun=clustfun, distfun=distfun,
       scale='row', Colv=order(annotations[, 'CLASS']),
       annCol=annotations, layout='dlmL|alm', main=id,
-      fontsize=6, filename=sprintf('%s/%s.pdf', dir, stat['GENESET']))
+      fontsize=6, filename=sprintf('%s/%s.pdf', dir, gsub(',', '_', stat['GENESET'])))
     save(heatmap,
-         file=sprintf('%s/%s.RData', dir, stat['GENESET']), compress='gzip')
+         file=sprintf('%s/%s.RData', dir, gsub(',', '_', stat['GENESET'])),
+         compress='gzip')
   }
 }
 
