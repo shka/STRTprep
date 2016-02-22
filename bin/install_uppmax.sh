@@ -19,8 +19,6 @@ ln -s `which gfortran` \
 brew tap homebrew/science
 brew update
 
-brew install coreutils
-
 gem install bundler
 bundle
 gem install rake

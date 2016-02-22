@@ -9,6 +9,8 @@ export PATH=$GEM_HOME/bin:.homebrew/bin:$PATH
 mkdir -p $R_LIBS $GEM_HOME
 
 module use ~katay/.modulefiles
+module load git
+module load coreutils
 module load bioinfo-tools
 module load ruby/2.1.0
 module load gnuparallel/20140222
