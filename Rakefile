@@ -1,7 +1,7 @@
 require 'yaml'
 require 'pp'
 
-PROCS = `gnproc`.to_i
+PROCS = ENV.key?('PROCS') ? ENV['PROCS'].to_i : `gnproc`.to_i
 
 conf = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'src/conf.yaml')
 LIBRARIES = conf['LIBRARIES']
