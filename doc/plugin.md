@@ -209,7 +209,7 @@ Parameter key | Type | Value
 ```yaml
 # Example of "simple_diffexp" plugin parameters
 PLUGINS:
-  heatmap_diffexp:
+  simple_diffexp:
     global:
       FLUCTUATIONP: 0.05
     0:
