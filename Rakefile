@@ -1,7 +1,7 @@
 require 'yaml'
 require 'pp'
 
-PROCS = `gnproc`.to_i
+PROCS = ENV.key?('PROCS') ? ENV['PROCS'].to_i : `gnproc`.to_i
 
 conf = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'src/conf.yaml')
 LIBRARIES = conf['LIBRARIES']
@@ -68,6 +68,9 @@ LIBWELLIDS.each do |libwellid|
 end
 LIBWELLIDS.each do |libwellid|
   qc_targets.push("tmp/byGene/#{libwellid}.step3c")
+end
+LIBWELLIDS.each do |libwellid|
+  qc_targets.push("out/seq/#{libwellid}.fq.gz")
 end
 
 task :qc => qc_targets + ['out/byGene/samples.xls']

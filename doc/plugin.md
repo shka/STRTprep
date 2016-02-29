@@ -24,6 +24,8 @@ A list below is available plugins and the help documents.
 - [`correlation_samples`](#plugin-correlation_samples)
 - [`heatmap_diffexp`](#plugin-heatmap_diffexp)
 - [`pca`](#plugin-pca)
+- [`simple_diffexp`](#plugin-simple_diffexp)
+- [`simple_gsea`](#plugin-simple_gsea)
 - [`transcripts`](#plugin-transcripts)
 
 Moreover,  you can add your plugins into STRTprep; see "[Extension of STRTprep](#extension-of-strtprep)".
@@ -144,7 +146,7 @@ Parameter key | Type | Value
 `DIFFEXPQ` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression q-value
 `DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
 `ANNOTATIONS` | Words | Column name(s) of `src/samples.csv` to be annotated
-`LABELS` | Words | (Ignored in test `global`) Class labels
+`LABELS` | Words | (Optional; ignored in test `global`) Class labels
 
 ```yaml
 # Example of "heatmap_diffexp" plugin parameters
@@ -192,6 +194,67 @@ PLUGINS:
       COLOR: LIBRARY
       POINT: TREATMENT
       COMPONENTS: 3
+```
+
+## Plugin `simple_diffexp`
+
+This plugin creates a subset of diffexp.csv, which contains only target samples and the significant features (ex. genes). It will provide all features if no specification of the significance thresholds.
+
+Parameter key | Type | Value
+--------------|------|------
+`FLUCTUATIONP` | Real, 0~1 | (Optional) Threshold of fluctuation p-value
+`DIFFEXPQ` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression q-value
+`DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
+
+```yaml
+# Example of "simple_diffexp" plugin parameters
+PLUGINS:
+  simple_diffexp:
+    global:
+      FLUCTUATIONP: 0.05
+    0:
+      FLUCTUATIONP: 0.05
+      DIFFEXPQ: 0.05
+```
+
+## Plugin `simple_gsea`
+
+This plugin tests enrichment of  [MSigDB](http://software.broadinstitute.org/gsea/msigdb/index.jsp) genes in the differentially expressed genes; there are 13,311 gene sets in total at the version 5.1 in Jan 27, 2016. Significance of the enrichment is, simply, based on Pearson's Chi-squared test with Yates' continuity correction. This plugin is only for `byGene` quantitation, and not for global comparison. Several parameters are compatible with `heatmap_diffexp`; it is expected that you will apply this plugin after `heatmap_diffexp`.
+
+* Output file `out/byGene/plugin_simple_gsea_n.csv` is the test result.
+  * Column `ENRICHMENTP` is the significance with Benjamini & Hochberg correction.
+  * `RESULT` == `OR` means over-representation of member genes in a gene set within the differentially expressed genes. In detail, (i) `ENRICHMENTP` is less than the threshold (see the parameter below), (ii) `EXP1` > `OBS1`, and (iii) `EXP1` > 5.
+  * `EXP1` is observed number of significantly regulated member gene, while 'OBS1' is the expected number.
+  * Sum of `EXP1`, `EXP2`, `EXP3` and `EXP4` is all genes detected by target samples in the comparison.
+* Folder `plugin_dimple_gsea_n.figures` contains heatmaps, which illustrate expression profile of member genes in the over-represented gene sets (`RESULT` == `OR`)
+
+Parameter key | Type | Value
+--------------|------|------
+`FLUCTUATIONP` | Real, 0~1 | (Optional) Threshold of fluctuation p-value
+`DIFFEXPQ` | Real, 0~1 | (Optional) Threshold of differential expression q-value
+`DIFFEXPP` | Real, 0~1 | (Optional) Threshold of differential expression p-value
+`ANNOTATIONS` | Words | Column name(s) of `src/samples.csv` to be annotated in the heatmaps
+`LABELS` | Words | (Optional) Class labels
+`MSIGDB` | Word | Location of MSigDB xml file; you can download from the [website](http://software.broadinstitute.org/gsea/downloads.jsp)
+`ENRICHMENTP` | Real, 0~1 | Threshold of the corrected significance of chi-squared test
+`HOMOLOGENE$FILE` | Word | (Optional) Location of [NCBI HomoloGene](http://www.ncbi.nlm.nih.gov/homologene) table file; you can download from [FTP site](ftp://ftp.ncbi.nih.gov/pub/HomoloGene/current). You can omit when you analyze human samples.
+`HOMOLOGENE$TAXID` | Integer | (Optional) Taxonomy ID, which is maintained at [NCBI Taxonomy](http://www.ncbi.nlm.nih.gov/taxonomy/), of your sample. You can omit when you analyze human samples.
+
+```yaml
+# Example of "simple_gsea" plugin parameters
+PLUGINS:
+  simple_gsea:
+    0:
+      ANNOTATIONS:
+      - DIAGNOSIS
+      - TREATMENT
+      FLUCTUATIONP: 0.05
+      DIFFEXPQ: 0.05
+      MSIGDB: src/msigdb_v5.1.xml
+      HOMOLOGENE:
+        FILE: src/homologene-68.data
+        TAXID: 10090
+      ENRICHMENTP: 0.05
 ```
 
 ## Plugin `transcripts`

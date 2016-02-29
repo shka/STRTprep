@@ -13,6 +13,8 @@
 
 The most important file in the quality check reports is `out/byGene/samples.xls`, which is a list of qualified samples and the statistics on quality. You must check whether there are enough number of qualified samples for your studies. If not, you should check the statistics also about the rejected samples at `out/byGene/samples_all.csv`; it may suggest that you can rescue some rejected samples by the `FORCE_APPROVAL` option in `src/samples.csv`.
 
+`out/seq/*.fq.gz` are the demultiplexed sequence files after the redundant-read exclusion.
+
 ### Detail of quality check report files
 
 #### `out/byGene/samples_all.csv`

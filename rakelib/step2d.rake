@@ -97,6 +97,13 @@ end
 
 #
 
+rule /^out\/seq\/[^\/]+\.fq\.gz$/ => [ ->(path){ path.sub(/^out\/seq/, 'tmp').sub(/\.fq\.gz$/, '.step2d') } ] do |t|
+  mkdir_p t.name.pathmap('%d')
+  sh "unpigz -c #{t.source} | cut -f 2- | gawk '{ print \"@\" $1 \"\\n\" $3 \"\\n+\\n\" $2 }' | pigz -c > #{t.name}"
+end
+
+#
+
 task :clean_step2d do
   LIBIDS.each do |libid|
     sh "rm -f tmp/#{libid}.*.step2d out/bam/#{libid}.*.bam tmp/#{libid}.*.step2d_cnt"
