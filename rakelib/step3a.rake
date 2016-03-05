@@ -81,6 +81,7 @@ begin
   else
     raise "No annotation file at #{tdbpath}."
   end
+  step3a_bed_sources.push(PREPROCESS['CUSTOMTSS']) if PREPROCESS.key?('CUSTOMTSS')
 end
 
 def load_acc2sym(path)
@@ -114,7 +115,15 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
   end
   infp.close
 
-  tbl = t.sources[t.sources.length == 2 ? 0 : 2]
+  if PREPROCESS.key?('CUSTOMTSS')
+    infp = open(t.sources[-1])
+    while line = infp.gets
+      outfp.puts line.rstrip
+    end
+    infp.close
+  end
+
+  tbl = t.sources[t.sources.length == 3 ? 0 : 2]
   ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
   extract_5utr(acc2sym, outfp, tbl, chrEnds, ofs)
   extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs)
@@ -157,7 +166,15 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
   end
   infp.close
 
-  tbl = t.sources[t.sources.length == 2 ? 0 : 2]
+  if PREPROCESS.key?('CUSTOMTSS')
+    infp = open(t.sources[-1])
+    while line = infp.gets
+      outfp.puts line.rstrip
+    end
+    infp.close
+  end
+
+  tbl = t.sources[t.sources.length == 3 ? 0 : 2]
   ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
   extract_exon(acc2sym, outfp, tbl, chrEnds, ofs)
   extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs)

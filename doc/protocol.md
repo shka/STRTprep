@@ -3,10 +3,12 @@
 ## Table of contents
 
 1. [Overview of a typical protocol](#typical-protocol)
-2. Protocol details
+2. Standard protocol details
   - [Preparation of project folder](#preparation-of-project-folder)
   - [Preparation of indexes](#preparation-of-indexes)
   - [Design of experiments](#design-of-experiments)
+3. Special protocols
+  - [Overexpression study](#overexpression-study)
 
 ## Typical protocol
 
@@ -87,6 +89,11 @@ Script | Genome | Spike-ins | Ribosomal DNA unit | Created index location
 `bin/index_susScr3_ercc92_ynbA.sh` | susScr3 (pig) | ERCC92 & ynbA | | `src/ebwt/susScr3_ercc92_ynbA/ref`
 `bin/index_danRer7_ercc92_ynbA.sh` | danRer7 (zebrafish) | ERCC92 & ynbA | | `src/ebwt/danRer7_ercc92_ynbA/ref`
 
+Only `bin/index_hg19_ercc92_ynbA_u13369.sh` accepts two options as follows.
+
+- **1st:** Path of index location
+- **2nd:** Path of fasta format file, which contains extra sequences, for example expression vectors.
+
 #### Index of reference transcriptome
 
 This is index for tophat. Currently there are three scripts to prepare index of the reference transcriptome. It requires two options, (i) genome version, and (ii) location of genome+spike-in index.
@@ -127,16 +134,17 @@ PLUGINS:
 
 This section contains preprocessing parameters. All key-value pairs below are essential.
 
-Key | Value
-----|------
-`UMI` | Length of UMI
-`BARCODE` | Length of barcode
-`GAP` | Length of gap
-`CDNA` | Length of cDNA part
-`LAYOUT` | Path of [barcode layout file](#barcode-layout-file)
-`PHYX` | Path of PhyX index
-`GENOMESPIKERIBO` | Path of genome index
-`TRANSCRIPT` | Path of transcriptome index
+Key | Type | Value
+----|------|------
+`UMI` | Integer | Length of UMI
+`BARCODE` | Integer | Length of barcode
+`GAP` | Integer | Length of gap
+`CDNA` | Integer | Length of cDNA part
+`LAYOUT` | String | Path of [barcode layout file](#barcode-layout-file)
+`PHYX` | String | Path of PhyX index
+`GENOMESPIKERIBO` | String | Path of genome index
+`TRANSCRIPT` | String | Path of transcriptome index
+`CUSTOMTSS` | String | (Optional) Path of bed-format file, which defines transcription start regions for hypothetical genes or expression vectors
 
 > You can give empty `PHYX` value when the exclusion is unnecessary.
 
@@ -199,3 +207,35 @@ Column | Type | Value
 #### Barcode layout file
 
 This is tab-delimited text file linking between well names and barcode+gap sequence. Although you can specify your own layout and sequence, there are three predefined mapping for 48-plex STRT with 6 bp barcodes and 3 bp gap, (i) [`src/barcodes.old.txt`](https://github.com/shka/STRTprep/blob/v3dev/src/barcodes.old.txt),  (ii) [`src/barcodes.txt`](https://github.com/shka/STRTprep/blob/v3dev/src/barcodes.txt), and (iii) [`src/barcodes-May2015.txt`](https://github.com/shka/STRTprep/blob/v3dev/src/barcodes-May2015.txt).
+
+## Special protocols
+
+### Overexpression study
+
+To estimate level of your over-expressed genes in the samples, you need two following files.
+
+- **Fasta format file:** This file must contain DNA sequences around actual start site of the expression vector. To distinguish between the exogenous and endogenous expressions, the start site sequence should be unique. An example is at [`src/PiggyBacCMV.fa`](https://github.com/shka/STRTprep/blob/v3dev/src/PiggyBacCMV.fa).
+- **Bed format file:** This file defines transcription start region within the vector sequence as quantification unit like as genes. Defined regions will be analyzed in gene-based analysis. An example is at [`src/PiggyBacCMV.bed`](https://github.com/shka/STRTprep/blob/v3dev/src/PiggyBacCMV.bed).
+
+With these two files, you need to create a custom genome index.
+
+```bash
+. bin/setup_uppmax.sh
+bin/index_hg19_ercc92_ynbA_u13369.sh src/ebwt/hg19_ercc92_ynbA_u13369_PiggyBacCMV src/PiggyBacCMV.fa
+bin/index_refGene.sh hg19 src/ebwt/hg19_ercc92_ynbA_u13369_PiggyBacCMV/ref
+```
+
+Also, do not forget to specify `CUSTOMTSS` at `PREPROCESS` configuration.
+
+```yaml
+PREPROCESS:
+  UMI: 6
+  BARCODE: 6
+  GAP: 3
+  CDNA: 44
+  LAYOUT: src/barcodes-Sep2015.txt
+  PHYX:
+  GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369_PiggyBacCMV/ref
+  TRANSCRIPT: src/ebwt/hg19_refGene/ref
+  CUSTOMTSS: src/PiggyBacCMV.bed
+```
