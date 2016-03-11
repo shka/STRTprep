@@ -9,6 +9,7 @@
   - [Design of experiments](#design-of-experiments)
 3. Special protocols
   - [Overexpression study](#overexpression-study)
+  - [Rescue of overlapping gene](#rescue-of-overlapping-gene)
 
 ## Typical protocol
 
@@ -144,7 +145,8 @@ Key | Type | Value
 `PHYX` | String | Path of PhyX index
 `GENOMESPIKERIBO` | String | Path of genome index
 `TRANSCRIPT` | String | Path of transcriptome index
-`CUSTOMTSS` | String | (Optional) Path of bed-format file, which defines transcription start regions for hypothetical genes or expression vectors
+`CUSTOMTSS` | String | (Optional) Path of bed-format file, which defines transcription start regions for hypothetical genes or expression vectors (see also [Overexpression study](#overexpression-study))
+`GENEMASKING` | Strings | (Optional) Genes to be masked, mainly for rescue of completely overlapping genes in gene-based analysis (see also [Rescue of overlapping gene](#rescue-of-overlapping-gene))
 
 > You can give empty `PHYX` value when the exclusion is unnecessary.
 
@@ -239,3 +241,29 @@ PREPROCESS:
   TRANSCRIPT: src/ebwt/hg19_refGene/ref
   CUSTOMTSS: src/PiggyBacCMV.bed
 ```
+
+### Rescue of overlapping gene
+
+Gene-based analysis (not TFE-based analysis) ignores genes completely overlapping, since it is not sure which the genes are origin of aligned reads at the overlapping regions. However, it's sometimes inconvenient, for example
+
+- Readthrough gene definition hides important primary gene; ex. INS-IGF2, which is readthrough from INS (insulin) to IGF2 on hg19 (NCBI definition 21-Nov-2015).
+- Subspecie-specific gene definition hides each other; ex. Hbb-bt, which is a haplotype of hemoglobin beta in C57BL/-type strain, overlaps Hbb-b2, which is a haplotype of hemoglobin beta in BALB/c and 129Sv on mm9 (NCBI definition 13-Nov-2015).
+
+To rescue either overlapping genes, you can specify `GENEMASKING` at `PREPROCESS` configuration. This is an example to rescue Hbb-b2 and Prnp.
+
+```yaml
+PREPROCESS:
+  UMI: 4
+  BARCODE: 6
+  GAP: 3
+  CDNA: 46
+  LAYOUT: src/barcodes.old.txt
+  PHYX:
+  GENOMESPIKERIBO: src/ebwt/mm9_ercc92_ynbA_bk000964/ref
+  TRANSCRIPT: src/ebwt/mm9_refGene/ref
+  GENEMASKING:
+  - Prn
+  - Hbb-bt
+```
+
+> Confirmation of readthrough level is recommended, when the rescued genes are differentially regulated.

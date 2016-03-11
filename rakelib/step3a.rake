@@ -2,7 +2,7 @@
 ## Step 3a - Region of coding 5'-UTR & the proximal upstream
 ##
 
-def extract_5utr(acc2sym, outfp, tbl, chrEnds, ofs=1)
+def extract_5utr(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
   infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
@@ -11,6 +11,7 @@ def extract_5utr(acc2sym, outfp, tbl, chrEnds, ofs=1)
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
+      next if mask.include?(sym)
       if cols[2] == '+'
         cdsleft = cols[5].to_i
         0.upto(lefts.length-1) do |i|
@@ -39,7 +40,7 @@ def extract_5utr(acc2sym, outfp, tbl, chrEnds, ofs=1)
   infp.close
 end
 
-def extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs=1)
+def extract_proxup(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
   infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
@@ -48,6 +49,7 @@ def extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs=1)
       lefts = cols[8].split(/,/)
       rights = cols[9].split(/,/)
       sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
+      next if mask.include?(sym)
       if cols[2] == '+'
         left = lefts[0].to_i
         tmp = (left-500 > 0 ? left-500: 0)
@@ -123,16 +125,17 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
     infp.close
   end
 
-  tbl = t.sources[t.sources.length == 3 ? 0 : 2]
+  tbl = PREPROCESS.key?('CUSTOMTSS') ? t.sources[t.sources.length == 3 ? 0 : 2] : t.sources[t.sources.length == 2 ? 0 : 2]
   ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
-  extract_5utr(acc2sym, outfp, tbl, chrEnds, ofs)
-  extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs)
+  mask = PREPROCESS.key?('GENEMASKING') ? PREPROCESS['GENEMASKING'] : []
+  extract_5utr(acc2sym, outfp, tbl, chrEnds, mask, ofs)
+  extract_proxup(acc2sym, outfp, tbl, chrEnds, mask, ofs)
   outfp.close
 end
 
 #
 
-def extract_exon(acc2sym, outfp, tbl, chrEnds, ofs=1)
+def extract_exon(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
   infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
@@ -143,6 +146,7 @@ def extract_exon(acc2sym, outfp, tbl, chrEnds, ofs=1)
         left = lefts[i].to_i
         right = rights[i].to_i
         sym = acc2sym.key?(cols[0]) ? acc2sym[cols[0]] : cols[11]
+        next if mask.include?(sym)
         outfp.puts [cols[1], left, right, sym, 0, cols[2]].join("\t")
       end
     end
@@ -174,9 +178,10 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
     infp.close
   end
 
-  tbl = t.sources[t.sources.length == 3 ? 0 : 2]
+  tbl = PREPROCESS.key?('CUSTOMTSS') ? t.sources[t.sources.length == 3 ? 0 : 2] : t.sources[t.sources.length == 2 ? 0 : 2]
   ofs = (/^kgXref/ =~ t.source.pathmap('%f')) ? 1 : 2
-  extract_exon(acc2sym, outfp, tbl, chrEnds, ofs)
-  extract_proxup(acc2sym, outfp, tbl, chrEnds, ofs)
+  mask = PREPROCESS.key?('GENEMASKING') ? PREPROCESS['GENEMASKING'] : []
+  extract_exon(acc2sym, outfp, tbl, chrEnds, mask, ofs)
+  extract_proxup(acc2sym, outfp, tbl, chrEnds, mask, ofs)
   outfp.close
 end
