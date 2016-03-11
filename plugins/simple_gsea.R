@@ -130,7 +130,7 @@ plot_heatmaps <- function(id) {
       log10(nreads[targets, ]),
       hclustfun=clustfun, distfun=distfun,
       scale='row', Colv=order(annotations[, 'BLOCK'], annotations[, 'CLASS']),
-      annCol=annotations[, setdiff(colnames(annotation), ifelse(length(unique(annotations[, 'BLOCK'])) > 1, 'BLOCK', ''))],
+      annCol=annotations[, setdiff(colnames(annotations), ifelse(length(unique(annotations[, 'BLOCK'])) > 1, 'BLOCK', ''))],
       layout='dlmL|alm', main=id,
       fontsize=6, filename=sprintf('%s/%s.pdf', dir, gsub(',', '_', stat['GENESET'])))
     save(heatmap,
