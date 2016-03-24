@@ -23,6 +23,7 @@ A list below is available plugins and the help documents.
 
 - [`correlation_samples`](#plugin-correlation_samples)
 - [`heatmap_diffexp`](#plugin-heatmap_diffexp)
+- [`motif_finder`](#plugin-motif_finder)
 - [`pca`](#plugin-pca)
 - [`simple_diffexp`](#plugin-simple_diffexp)
 - [`simple_gsea`](#plugin-simple_gsea)
@@ -169,6 +170,34 @@ PLUGINS:
       DIFFEXPQ: 0.05
 ```
 
+## Plugin `motif_finder`
+
+This plugin identifies over-represented short DNA sequences around (-2,000~+500 nt) the peaks of differentially regulated TFEs as putative regulatory elements, and checks enrichments of the motifs towards all detected TFEs and randomly-selected genomic sequences. This plugin is only for `byTFE` quantitation, and not good for global comparison. It takes a long time and consumes much memory (approximately 16 CPU hours and 16GB RAM for 250 TFEs, although it will perform parallel calculation), therefore strongly recommend to apply it only to meaningful number (from tens to hundreds) of differentially regulated TFEs, by `heatmap_diffexp` plugin etc.
+
+* Output files `out/byTFE/plugin_motif_finder_n.*.pwm.pdf` are PWM of the over-represented motifs.
+* Output files `out/byTFE/plugin_motif_finder_n.*.pwm.pdf` are PWM of the over-represented motifs, in text format, for further downstream analysis, for example [Tomtom](http://meme-suite.org/tools/tomtom).
+* Output files `out/byTFE/plugin_motif_finder_n.*.posPref.pdf` are positional preferences of the over-represented motifs.
+  * Red line is observed number of TFEs which have the motif at the location.
+  * Blue line is expected number of TFEs which have the motif at the location based on the all detected TFEs; top and bottom of the blue band represent P=0.05.
+  * Gray line is expected number of TFEs which have the motif at the location based on randomly-selected genomic sequences; top and bottom of the blue band represent P=0.05.
+
+Parameter key | Type | Value
+--------------|------|------
+`FLUCTUATIONP` | Real, 0~1 | (Optional) Threshold of fluctuation p-value
+`DIFFEXPQ` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression q-value
+`DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
+
+```yaml
+# Example of "motif_finder" plugin parameters
+PLUGINS:
+  motif_finder:
+    0:
+      FLUCTUATIONP: 0.05
+      DIFFEXPQ: 0.05
+```
+
+> See also - Li L. GADEM: a genetic algorithm guided formation of spaced dyads coupled with an EM algorithm for motif discovery. J Comput Biol. 2009 Feb;16(2):317–29.
+
 ## Plugin `pca`
 
 This plugin draws a PCA plot in the qualified samples with the fluctuated gene expression.
@@ -256,6 +285,8 @@ PLUGINS:
         TAXID: 10090
       ENRICHMENTP: 0.05
 ```
+
+> See also - Subramanian A, Tamayo P, Mootha VK, Mukherjee S, Ebert BL, Gillette MA, et al. Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. Proc Natl Acad Sci USA. 2005 Oct 25;102(43):15545–50.
 
 ## Plugin `transcripts`
 
