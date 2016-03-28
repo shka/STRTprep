@@ -10,6 +10,7 @@
 3. Special protocols
   - [Overexpression study](#overexpression-study)
   - [Rescue of overlapping gene](#rescue-of-overlapping-gene)
+  - [STRT by Fluidigm C1](#strt-by-fluidigm-c1)
 
 ## Typical protocol
 
@@ -141,12 +142,14 @@ Key | Type | Value
 `BARCODE` | Integer | Length of barcode
 `GAP` | Integer | Length of gap
 `CDNA` | Integer | Length of cDNA part
-`LAYOUT` | String | Path of [barcode layout file](#barcode-layout-file)
-`PHYX` | String | Path of PhyX index
 `GENOMESPIKERIBO` | String | Path of genome index
 `TRANSCRIPT` | String | Path of transcriptome index
-`CUSTOMTSS` | String | (Optional) Path of bed-format file, which defines transcription start regions for hypothetical genes or expression vectors (see also [Overexpression study](#overexpression-study))
-`GENEMASKING` | Strings | (Optional) Genes to be masked, mainly for rescue of completely overlapping genes in gene-based analysis (see also [Rescue of overlapping gene](#rescue-of-overlapping-gene))
+`CUSTOMTSS` | String | (Optional) Path of bed-format file, which defines transcription start regions for hypothetical genes or expression vectors; see also [Overexpression study](#overexpression-study)
+`GENEMASKING` | Strings | (Optional) Genes to be masked, mainly for rescue of completely overlapping genes in gene-based analysis; see also [Rescue of overlapping gene](#rescue-of-overlapping-gene)
+`LAYOUT` | String | (Optional) Path of [barcode layout file](#barcode-layout-file) as default; see also [`LIBRARIES` section](#libraries-section) and [Barcode layout file](#barcode-layout-file)
+`MULTIPLEXTYPE` | String | (Optional) Barcode reads and UMI+gap+cDNA reads must be sequenced separately if you specify `C1` as `MULTIPLEXTYPE`. Otherwise (ex. no specification), the barcode+UMI+gap+cDNA must be contained in each read. See also [`LIBRARIES` section](#libraries-section) and [STRT by Fluidigm C1](#strt-by-fluidigm-c1).
+`PHYX` | String | (Optional) Path of PhyX index
+`QUALITYBASE` | Integer | (Optional) Either 33 (as default) or 64; see also [FASTQ format in Wikipedia](https://en.wikipedia.org/wiki/FASTQ_format)
 
 > You can give empty `PHYX` value when the exclusion is unnecessary.
 
@@ -158,14 +161,19 @@ PREPROCESS:
   GAP: 3
   CDNA: 44
   LAYOUT: src/barcodes-May2015.txt
-  PHYX:
   GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
   TRANSCRIPT: src/ebwt/hg19_refGene/ref
 ```
 
 ##### `LIBRARIES` section
 
-This section defines your library names, and location of the raw sequence files. In the example, `TEST1` and `TEST2` at the second level are the library names themselves, and `FASTQS` key was followed by locations of the raw sequences.
+This section defines your library names, and location of the raw sequence files. In the example, `TEST1` and `TEST2` at the second level are the library names themselves, and the third levels are specification of each library as below.
+
+Key | Type | Value
+----|------|------
+`FASTQS` | Array (of string) | Locations of the raw sequences. It must contain barcode+UMI+gap+cDNA (as default), or at least UMI+gap+cDNA (if `MULTIPLEXTYPE == C1` at [`PREPROCESS` section](#preprocess-section)).
+`FASTQS2` | Array (of string) | (Optional) Locations of the raw barcode sequences; see also [`PREPROCESS` section](#preprocess-section) and [STRT by Fluidigm C1](#strt-by-fluidigm-c1).
+`LAYOUT` | String | (Optional) Path of [barcode layout file](#barcode-layout-file) for each library; see also [`PREPROCESS` section](#preprocess-section) and [Barcode layout file](#barcode-layout-file)
 
 ```yaml
 # Example of LIBRARIES section
@@ -267,3 +275,31 @@ PREPROCESS:
 ```
 
 > Confirmation of readthrough level is recommended, when the rescued genes are differentially regulated.
+
+### STRT by Fluidigm C1
+
+You can use STRTprep not ony for single-end STRT (= barcode, UMI, gap for template-switching and cDNA at the same end of sequencing target, like in [Islam et al. 2011](http://genome.cshlp.org/content/21/7/1160.long) and [Krjutškov et al. 2016](http://humrep.oxfordjournals.org/content/31/4/844.long)) but also pair-end STRT (UMI, gap and cDNA at either end, and barcode at the other end, like by [Fluidigm C1](https://www.fluidigm.com/c1openapp/scripthub/script/2015-06/strt2fc1-protocol-1434125971861-2)). For the latter case, you must specify
+
+- `C1` at `MULTIPLEXTYPE` of [`PREPROCESS` section](#preprocess-section)
+- `FASTQS2` for each library at [`LIBRARY` section](#library-section)
+
+This is an example.
+
+```yaml
+PREPROCESS:
+  UMI: 6
+  BARCODE: 8
+  GAP: 3
+  CDNA: 42
+  GENOMESPIKERIBO: src/ebwt/hg19_ercc92_ynbA_u13369/ref
+  TRANSCRIPT: src/ebwt/hg19_refGene/ref
+  QUALITYBASE: 64
+  MULTIPLEXTYPE: C1
+LIBRARIES:
+  TEST1:
+    FASTQS:
+      - src/Run00354_L2_1_160226_read1_indexC1-1.fq.gz
+    FASTQS2:
+      - src/Run00354_L2_1_160226_read2_indexC1-1.fq.gz
+    LAYOUT: src/barcodes.test1.txt
+```

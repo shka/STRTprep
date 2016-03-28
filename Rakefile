@@ -10,16 +10,15 @@ PREPROCESS = conf['PREPROCESS']
 
 LIBIDS = ENV.key?('LIBS') ? ENV['LIBS'].split(',') : LIBRARIES.keys
 
-WELLIDS = Array.new
-['A', 'B', 'C', 'D', 'E', 'F'].each do |col|
-  1.upto(8).each do |row|
-    WELLIDS.push("#{col}#{row}")
-  end
+def getLayout(libid)
+  return LIBRARIES[libid].key?('LAYOUT') ? LIBRARIES[libid]['LAYOUT'] : PREPROCESS['LAYOUT']
 end
 
 LIBWELLIDS = Array.new
 LIBIDS.each do |libid|
-  WELLIDS.each do |wellid|
+  layoutFile = getLayout(libid)
+  open(layoutFile).each do |line|
+    wellid, barcode = line.rstrip.split(/\t/)
     LIBWELLIDS.push("#{libid}.#{wellid}")
   end
 end
@@ -46,35 +45,57 @@ rule '.xls' => '.csv' do |t|
   book.write(t.name)
 end
 
-##
+## QC tasks
 
-qc_targets = Array.new
+### QC1: parallel by lanes
+
+qcTargets1 = Array.new
+
 LIBIDS.each do |libid|
   LIBRARIES[libid]['FASTQS'].each_index do |runid|
-    qc_targets.push("tmp/#{libid}.#{runid}.step1b")
+    qcTargets1.push("tmp/#{libid}.#{runid}.step1b")
   end
 end
+
+task :qc1 => qcTargets1
+
+#### QC2: parallel by libraries
+
+qcTargets2 = Array.new
+
 LIBIDS.each do |libid|
-  qc_targets.push("out/fig.#{libid}.qualifiedReads.pdf")
-end
-LIBIDS.each do |libid|
-  qc_targets.push("tmp/#{libid}.step2a")
-end
-LIBWELLIDS.each do |libwellid|
-  qc_targets.push("tmp/#{libwellid}.step2f")
-end
-LIBWELLIDS.each do |libwellid|
-  qc_targets.push("tmp/byGene/#{libwellid}.step3b")
-end
-LIBWELLIDS.each do |libwellid|
-  qc_targets.push("tmp/byGene/#{libwellid}.step3c")
-end
-LIBWELLIDS.each do |libwellid|
-  qc_targets.push("out/seq/#{libwellid}.fq.gz")
+  qcTargets2.push("tmp/#{libid}.step2a", "out/fig.#{libid}.qualifiedReads.pdf")
 end
 
-task :qc => qc_targets + ['out/byGene/samples.xls']
+task :qc2 => qcTargets2
 
+#### QC3: parallel by project
+
+qcTargets3 = ['tmp/step2c/accepted_hits.samUniqSortedByAcc']
+
+LIBWELLIDS.each do |libwellid|
+  qcTargets3.push("tmp/#{libwellid}.step2f")
+end
+
+task :qc3 => qcTargets3
+
+#### QC4:
+
+qcTargets4 = Array.new
+
+LIBWELLIDS.each do |libwellid|
+  qcTargets4.push("tmp/#{libwellid}.step2g",
+                  "tmp/byGene/#{libwellid}.step3b",
+                  "tmp/byGene/#{libwellid}.step3c",
+                  "out/seq/#{libwellid}.fq.gz")
+end
+
+task :qc4 => qcTargets4
+
+####
+
+task :qc => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 + ['out/byGene/samples.xls']
+ 
 ##
 
 classes = ['global']
@@ -90,33 +111,35 @@ end
 plugin_byGene_targets = Array.new
 plugin_byTFE_targets = Array.new
 
-PLUGINS.each_key do |plugin|
-  script = "plugins/#{plugin}.R"
-  if File.exist?(script)
-    classes.each do |cls|
-      if PLUGINS[plugin].key?(cls)
-        target = "out/byGene/plugin_#{plugin}_#{cls}.timestamp"
-        plugin_byGene_targets.push(target)
-        file target => ['out/byGene/diffexp.csv',
-                        'out/byGene/samples.csv',
-                        'src/conf.yaml'] do |t|
-          sh "#{script} byGene #{cls} #{t.sources.join(' ')} > #{t.name.pathmap("%X")}.log 2>&1"
-          sh "touch #{t.name}"
-        end
-        target = "out/byTFE/plugin_#{plugin}_#{cls}.timestamp"
-        plugin_byTFE_targets.push(target)
-        file target => ['out/byTFE/diffexp.csv',
-                        'out/byGene/samples.csv',
-                        'src/conf.yaml'] do |t|
-          sh "#{script} byTFE #{cls} #{t.sources.join(' ')} > #{t.name.pathmap("%X")}.log 2>&1"
-          sh "touch #{t.name}"
+if !PLUGINS.nil?
+  PLUGINS.each_key do |plugin|
+    script = "plugins/#{plugin}.R"
+    if File.exist?(script)
+      classes.each do |cls|
+        if PLUGINS[plugin].key?(cls)
+          target = "out/byGene/plugin_#{plugin}_#{cls}.timestamp"
+          plugin_byGene_targets.push(target)
+          file target => ['out/byGene/diffexp.csv',
+                          'out/byGene/samples.csv',
+                          'src/conf.yaml'] do |t|
+            sh "#{script} byGene #{cls} #{t.sources.join(' ')} > #{t.name.pathmap("%X")}.log 2>&1"
+            sh "touch #{t.name}"
+          end
+          target = "out/byTFE/plugin_#{plugin}_#{cls}.timestamp"
+          plugin_byTFE_targets.push(target)
+          file target => ['out/byTFE/diffexp.csv',
+                          'out/byGene/samples.csv',
+                          'src/conf.yaml'] do |t|
+            sh "#{script} byTFE #{cls} #{t.sources.join(' ')} > #{t.name.pathmap("%X")}.log 2>&1"
+            sh "touch #{t.name}"
+          end
         end
       end
     end
   end
 end
 
-task :gene => qc_targets +
+task :gene => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 + 
               plugin_byGene_targets +
               ['out/byGene/samples.xls',
                'out/byGene/diffexp.xls',
@@ -124,7 +147,7 @@ task :gene => qc_targets +
 
 ##
 
-task :default => qc_targets +
+task :default => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 + 
                  plugin_byGene_targets +
                  plugin_byTFE_targets +
                  ['out/byGene/samples.xls',

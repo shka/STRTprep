@@ -5,8 +5,8 @@
 require 'damerau-levenshtein'
 
 def step2a_byLibraries_sources(path)
-  tmp = [File.expand_path(PREPROCESS['LAYOUT'])]
   libid = path.pathmap('%X').pathmap('%f')
+  tmp = [getLayout(libid)]
   LIBRARIES[libid]['FASTQS'].each_index do |runid|
     tmp.push("tmp/#{libid}.#{runid}.step1b")
   end

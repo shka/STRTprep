@@ -2,38 +2,76 @@
 ## Step 1b - QV filtering & sort
 ##
 
-if PREPROCESS['PHYX'].nil?
-  def step2b_sources(path)
-    libid, runid = parse_librunid(path)
-    return LIBRARIES[libid]['FASTQS'][runid]
-  end
+qb = !PREPROCESS.key?('QUALITYBASE') || PREPROCESS['QUALITYBASE'] == 33 ? 33 : PREPROCESS['QUALITYBASE']
 
-  rule '.step1b' => [->(path){ step2b_sources(path) }] do |t|
-    libid, runid = parse_librunid(t.name)
-    len = PREPROCESS['UMI']+PREPROCESS['BARCODE']+PREPROCESS['GAP']+PREPROCESS['CDNA']
-    mkdir_p t.name.pathmap('%d')
-    sh <<EOF
-(unpigz -c #{t.source} \
- | bin/_step1b_fastq2oneLine \
- | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat \
+if !PREPROCESS.key?('PHYX') || PREPROCESS['PHYX'].nil?
+
+  if PREPROCESS.key?('MULTIPLEXTYPE') && PREPROCESS['MULTIPLEXTYPE'] == 'C1'
+
+    def step1b_sources(path)
+      libid, runid = parse_librunid(path)
+      return [LIBRARIES[libid]['FASTQS'][runid],
+              LIBRARIES[libid]['FASTQS2'][runid]]
+    end
+
+    rule '.step1b' => [->(path){ step1b_sources(path) }] do |t|
+      libid, runid = parse_librunid(t.name)
+      len = PREPROCESS['UMI']+PREPROCESS['BARCODE']+PREPROCESS['GAP']+PREPROCESS['CDNA']
+      mkdir_p t.name.pathmap('%d')
+      read1fifo = mymkfifo('step1b-read1-')
+      pid1 = spawn "unpigz -c #{t.sources[0]} > #{read1fifo}"
+      read2fifo = mymkfifo('step1b-read2-')
+      pid2 = spawn "unpigz -c #{t.sources[1]} > #{read2fifo}"
+      sh <<EOF
+(gpaste #{read1fifo} #{read2fifo} \
+ | bin/_step1b_fastqs2oneLine #{PREPROCESS['UMI']} \
+ | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat #{qb} \
  | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
-    sh "touch #{t.name}.stat"
+      sh "touch #{t.name}.stat"
+      Process.waitpid(pid1)
+      Process.waitpid(pid2)
+    end
+    
+  else
+    
+    def step1b_sources(path)
+      libid, runid = parse_librunid(path)
+      return LIBRARIES[libid]['FASTQS'][runid]
+    end
+    
+    rule '.step1b' => [->(path){ step1b_sources(path) }] do |t|
+      libid, runid = parse_librunid(t.name)
+      len = PREPROCESS['UMI']+PREPROCESS['BARCODE']+PREPROCESS['GAP']+PREPROCESS['CDNA']
+      mkdir_p t.name.pathmap('%d')
+      sh <<EOF
+(unpigz -c #{t.source} \
+ | bin/_step1b_fastq2oneLine \
+ | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat #{qb} \
+ | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
+ | pigz -c > #{t.name}) 2> #{t.name}.log
+EOF
+      sh "touch #{t.name}.stat"
+    end
+    
   end
+  
 else
+  
   rule '.step1b' => '.step1a' do |t|
     libid, runid = parse_librunid(t.name)
     len = PREPROCESS['UMI']+PREPROCESS['BARCODE']+PREPROCESS['GAP']+PREPROCESS['CDNA']
     sh <<EOF
 (samtools view -f 4 -F 256 #{t.source}\
  | gcut -f 1,10,11 \
- | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat \
+ | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat #{qb} \
  | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
     sh "touch #{t.name}.stat"
   end
+  
 end
 
 rule /\.step1b\.stat$/ => [->(p){ p.pathmap("%X") }]

@@ -76,4 +76,5 @@ install_github('shka/R-SAMstrt')
 EOF
 
 gcc -o bin/_step1b_fastq2oneLine bin/_step1b_fastq2oneLine.c
+gcc -o bin/_step1b_fastqs2oneLine bin/_step1b_fastsq2oneLine.c
 gcc -o bin/_step1b_trimWithQCFilter bin/_step1b_trimWithQCFilter.c
