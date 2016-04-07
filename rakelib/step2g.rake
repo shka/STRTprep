@@ -5,16 +5,15 @@
 require 'csv'
 
 def estimate_scale(t)
-  libwellid2scale = Hash.new
-  CSV.table(t.source).each do |row|
-    libwellid2scale["#{row[:library]}.#{row[:well]}"] = row[:spikein_reads]
-  end
-  return libwellid2scale[t.name.pathmap('%f').pathmap('%X')]
+  infp = open(t.source)
+  tmp = infp.gets.rstrip.split("\t")
+  infp.close
+  return tmp[1].to_i
 end
 
 rule /\.step2g$/ => [
-  ->(path){ ['tmp/byGene/samples.csv',
-             path.sub(/^tmp\//, 'out/bam/').sub(/\.step2g$/, '.bam')] }] do |t|
+  ->(path){[ path.sub(/\.step2g$/, '.step2e_cnt'),
+             path.sub(/^tmp\//, 'out/bam/').sub(/\.step2g$/, '.bam') ] }] do |t|
   scale = estimate_scale(t)
   sh <<EOF
 bamToBed -i #{t.sources[1]} \
