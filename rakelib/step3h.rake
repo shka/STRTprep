@@ -89,6 +89,7 @@ def step3h_job(t)
   t.sources[ofs..-1].each_index do |idx|
     tmp = Hash.new
     infp = open("| gunzip -c #{t.sources[idx+ofs]}")
+    clsnum = /\/diffexp(\d+)/.match(t.sources[idx+ofs]).to_a[1].to_i
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
@@ -103,11 +104,11 @@ def step3h_job(t)
     end
     infp.close
     diffexps[idx] = tmp
-    header_diffexps.push("diffexpScore.#{idx}")
-    header_diffexps.push("pvalue.#{idx}")
-    header_diffexps.push("qvalue.#{idx}")
-    header_diffexps.push("fluctuation.#{idx}")
-    header_diffexps.push("fluctuationScore.#{idx}")
+    header_diffexps.push("diffexpScore.#{clsnum}")
+    header_diffexps.push("pvalue.#{clsnum}")
+    header_diffexps.push("qvalue.#{clsnum}")
+    header_diffexps.push("fluctuation.#{clsnum}")
+    header_diffexps.push("fluctuationScore.#{clsnum}")
   end
 
   fluctuation = Hash.new
