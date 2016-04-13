@@ -1,5 +1,6 @@
-require 'yaml'
+require 'csv'
 require 'pp'
+require 'yaml'
 
 PROCS = ENV.key?('PROCS') ? ENV['PROCS'].to_i : `gnproc`.to_i
 
@@ -79,7 +80,7 @@ end
 
 task :qc3 => qcTargets3
 
-#### QC4:
+#### QC4: parallel by wells
 
 qcTargets4 = Array.new
 
@@ -94,8 +95,35 @@ task :qc4 => qcTargets4
 
 ####
 
-task :qc => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 + ['out/byGene/samples.xls']
- 
+task :qc => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 +
+            ['out/byGene/samples.xls']
+
+## TFE intermediate tasks
+
+#### TFE1: parallel by project
+
+tfeTargets1 = Array.new
+begin
+  samples = CSV.table('src/samples.csv')
+  classes = Array.new
+  samples.each { |row| classes.push(row[:classtfe]) if row[:classtfe] != 'NA' }
+  classes.uniq.each do |cls|
+    tfeTargets1.push("tmp/byTFE/#{cls}.step4a/transcripts.gtf")
+  end
+end
+tfeTargets1 << 'out/byTFE/regions.bed.gz'
+
+task :tfe1 => tfeTargets1
+
+#### TFE2: parallel by wells
+
+tfeTargets2 = Array.new
+LIBWELLIDS.each do |libwellid|
+  tfeTargets2.push("tmp/byTFE/#{libwellid}.step4b")
+end
+
+task :tfe2 => tfeTargets2
+
 ##
 
 classes = ['global']
@@ -139,23 +167,21 @@ if !PLUGINS.nil?
   end
 end
 
-task :gene => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 + 
-              plugin_byGene_targets +
+task :gene => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 +
               ['out/byGene/samples.xls',
                'out/byGene/diffexp.xls',
                'out/web/regions_byGene.bed.gz']
 
-##
+task :plugins_gene => [:gene] + plugin_byGene_targets
 
-task :default => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 + 
-                 plugin_byGene_targets +
-                 plugin_byTFE_targets +
-                 ['out/byGene/samples.xls',
-                  'out/byGene/diffexp.xls',
-                  'out/byTFE/diffexp.xls',
-                  :web]
+task :tfe => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 +
+             tfeTargets1 + tfeTargets2 +
+             ['out/byGene/samples.xls',
+              'out/byTFE/diffexp.xls',]
 
-##
+task :plugins_tfe => [:tfe] + plugin_byTFE_targets
+
+task :default => [:gene, :plugins_gene, :tfe, :plugins_tfe, :web]
 
 task :check do
   pp conf
