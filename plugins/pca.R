@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 
 source('Rlib/STRTprepHelper.R', chdir=T)
-helper <- STRTprepHelper$new(name='pca', required_packages=c('RColorBrewer'))
+helper <- STRTprepHelper$newPlugin(name='pca',
+                                   required_packages=c('RColorBrewer'))
 
 library(RColorBrewer)
 

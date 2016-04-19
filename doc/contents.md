@@ -26,6 +26,7 @@ rake > tfe.log 2>&1
 3. [Interpretation of the results](result.md)
 4. STRTprepHelper - R interface to access the results for the further analysis
 5. [Plugin framework](plugin.md) and extension of STRTprep
+6. [Utilities](util.md) in this package
 
 ## Notation
 

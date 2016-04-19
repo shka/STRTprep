@@ -29,6 +29,7 @@ STRTprepExpressions <- R6Class(
   
   public = list(
     initialize = function(helper) {
+      private$helper <- helper
       private$samples <- helper$samples
       private$content <- read.table(
         helper$expressions_path,
@@ -63,7 +64,7 @@ STRTprepExpressions <- R6Class(
     
     fluctuated = function() {
       tmp <- private$content
-      options <- helper$options
+      options <- private$helper$options
       targets <- 1:nrow(tmp)
       if(!is.null(options$FLUCTUATIONP))
         targets <- which(tmp[, 'fluctuation'] < options$FLUCTUATIONP)
@@ -95,6 +96,7 @@ STRTprepExpressions <- R6Class(
     
     significant = function() {
       tmp <- private$content
+      helper <- private$helper
       options <- helper$options
       if(helper$comparison != 'global') {
         targets1 <- 1:nrow(tmp)

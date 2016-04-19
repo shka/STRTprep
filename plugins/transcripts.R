@@ -1,8 +1,9 @@
 #!/usr/bin/env Rscript
 
 source('Rlib/STRTprepHelper.R', chdir=T)
-helper <- STRTprepHelper$new(name='transcripts',
-                             required_packages=c('beeswarm', 'RColorBrewer'))
+helper <- STRTprepHelper$newPlugin(
+  name='transcripts',
+  required_packages=c('beeswarm', 'RColorBrewer'))
 
 library(beeswarm)
 library(RColorBrewer)

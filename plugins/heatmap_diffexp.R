@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 source('Rlib/STRTprepHelper.R', chdir=T)
-helper <- STRTprepHelper$new(name='heatmap_diffexp',
-                             required_packages=c('renozao/pkgmaker@develop',
-                                                 'renozao/NMF'))
+helper <- STRTprepHelper$newPlugin(
+  name='heatmap_diffexp',
+  required_packages=c('renozao/pkgmaker@develop', 'renozao/NMF'))
 options <- helper$options
 if(helper$comparison != 'global') {
   annotations <-
@@ -17,6 +17,7 @@ if(helper$comparison != 'global') {
 } else {
   annotations <- helper$samples$annotations[, options$ANNOTATIONS]
 }
+
 nreads <- helper$expressions$offset$significant$normalized_levels
 
 distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)

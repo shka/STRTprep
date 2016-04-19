@@ -1,15 +1,13 @@
 #!/usr/bin/env Rscript
 
 source('Rlib/STRTprepHelper.R', chdir=T)
-helper <- STRTprepHelper$new(name='simple_gsea',
-                             required_packages=c('renozao/pkgmaker@develop',
-                                                 'renozao/NMF',
-                                                 'XML'))
+helper <- STRTprepHelper$newPlugin(
+  name='simple_gsea',
+  required_packages=c('renozao/pkgmaker@develop', 'renozao/NMF', 'XML'))
 if(helper$comparison == 'global') {
   warning('Skipped - this plugin is not for global comparison.')
   q(save='no')
 }
-
 if(helper$quantification != 'byGene') {
   warning('Skipped - this plugin is only for gene-based quantification.')
   q(save='no')

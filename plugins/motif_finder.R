@@ -1,10 +1,9 @@
 #!/usr/bin/env Rscript
 
 source('Rlib/STRTprepHelper.R', chdir=T)
-helper <- STRTprepHelper$new(name='motif_finder',
-                             required_packages=c('rGADEM',
-                                                 'snow',
-                                                 'TFBSTools'))
+helper <- STRTprepHelper$newPlugin(
+  name='motif_finder',
+  required_packages=c('rGADEM', 'snow', 'TFBSTools'))
 if(helper$quantification != 'byTFE') {
   warning('Skipped - this plugin is only for TFE-based quantification.')
   q(save='no')
