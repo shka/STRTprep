@@ -74,10 +74,6 @@ task :qc2 => qcTargets2
 
 qcTargets3 = ['tmp/step2c/accepted_hits.samUniqSortedByAcc']
 
-LIBWELLIDS.each do |libwellid|
-  qcTargets3.push("tmp/#{libwellid}.step2f")
-end
-
 task :qc3 => qcTargets3
 
 #### QC4: parallel by wells
@@ -85,7 +81,8 @@ task :qc3 => qcTargets3
 qcTargets4 = Array.new
 
 LIBWELLIDS.each do |libwellid|
-  qcTargets4.push("tmp/#{libwellid}.step2g",
+  qcTargets4.push("tmp/#{libwellid}.step2f",
+                  "tmp/#{libwellid}.step2g",
                   "tmp/byGene/#{libwellid}.step3b",
                   "tmp/byGene/#{libwellid}.step3c",
                   "out/seq/#{libwellid}.fq.gz")
