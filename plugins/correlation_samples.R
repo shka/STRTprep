@@ -11,6 +11,18 @@ if(length(helper$options$ANNOTATIONS) == 1) {
   annotations <- helper$samples$annotations[, helper$options$ANNOTATIONS]
 }
 
+solarized <- c('#dc322f', '#859900', '#268bd2', '#b58900', '#cb4b16', '#6c71c4', '#d33682', '#2aa198', '#002b36')
+
+colors <- list()
+for (i in 1:ncol(annotations)) {
+  col <- colnames(annotations)[i]
+  if (is.factor(annotations[, col])) {
+    annotations[, col] <- factor(as.character(annotations[, col]))
+    colors[[col]] <- rep(solarized, length=length(levels(annotations[, col])))
+  } else
+    colors[[col]] <- rep(solarized, length=ncol(annotations))[i]
+}
+
 nreads <- helper$expressions$fluctuated$mask$normalized_levels
 
 if(nrow(nreads) > 3) {
@@ -19,7 +31,8 @@ if(nrow(nreads) > 3) {
   nmf.options(grid.patch=T)
   correlation_samples <- aheatmap(
     correlations,
-    breaks=0, Rowv=F, revC=T, annCol=annotations, layout='lmL|dalm', fontsize=6, 
+    annCol=annotations, annColors=colors,
+    breaks=0, Rowv=F, revC=T, layout='lmL|dalm', fontsize=6, 
     filename=sprintf('%s.pdf', helper$output_prefix))
   save(correlation_samples,
        file=sprintf('%s.RData', helper$output_prefix), compress='gzip')
