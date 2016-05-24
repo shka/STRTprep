@@ -18,6 +18,18 @@ if(helper$comparison != 'global') {
   annotations <- helper$samples$annotations[, options$ANNOTATIONS]
 }
 
+solarized <- c('#dc322f', '#859900', '#268bd2', '#b58900', '#cb4b16', '#6c71c4', '#d33682', '#2aa198', '#002b36')
+
+colors <- list()
+for (i in 1:ncol(annotations)) {
+  col <- colnames(annotations)[i]
+  if (is.factor(annotations[, col])) {
+    annotations[, col] <- factor(as.character(annotations[, col]))
+    colors[[col]] <- rep(solarized, length=length(levels(annotations[, col])))
+  } else
+    colors[[col]] <- rep(solarized, length=ncol(annotations))[i]
+}
+
 nreads <- helper$expressions$offset$significant$normalized_levels
 
 distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)
@@ -30,12 +42,11 @@ if(nrow(nreads) > 3) {
   library(NMF)
   nmf.options(grid.patch=T)
   heatmap <- aheatmap(
-    log10(nreads),
+    log10(nreads), scale='row',
     hclustfun=clustfun, distfun=distfun,
-    ## color=scaleBlackRedYellow(100), breaks=0,
-    scale='row',
-    annCol=annotations, layout='dlmL|dalm',
-    fontsize=6, filename=sprintf('%s.pdf', helper$output_prefix))
+    annCol=annotations, annColors=colors,
+    fontsize=6, layout='dlmL|dalm',
+    filename=sprintf('%s.pdf', helper$output_prefix))
   save(heatmap,
        file=sprintf('%s.RData', helper$output_prefix), compress='gzip')
 } else
