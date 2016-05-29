@@ -1,14 +1,8 @@
 draw_outliers <- function(x, y, ylab) {
-    tmp.names <- unique(x)
     tmp.stats <- boxplot(y ~ x, plot=F)
-    tmp.stats.mean <- colMeans(tmp.stats$stats)
-    tmp.stats.mean.stats <- boxplot(tmp.stats.mean, plot=F)
-    for(i in which(is.element(tmp.stats.mean, tmp.stats.mean.stats$out))) {
-        tmp.names[i] <- sprintf("* %s", tmp.names[i])
-    }
     par(las=3, mar=c(6, 4, 2, 1), mgp=c(2.5, 1, 0))
     tmp <- boxplot(y ~ x, axes=F, ylab=ylab)
-    axis(1, at=1:length(tmp.names), labels=tmp.names, lty=0)
+    axis(1, at=1:length(tmp.stats$names), labels=tmp.stats$names, lty=0)
     axis(2)
     tmp.stats
 }
