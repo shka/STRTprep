@@ -14,4 +14,4 @@ targets <- intersect(rownames(table1), rownames(table2))
 tmp <- cbind(table1[targets, ], table2[targets, ])
 colnames(tmp) <- c(sprintf("%s.%s", colnames(table1), args[2]),
                    sprintf("%s.%s", colnames(table2), args[3]))
-write.csv(tmp)
+write.csv(tmp, quote=F)
