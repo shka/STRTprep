@@ -17,6 +17,7 @@ ln -s `which gfortran` \
    `brew --prefix`/bin/gfortran-`gfortran -dumpversion | cut -d. -f1,2` && true
 
 brew tap homebrew/science
+brew prune
 brew update
 
 gem install bundler
