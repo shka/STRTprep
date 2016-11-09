@@ -13,7 +13,7 @@ rule /\/fluctuation\.txt\.gz$/ => [->(p){ step3g_fluctuation_source(p) }] do |t|
       !File.exist?(tmp) ||
       `gmd5sum #{t.source} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     sh "bin/_step3g_fluctuation.R #{dir} > #{t.name}.log 2>&1"
-    sh "cp -p #{t.source} #{tmp}"
+    sh "gcp --preserve=timestamps #{t.source} #{tmp}"
   else
     puts "... skipped #{t.name}, since the qualified samples were identical with the previous run"
     sh "touch #{t.name}"

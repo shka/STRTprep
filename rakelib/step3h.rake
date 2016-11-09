@@ -33,7 +33,7 @@ rule /\/diffexp\d+\.txt\.gz$/ =>
       !File.exist?(tmp) ||
       `gmd5sum #{t.source} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     sh "bin/_step3h_test_diffexp.R #{idx} #{t.source} #{t.name} #{t.name.pathmap('%d')} > #{t.name}.log 2>&1"
-    sh "cp -p #{t.source} #{tmp}"
+    sh "gcp --preserve=timestamps #{t.source} #{tmp}"
   else
     puts "... skipped #{t.name}, since the target samples were identical with the previous run"
     sh "touch #{t.name}"

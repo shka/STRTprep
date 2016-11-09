@@ -28,7 +28,7 @@ rule /\.step4a\/transcripts\.gtf$/ => [->(path){ step4a_transcripts_sources(path
       `gmd5sum #{bam} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     cls = t.name.pathmap("%d").pathmap("%f").pathmap("%X")
     sh "(cufflinks -o #{dir} -p #{PROCS} --library-type fr-secondstrand -L #{cls} #{bam}) >> #{t.name}.log 2>&1"
-    sh "cp -p #{bam} #{tmp}"
+    sh "gcp --preserve=timestamps #{bam} #{tmp}"
   else
     puts "... skipped #{t.name}, since the qualified samples were identical with the previous run"
     sh "touch #{t.name}"
