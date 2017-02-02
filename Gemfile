@@ -1,5 +1,2 @@
 source 'https://rubygems.org'
-gem 'bio-faster'
-gem 'damerau-levenshtein'
-gem 'mkfifo'
-gem 'spreadsheet'
+gem 'bio-gadget'
