@@ -5,17 +5,22 @@ helper <- STRTprepHelper$newPlugin(
   name='heatmap_diffexp',
   required_packages=c('renozao/pkgmaker@develop', 'renozao/NMF'))
 options <- helper$options
+samples <- helper$samples
+
 if(helper$comparison != 'global') {
-  annotations <-
-    helper$samples$annotations[, union(options$ANNOTATIONS, 'CLASS')]
+  annotations <- samples$annotations[, union(options$ANNOTATIONS, 'CLASS')]
   if(is.null(options$LABELS)) {
-    annotations[, 'CLASS'] <- helper$samples$annotations[, 'CLASS']
+    annotations[, 'CLASS'] <- samples$annotations[, 'CLASS']
   } else {
     annotations[, 'CLASS'] <-
-      factor(helper$samples$annotations[, 'CLASS'], labels=options$LABELS)
+      factor(samples$annotations[, 'CLASS'], labels=options$LABELS)
   }
+} else { annotations <- samples$annotations[, options$ANNOTATIONS] }
+
+if(is.null(options$COLUMN_ORDER_BY)) {
+    colv <- TRUE
 } else {
-  annotations <- helper$samples$annotations[, options$ANNOTATIONS]
+    colv <- order(as.vector(samples$annotations[, options$COLUMN_ORDER_BY]))
 }
 
 solarized <- c('#dc322f', '#859900', '#268bd2', '#b58900', '#cb4b16', '#6c71c4', '#d33682', '#2aa198', '#002b36')
@@ -34,15 +39,12 @@ nreads <- helper$expressions$offset$significant$normalized_levels
 
 distfun <- function(x) as.dist((1-cor(t(x), method='spearman'))/2)
 clustfun <- function(d) hclust(d, method='ward.D2')
-scaleBlackRedYellow <-
-  function(n) colorRampPalette(c('black', 'red', 'yellow', 'white'),
-                               space = "rgb")(n)
 
 if(nrow(nreads) > 3) {
   library(NMF)
   nmf.options(grid.patch=T)
   heatmap <- aheatmap(
-    log10(nreads), scale='row',
+    log10(nreads), scale='row', Colv=colv,
     hclustfun=clustfun, distfun=distfun,
     annCol=annotations, annColors=colors,
     fontsize=6, layout='dlmL|dalm',

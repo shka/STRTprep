@@ -148,6 +148,7 @@ Parameter key | Type | Value
 `DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
 `ANNOTATIONS` | Words | Column name(s) of `src/samples.csv` to be annotated
 `LABELS` | Words | (Optional; ignored in test `global`) Class labels
+`COLUMN_ORDER_BY` | Word | (Optional) Order samples by values in the specified column
 
 ```yaml
 # Example of "heatmap_diffexp" plugin parameters
@@ -166,6 +167,7 @@ PLUGINS:
       ANNOTATIONS:
       - DIAGNOSIS
       - TREATMENT
+      COLUMN_ORDER_BY: CLASS
       FLUCTUATIONP: 0.05
       DIFFEXPQ: 0.05
 ```
