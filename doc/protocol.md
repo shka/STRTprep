@@ -207,8 +207,8 @@ Column | Type | Value
 `WELL` | Word | Well name, based on the barcode layout, specified in `src/conf.yaml`
 `NAME` | Word | Sample name; `NA` in case of empty well or ignoring
 `CLASS.TFE` | Word | (Required only for the step 5) Class name for transcript assembly as TFE definition; "NA" in case of empty or ignore
-`CLASS.n` (n=0, 1, ...) | Integer | (Optional) Sample class number for differential expression test `n`; 1 or 2 for two class comparison; 1, 2, 3, ... for multiclass comparison; "NA" in case of empty well or ignoring
-`BLOCK.n` (n=0, 1, ...) | Integer | (Optional) Permutation block number (1, 2, ...) for the differential expression test `n`; identical number is assigned (i) to a pair for the paired comparison, (ii) to a same gender, or (iii) to a library for canceling of library bias, for example; "NA" in case of empty or ignore
+`CLASS.n` (n=0, 1, ...) | Integer | (Optional) Sample class number for differential expression test `n`; 1 or 2 for unpaired two class comparison; 1, 2, 3, ... for multiclass comparison; -1, 1, -2, 2, ... for paired two class comparison; "NA" in case of empty well or ignoring
+`BLOCK.n` (n=0, 1, ...) | Integer | (Optional) Permutation block number (1, 2, ...) for the differential expression test `n`; identical number is assigned (i) to a same gender, or (ii) to a library for canceling of library bias, for example; ignored when the comparison `n` performs paired two class comparison; "NA" in case of empty or ignore
 `FORCE_APPROVAL` | Boolean | (Optional) If `TRUE` as for inter-library control samples etc., we can ignore the automatic outlier check for the samples. The other samples to be checked must be `FALSE`, when you use this column.
 
 > Especially in use of Excel, there could be " " (space) characters at the end of the values unexpectedly, but these are prohibited.

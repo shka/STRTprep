@@ -31,6 +31,23 @@ test_twoClasses <- function(reads, classes, blocks, dir, idx) {
              qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
 }
 
+test_pairedClasses <- function(reads, classes, blocks, dir, idx) {
+  samfit <- SAMseq(reads, y=sprintf('%d', classes),
+                   random.seed=1, resp.type='Two class paired', nperms=1000)
+  save(samfit, file=sprintf('%s/samfit%d.RData', dir, idx), compress='gzip')
+  tmp.sig <- samr.compute.siggenes.table(samfit$samr.obj, samfit$del,
+                                         samfit$samr.obj, samfit$delta.table,
+                                         all.genes=TRUE)
+  tmp.pv <-
+    samr.pvalues.from.perms(samfit$samr.obj$tt, samfit$samr.obj$ttstar)
+  tmp2 <- rbind(tmp.sig$genes.up, tmp.sig$genes.lo)
+  rowidxs <- as.numeric(tmp2[, 1])-1
+  data.frame(Gene=rownames(reads)[rowidxs],
+             Score=as.numeric(tmp2[, 'Score(d)']),
+             pvalue=p.adjust(tmp.pv[rowidxs], method='BH'),
+             qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
+}
+
 test_multiClasses <- function(reads, classes, blocks, dir, idx) {
   samfit <- SAMseq(reads, y=sprintf('%dBlock%d', classes, blocks),
                    random.seed=1, resp.type='Multiclass', nperms=1000)
@@ -48,8 +65,12 @@ test_multiClasses <- function(reads, classes, blocks, dir, idx) {
              qvalue=as.numeric(tmp2[, 'q-value(%)'])/100)
 }
 
-if(setequal(unique(classes), c(1, 2))) {
+classes.uniq <- as.numeric(unique(classes))
+
+if(setequal(classes.uniq, c(1, 2))) {
   diffexp <- test_twoClasses(reads, classes, blocks, dir, idx)
+} else if(setequal(classes.uniq[which(classes.uniq<0)], -classes.uniq[which(classes.uniq>0)])) {
+  diffexp <- test_pairedClasses(reads, classes, blocks, dir, idx)
 } else {
   diffexp <- test_multiClasses(reads, classes, blocks, dir, idx)
 }
