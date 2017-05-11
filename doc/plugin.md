@@ -146,7 +146,7 @@ Parameter key | Type | Value
 `FLUCTUATIONP` | Real, 0~1 | (Optional) Threshold of fluctuation p-value
 `DIFFEXPQ` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression q-value
 `DIFFEXPP` | Real, 0~1 | (Optional; ignored in test `global`) Threshold of differential expression p-value
-`ANNOTATIONS` | Words | Column name(s) of `src/samples.csv` to be annotated
+`ANNOTATIONS` | Words | Column name(s) of `src/samples.csv` to be annotated. Requires at least two annotations for the global heatmap. 
 `LABELS` | Words | (Optional; ignored in test `global`) Class labels
 `COLUMN_ORDER_BY` | Word | (Optional) Order samples by values in the specified column
 
