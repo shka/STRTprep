@@ -3,7 +3,7 @@
 seq=src/NC_001422.fa
 
 while [ -z "`grep '^>' $seq`" ]; do
-    curl -o $seq "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=9626372&strand=1&rettype=fasta&retmode=text"
+    curl -o $seq "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=9626372&strand=1&rettype=fasta&retmode=text"
 done
 
 dir=src/ebwt/phyX
