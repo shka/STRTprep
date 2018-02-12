@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
-
+# [[file:~/Documents/org/Rackham.org::*STRTprep3%20configulation][STRTprep3 configulation:1]]
 export LC_ALL=C
 export GEM_HOME=$PWD/vendor/gems
 export RUBYLIB=$GEM_HOME
 export R_LIBS=$PWD/vendor/Rlibs
-export PATH=$GEM_HOME/bin:.homebrew/bin:$PATH
+export PATH=$GEM_HOME/bin:/proj/uppstore2017139/private/.linuxbrew/bin:$PATH
+export MANPATH="$(brew --prefix)/share/man:$MANPATH"
+export INFOPATH="$(brew --prefix)/share/info:$INFOPATH"
 
 mkdir -p $R_LIBS $GEM_HOME
 
-module use ~katay/.modulefiles
 module load git
-module load coreutils
+module load ruby
+module load gnuparallel
+module load R
 module load bioinfo-tools
-module load ruby/2.1.0
-module load gnuparallel/20140222
 module load BEDTools/2.21.0
 module load samtools/0.1.19
-module load bowtie/1.1.0
-module load tophat/2.0.12
-module load ucsc-utilities/v287
-module load R/3.2.3
-module load cufflinks/2.1.1
+module load bowtie/1.1.2
+module load tophat/2.1.1
+module load cufflinks/2.2.1
+module load ucsc-utilities
+# STRTprep3 configulation:1 ends here
