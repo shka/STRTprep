@@ -17,7 +17,7 @@ main() {
        || fgets(quality, BUFSIZE, stdin) == NULL) {
       exit(1);
     }
-    acc = strtok(header+1, " \t");
+    acc = strtok(header+1, " \t\r\n");
     sequence[strcspn(sequence, "\r\n")] = 0;
     quality[strcspn(quality, "\r\n")] = 0;
     fprintf(stdout, "%s\t%s\t%s\n", acc, sequence, quality);

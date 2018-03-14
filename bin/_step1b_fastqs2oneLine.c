@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
     header[strcspn(header, "\r\n")] = 0;
-    acc = strtok(header+1, " \t");
+    acc = strtok(header+1, " \t\r\n");
     sequence[strcspn(sequence, "\r\n")] = 0;
     tmp = strtok(sequence, "\t");
     strncpy(sequence_umi, tmp, umi);
