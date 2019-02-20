@@ -15,7 +15,8 @@ file 'tmp/step2c/accepted_hits.bam' =>
      ['tmp/step2c/reads.fq.gz',
       File.expand_path(PREPROCESS['GENOMESPIKERIBO'])+'.1.ebwt',
       File.expand_path(PREPROCESS['TRANSCRIPT'])+'.1.ebwt'] do |t|
-  sh <<EOF
+  if PREPROCESS['CDNA'].to_i < 45 then
+    sh <<EOF
 (tophat\
    --transcriptome-index #{t.sources[2].pathmap('%X').pathmap('%X')}\
    --library-type fr-secondstrand --min-anchor 5 --coverage-search\
@@ -24,6 +25,16 @@ file 'tmp/step2c/accepted_hits.bam' =>
    #{t.sources[1].pathmap('%X').pathmap('%X')} #{t.source})\
    > #{t.name}.log 2>&1
 EOF
+  else
+    sh <<EOF
+(tophat\
+   --transcriptome-index #{t.sources[2].pathmap('%X').pathmap('%X')}\
+   --library-type fr-secondstrand --min-anchor 5 --coverage-search\
+   --output-dir #{t.name.pathmap('%d')} --num-threads #{PROCS} --bowtie1\
+   #{t.sources[1].pathmap('%X').pathmap('%X')} #{t.source})\
+   > #{t.name}.log 2>&1
+EOF
+  end
 end
 
 rule '.samUniqSortedByAcc' => '.bam' do |t|
