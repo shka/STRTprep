@@ -7,7 +7,7 @@ require 'csv'
 def step4a_transcripts_sources(t)
   cls = t.pathmap("%d").pathmap("%f").pathmap("%X")
   src = ['src/samples.csv']
-  samples = CSV.table(src[0])
+  samples = CSV.table(src[0], { converters: nil })
   samples.each do |row|
     if row[:classtfe] == cls
       src.push("out/bam/#{row[:library]}.#{row[:well]}.bam")
@@ -67,7 +67,7 @@ end
 def step4a_fivePrimes_sources(t)
   cls = t.pathmap("%d").pathmap("%f").pathmap("%X")
   src = Array.new
-  samples = CSV.table('src/samples.csv')
+  samples = CSV.table('src/samples.csv', { converters: nil })
   samples.each do |row|
     if row[:classtfe] == cls
       src.push("tmp/#{row[:library]}.#{row[:well]}.step2g")
@@ -90,7 +90,7 @@ end
 step4a_firstExons = Array.new
 step4a_fivePrimes = Array.new
 begin 
-  samples = CSV.table('src/samples.csv')
+  samples = CSV.table('src/samples.csv', { converters: nil })
   classes = Array.new
   samples.each { |row| classes.push(row[:classtfe]) if row[:classtfe] != 'NA' }
   classes.uniq.each do |cls|

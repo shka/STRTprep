@@ -60,7 +60,7 @@ require 'csv'
 step5_targets = ['out/web/regions_byTFE.bed.gz']
 begin
   tmp = Hash.new
-  samples = CSV.table('src/samples.csv')
+  samples = CSV.table('src/samples.csv', { converters: nil })
   samples.each do |row|
     cls = row[:classtfe]
     tmp[cls] = '' if cls != 'NA' && cls != ''
