@@ -12,7 +12,7 @@ STRTprepSamples <- R6Class(
     initialize = function(helper) {
       private$helper = helper
       tmp <- read.table(
-        helper$samples_path, header=T, check.names=F, sep=',', quote='')
+        helper$samples_path, header=T, check.names=F, sep=',', quote='', colClasses=list(WELL="character"))
       rownames(tmp) <- tmp[, which(colnames(tmp) == 'NAME')]
       comparison <- helper$comparison
       if(comparison != 'global') {

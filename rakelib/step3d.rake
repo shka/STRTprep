@@ -12,7 +12,7 @@ end
 def step3d_job(t, colname)
   pid = Process.fork do
     libwellid2name = Hash.new
-    samples = CSV.table(t.source)
+    samples = CSV.table(t.source, { converters: nil })
     samples.each do |row|
       libwellid2name["#{row[:library]}.#{row[:well]}"] = row[:name]
     end

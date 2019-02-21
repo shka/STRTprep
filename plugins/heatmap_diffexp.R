@@ -3,7 +3,8 @@
 source('Rlib/STRTprepHelper.R', chdir=T)
 helper <- STRTprepHelper$newPlugin(
   name='heatmap_diffexp',
-  required_packages=c('ganesh-krishnan/nloptr', 'lme4', 'renozao/pkgmaker@develop', 'renozao/NMF'))
+  # required_packages=c('ganesh-krishnan/nloptr', 'lme4', 'renozao/pkgmaker@develop', 'renozao/NMF'))
+  required_packages=c('renozao/pkgmaker@develop', 'renozao/NMF@devel'))
 options <- helper$options
 samples <- helper$samples
 

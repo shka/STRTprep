@@ -14,7 +14,7 @@ extract_outliers <- function(stat, lowerOnly=T) {
 
 ###
 
-samples.all <- read.table('tmp/byGene/samples.csv', header=T, sep=',', quote='', check.names=F)
+samples.all <- read.table('tmp/byGene/samples.csv', header=T, sep=',', quote='', check.names=F, colClasses=list(WELL="character"))
 if(!is.element('FORCE_APPROVAL', colnames(samples.all)))
     samples.all[, 'FORCE_APPROVAL'] <- FALSE 
 libwellids <- sprintf('%s.%s', samples.all[, 'LIBRARY'], samples.all[, 'WELL'])

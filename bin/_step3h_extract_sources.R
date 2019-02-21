@@ -7,7 +7,7 @@ path_reads <- ifelse(is.na(args[3]), 'out/byGene/reads.RData', args[3])
 path_nreads <- ifelse(is.na(args[4]), 'out/byGene/nreads.RData', args[4])
 path_output <- ifelse(is.na(args[5]), 'out/byGene/sources0.RData', args[5])
 
-samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F)
+samples <- read.table(path_samples, header=T, sep=',', quote='', check.names=F, colClasses=list(WELL="character"))
 tmp.classes <- samples[, sprintf('CLASS.%d', idx)]
 tmp.blocks <- samples [, sprintf('BLOCK.%d', idx)]
 names(tmp.classes) <- names(tmp.blocks) <- sprintf('%s.%s|%s', samples[, 'LIBRARY'], samples[, 'WELL'], samples[, 'NAME'])

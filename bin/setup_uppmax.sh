@@ -13,7 +13,7 @@ mkdir -p $R_LIBS $GEM_HOME
 module load git
 module load ruby
 module load gnuparallel
-module load R
+module load R/3.5.2
 module load bioinfo-tools
 module load BEDTools/2.21.0
 module load samtools/0.1.19
