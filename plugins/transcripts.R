@@ -44,7 +44,7 @@ par(mai=c(width_label+ppar$mgp[2]*ppar$csi,
           (1+2.5)*ppar$csi,
           .1,
           width_legend+(1+1)*ppar$csi)+.05, las=3, mgp=c(2.5, 1, 0))
-transcripts <- boxplot(VALUE ~ CLASS, data=tmp, log='y', cex=2/3,
+transcripts <- boxplot(VALUE ~ CLASS, data=tmp, cex=2/3,
                        ylab='Relative amount of poly(A)+ transcripts')
 beeswarm(VALUE ~ CLASS, data=tmp,
          pwcol=color_palette[color_indexes], add=T, cex=2/3, spacing=2/3)
