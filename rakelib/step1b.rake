@@ -26,7 +26,7 @@ if !PREPROCESS.key?('PHYX') || PREPROCESS['PHYX'].nil?
 (gpaste #{read1fifo} #{read2fifo} \
  | bin/_step1b_fastqs2oneLine #{PREPROCESS['UMI']} \
  | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat #{qb} \
- | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
+ | gsort --parallel=#{PROCS} -S 85% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
       sh "touch #{t.name}.stat"
@@ -49,7 +49,7 @@ EOF
 (unpigz -c #{t.source} \
  | bin/_step1b_fastq2oneLine \
  | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat #{qb} \
- | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
+ | gsort --parallel=#{PROCS} -S 85% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
       sh "touch #{t.name}.stat"
@@ -66,7 +66,7 @@ else
 (samtools view -f 4 -F 256 #{t.source}\
  | gcut -f 1,10,11 \
  | bin/_step1b_trimWithQCFilter #{libid} #{len} #{t.name}.stat #{qb} \
- | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 4,4 -k 3,3r \
+ | gsort --parallel=#{PROCS} -S 85% -t '\t' -k 4,4 -k 3,3r \
  | pigz -c > #{t.name}) 2> #{t.name}.log
 EOF
     sh "touch #{t.name}.stat"

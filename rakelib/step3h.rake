@@ -68,7 +68,7 @@ def step3h_job(t)
   if ofs == 5
     annotation = Hash.new
     
-    infp = open("| gunzip -c #{t.sources[3]}")
+    infp = open("| unpigz -c #{t.sources[3]}")
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
       start = cols[1].to_i+1
@@ -76,7 +76,7 @@ def step3h_job(t)
     end
     infp.close
     
-    infp = open("| gunzip -c #{t.sources[4]}")
+    infp = open("| unpigz -c #{t.sources[4]}")
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
       annotation[cols[0]] = [cols[4], cols[6]] + annotation[cols[0]] + [cols[2], cols[5]]
@@ -88,7 +88,7 @@ def step3h_job(t)
   header_diffexps = Array.new
   t.sources[ofs..-1].each_index do |idx|
     tmp = Hash.new
-    infp = open("| gunzip -c #{t.sources[idx+ofs]}")
+    infp = open("| unpigz -c #{t.sources[idx+ofs]}")
     clsnum = /\/diffexp(\d+)/.match(t.sources[idx+ofs]).to_a[1].to_i
     header = infp.gets
     while line = infp.gets
@@ -96,7 +96,7 @@ def step3h_job(t)
       tmp[cols[0]] = cols[1..-1].join(',')
     end
     infp.close
-    infp = open("| gunzip -c #{t.sources[idx+ofs].sub('/diffexp', '/fluctuation')}")
+    infp = open("| unpigz -c #{t.sources[idx+ofs].sub('/diffexp', '/fluctuation')}")
     header = infp.gets
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
@@ -112,7 +112,7 @@ def step3h_job(t)
   end
 
   fluctuation = Hash.new
-  infp = open("| gunzip -c #{t.sources[2]}")
+  infp = open("| unpigz -c #{t.sources[2]}")
   header_fluctuation = infp.gets
   while line = infp.gets
     gene, pvalue, score = line.rstrip.split(/\t/)
@@ -121,7 +121,7 @@ def step3h_job(t)
   infp.close
   
   nreads = Hash.new
-  infp = open("| gunzip -c #{t.sources[1]}")
+  infp = open("| unpigz -c #{t.sources[1]}")
   header_nreads = infp.gets.rstrip.split(/\t/)
   1.upto(header_nreads.length-1) do |i|
     header_nreads[i] = "N|#{header_nreads[i]}"
@@ -133,7 +133,7 @@ def step3h_job(t)
   infp.close
 
   outfp = open(t.name, 'w')
-  infp = open("| gunzip -c #{t.source}")
+  infp = open("| unpigz -c #{t.source}")
   header_reads = infp.gets.rstrip.split(/\t/)
   1.upto(header_reads.length-1) do |i|
     header_reads[i] = "R|#{header_reads[i]}"

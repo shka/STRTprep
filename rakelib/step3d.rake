@@ -23,7 +23,7 @@ def step3d_job(t, colname)
       header.push("#{libwellid}|#{libwellid2name[libwellid]}")
     end
     
-    outfp = open("| gzip -c > #{t.name}", 'w')
+    outfp = open("| pigz -c > #{t.name}", 'w')
     outfp.puts header.join("\t")
     infp = open("| cat "+t.sources[1..-1].join(" | join -t '\t' -j 1 - "))
     while line = infp.gets

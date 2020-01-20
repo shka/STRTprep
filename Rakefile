@@ -3,6 +3,7 @@ require 'pp'
 require 'yaml'
 
 PROCS = ENV.key?('PROCS') ? ENV['PROCS'].to_i : `gnproc`.to_i
+THREADS = Rake.application.thread_pool.statistics[:max_active_threads]+1
 
 conf = YAML.load_file(ENV.key?('CONF') ? ENV['CONF'] : 'src/conf.yaml')
 LIBRARIES = conf['LIBRARIES']
@@ -81,19 +82,19 @@ task :qc3 => qcTargets3
 qcTargets4 = Array.new
 
 LIBWELLIDS.each do |libwellid|
-  qcTargets4.push("tmp/#{libwellid}.step2f",
+  qcTargets4.push("tmp/#{libwellid}.step2d_cnt",
+                  "tmp/#{libwellid}.step2f_cnt",
                   "tmp/#{libwellid}.step2g",
-                  "tmp/byGene/#{libwellid}.step3b",
-                  "tmp/byGene/#{libwellid}.step3c",
+                  "tmp/byGene/#{libwellid}.step3b_cnt",
+                  "tmp/byGene/#{libwellid}.step3c_cnt",
                   "out/seq/#{libwellid}.fq.gz")
 end
 
-task :qc4 => qcTargets4
+multitask :qc4 => qcTargets4
 
 ####
 
-task :qc => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 +
-            ['out/byGene/samples.xls']
+task :qc => [:qc1, :qc2, :qc3, :qc4, 'out/byGene/samples.xls']
 
 ## TFE intermediate tasks
 
@@ -116,10 +117,10 @@ task :tfe1 => tfeTargets1
 
 tfeTargets2 = Array.new
 LIBWELLIDS.each do |libwellid|
-  tfeTargets2.push("tmp/byTFE/#{libwellid}.step4b")
+  tfeTargets2.push("tmp/byTFE/#{libwellid}.step4b_cnt")
 end
 
-task :tfe2 => tfeTargets2
+multitask :tfe2 => tfeTargets2
 
 ##
 
@@ -164,17 +165,18 @@ if !PLUGINS.nil?
   end
 end
 
-task :gene => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 +
-              ['out/byGene/samples.xls',
+##
+
+task :gene => [:qc,
+               'out/byGene/samples.xls',
                'out/byGene/diffexp.xls',
                'out/web/regions_byGene.bed.gz']
 
 task :plugins_gene => [:gene] + plugin_byGene_targets
 
-task :tfe => qcTargets1 + qcTargets2 + qcTargets3 + qcTargets4 +
-             tfeTargets1 + tfeTargets2 +
-             ['out/byGene/samples.xls',
-              'out/byTFE/diffexp.xls',]
+task :tfe => [:qc,
+              'out/byGene/samples.xls',
+              'out/byTFE/diffexp.xls']
 
 task :plugins_tfe => [:tfe] + plugin_byTFE_targets
 

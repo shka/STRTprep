@@ -18,8 +18,8 @@ end
 
 rule '.step2e_cnt' => '.step2e' do |t|
   sh <<EOF
-(unpigz -c #{t.source} | wc -l | gtr -d ' '; \
- unpigz -c #{t.source} | grep ^RNA_SPIKE_ | wc -l | gtr -d ' ')\
+(unpigz -c #{t.source} | gwc -l | gtr -d ' '; \
+ unpigz -c #{t.source} | grep ^RNA_SPIKE_ | gwc -l | gtr -d ' ')\
 | gpaste -s - > #{t.name}
 EOF
 end

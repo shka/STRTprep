@@ -14,7 +14,7 @@ rule /\.step2f$/ => [->(path){ step2f_sources(path) }] do |t|
   sh <<EOF
 unpigz -c #{t.source} \
 | gcut -f 2 \
-| gsort -S #{100/(PROCS+1)}% -t '\t' -k 1,1 \
+| gsort -S #{80/THREADS}% -t '\t' -k 1,1 \
 | gjoin -t '\t' -j 1 - #{repacc2accpath} \
 | pigz -c > #{t.name}
 EOF
@@ -25,5 +25,5 @@ end
 #
 
 rule '.step2f_cnt' => '.step2f' do |t|
-  sh "unpigz -c #{t.source} | wc -l | gtr -d ' ' > #{t.name}"
+  sh "unpigz -c #{t.source} | gwc -l | gtr -d ' ' > #{t.name}"
 end

@@ -13,8 +13,8 @@ def step3f_job(t, colname)
     infp.close
     
     header = [true]
-    outfp = open("| gzip -c > #{t.name}", 'w')
-    infp = open("| gunzip -c #{t.sources[1]}")
+    outfp = open("| pigz -c > #{t.name}", 'w')
+    infp = open("| unpigz -c #{t.sources[1]}")
     while line = infp.gets
       cols = line.rstrip.split(/\t/)
       if header.length == 1

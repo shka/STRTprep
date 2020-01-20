@@ -27,7 +27,7 @@ rule /\.step4a\/transcripts\.gtf$/ => [->(path){ step4a_transcripts_sources(path
       !File.exist?(tmp) ||
       `gmd5sum #{bam} #{tmp} | gcut -d ' ' -f 1 | guniq | gwc -l`.to_i != 1)
     cls = t.name.pathmap("%d").pathmap("%f").pathmap("%X")
-    sh "(cufflinks -o #{dir} -p #{PROCS} --library-type fr-secondstrand -L #{cls} #{bam}) >> #{t.name}.log 2>&1"
+    sh "(cufflinks -o #{dir} -p `gnproc` --library-type fr-secondstrand -L #{cls} #{bam}) >> #{t.name}.log 2>&1"
     sh "gcp --preserve=timestamps #{bam} #{tmp}"
   else
     puts "... skipped #{t.name}, since the qualified samples were identical with the previous run"
@@ -39,7 +39,7 @@ end
 
 rule /\.step4a\/firstExons\.bed\.gz$/ => [
   ->(path){ return path.sub(/\/firstExons\.bed\.gz$/, '/transcripts.gtf') }] do |t|
-  outfp = open("| gzip -c > #{t.name}", 'w')
+  outfp = open("| pigz -c > #{t.name}", 'w')
   infp = open(t.source)
   tid = nil
   str = nil
@@ -78,10 +78,10 @@ end
 
 rule /\.step4a\/fivePrimes.bed.gz$/ => [->(path){ step4a_fivePrimes_sources(path) }] do |t|
   sh <<EOF
-gunzip -c #{t.sources.join(' ')} \
+unpigz -c #{t.sources.join(' ')} \
 | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
 | mergeBed -s -c 4,5,6 -o distinct,sum,distinct -d -1 -i - \
-| gzip -c > #{t.name}
+| pigz -c > #{t.name}
 EOF
 end
   
@@ -103,8 +103,8 @@ end
 
 file 'out/byTFE/regions.bed.gz' => step4a_firstExons do |t|
   mkdir_p t.name.pathmap('%d')
-  outfp = open("| gzip -c > #{t.name}", 'w')
-  infp = open("| gunzip -c #{t.sources.join(' ')} | gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -c 6 -o distinct -i -")
+  outfp = open("| pigz -c > #{t.name}", 'w')
+  infp = open("| unpigz -c #{t.sources.join(' ')} | gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -c 6 -o distinct -i -")
   spikes = Hash.new
   tfe = 0
   while line = infp.gets
@@ -126,10 +126,10 @@ end
 file 'tmp/byTFE/fivePrimes.bed.gz' => step4a_fivePrimes do |t|
   mkdir_p t.name.pathmap('%d')
   sh <<EOF
-gunzip -c #{t.sources.join(' ')} \
+unpigz -c #{t.sources.join(' ')} \
 | gsort --parallel=#{PROCS} -S #{100/(PROCS+1)}% -t '\t' -k 1,1 -k 2,2n \
 | mergeBed -s -c 4,5,6 -o distinct,sum,distinct -d -1 -i - \
-| gzip -c > #{t.name}
+| pigz -c > #{t.name}
 EOF
 end
 
@@ -192,7 +192,7 @@ rule /peaks_class\d+\.txt\.gz$/ => [->(path){ step4a_peakClass_sources(path) }] 
   end
   infp.close
   
-  outfp = open("| gzip -c > #{t.name}", 'w')
+  outfp = open("| pigz -c > #{t.name}", 'w')
   tfe2sym2acc.each do |tfe, sym2acc|
     syms = Array.new
     symaccs = Array.new
@@ -207,7 +207,7 @@ end
 
 rule /peaks_nonClass[1-8]\.bed\.gz$/ => [->(path){ step4a_peakClass_sources(path) }] do |t|
   cls = /lass(\d+)\.(txt|bed)\.gz$/.match(t.name).to_a[1].to_i
-  sh "intersectBed -s -v -b #{t.source} -a #{t.sources[1]} | gzip -c > #{t.name}"
+  sh "intersectBed -s -v -b #{t.source} -a #{t.sources[1]} | pigz -c > #{t.name}"
 end
                            
 ##
@@ -215,15 +215,15 @@ end
 file 'tmp/byTFE/peaks_class9.txt.gz' =>
      ['out/byTFE/regions.bed.gz', 'tmp/byTFE/peaks_nonClass8.bed.gz'] do |t|
   rid = Hash.new
-  infp = open("| gunzip -c #{t.source}")
+  infp = open("| unpigz -c #{t.source}")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     rid[cols[3]] = "#{cols[0]}:#{cols[1].to_i+1}-#{cols[2]};#{cols[5]}"
   end
   infp.close
   
-  outfp = open("| gzip -c > #{t.name}", 'w')
-  infp = open("| gunzip -c #{t.sources[1]}")
+  outfp = open("| pigz -c > #{t.name}", 'w')
+  infp = open("| unpigz -c #{t.sources[1]}")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     outfp.puts [cols[3], "#{cols[0]}\t#{cols[2]}\t#{cols[5]}", rid[cols[3]], '', 'Unannotated'].join("\t")
@@ -240,5 +240,5 @@ step4a_annotation_sources = Array.new
 end
 
 file 'out/byTFE/annotation.txt.gz' => step4a_annotation_sources do |t|
-  sh "gunzip -c #{t.sources.join(' ')} | gzip -c > #{t.name}"
+  sh "unpigz -c #{t.sources.join(' ')} | pigz -c > #{t.name}"
 end

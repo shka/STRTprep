@@ -12,7 +12,7 @@ def step3b_job(t)
     mkdir_p t.name.pathmap('%d')
 
     sym2cnt = Hash.new
-    infp = open("| gunzip -c #{t.sources[1]} | intersectBed -c -s -a #{t.source} -b - | gcut -f 4,7")
+    infp = open("| unpigz -c #{t.sources[1]} | intersectBed -c -s -a #{t.source} -b - | gcut -f 4,7")
     while line = infp.gets
       sym, cnt = line.rstrip.split(/\t/)
       if sym2cnt.key?(sym)

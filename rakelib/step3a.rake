@@ -3,7 +3,7 @@
 ##
 
 def extract_5utr(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
-  infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
+  infp = open("| unpigz -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     # no ORF ~ CDS start != CDS stop, since the start position is 0-based
@@ -41,7 +41,7 @@ def extract_5utr(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
 end
 
 def extract_proxup(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
-  infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
+  infp = open("| unpigz -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     # no ORF ~ CDS start != CDS stop, since the start position is 0-based
@@ -91,7 +91,7 @@ def load_acc2sym(path)
   cut = ''
   cut = '| gcut -f 1,5' if /^kgXref/ =~ path.pathmap('%f')
   cut = '| gcut -f 2,13' if /^refGene/ =~ path.pathmap('%f')
-  infp = open("| gunzip -c #{path} #{cut}")
+  infp = open("| unpigz -c #{path} #{cut}")
   while line = infp.gets
     acc, sym = line.rstrip.split(/\t/)
     acc2sym[acc] = sym.gsub(' ', '%20')
@@ -106,7 +106,7 @@ file 'out/byGene/regions.bed.gz' => step3a_bed_sources do |t|
 
   acc2sym = load_acc2sym(t.source)
 
-  outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | gzip -c > #{t.name}", 'w')
+  outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | grep -v , | pigz -c > #{t.name}", 'w')
 
   chrEnds = Hash.new
   infp = open(t.sources[1])
@@ -136,7 +136,7 @@ end
 #
 
 def extract_exon(acc2sym, outfp, tbl, chrEnds, mask, ofs=1)
-  infp = open("| gunzip -c #{tbl} | gcut -f #{ofs}-")
+  infp = open("| unpigz -c #{tbl} | gcut -f #{ofs}-")
   while line = infp.gets
     cols = line.rstrip.split(/\t/)
     if cols[5] != cols[6] && chrEnds.key?(cols[1])
@@ -159,7 +159,7 @@ file 'tmp/byGene/regions_forQC.bed.gz' => step3a_bed_sources do |t|
 
   acc2sym = load_acc2sym(t.source)
   
-  outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | gzip -c > #{t.name}", 'w')
+  outfp = open("| gsort -t '\t' -k 1,1 -k 2,2n | mergeBed -s -o distinct,distinct,distinct -c 4,5,6 -i - | pigz -c > #{t.name}", 'w')
 
   chrEnds = Hash.new
   infp = open(t.sources[1])
