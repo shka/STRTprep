@@ -12,7 +12,7 @@ for lane in {1..4}; do
 done
 
 for lane in {1..4}; do
-    java -Xmx7g -jar ./src/picard.jar IlluminaBasecallsToFastq \
+    java -Xmx7g -jar ./bin/picard.jar IlluminaBasecallsToFastq \
          NUM_PROCESSORS=1 \
          READ_STRUCTURE=85T6B \
          BASECALLS_DIR=./src/${bcl}/Data/Intensities/BaseCalls/ \
