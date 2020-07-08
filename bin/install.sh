@@ -15,17 +15,17 @@ brew tap brewsci/bio
 brew tap brewsci/science
 brew install bedtools bowtie coreutils kent-tools parallel pigz r ruby samtools@0.1
 
-wget -O ~/bowtie-1.2.3-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.2.3/bowtie-1.2.3-linux-x86_64.zip/download
-unzip bowtie-1.2.3-linux-x86_64.zip -d ~/.local/
-ln -s ~/.local/bowtie-1.2.3-linux-x86_64/bowtie* ~/.local/bin/
+wget -O src/bowtie-1.2.3-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.2.3/bowtie-1.2.3-linux-x86_64.zip/download
+unzip src/bowtie-1.2.3-linux-x86_64.zip -d src/
+ln -s $PWD/src/bowtie-1.2.3-linux-x86_64/bowtie* bin/
 
-wget https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz
-tar zxvf tophat-2.1.1.Linux_x86_64.tar.gz -C ~/.local/
-ln -s `find ~/.local/tophat-2.1.1.Linux_x86_64/ -executable -type f -maxdepth 1` ~/.local/bin
+wget -O src/tophat-2.1.1.Linux_x86_64.tar.gz https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz
+tar zxvf src/tophat-2.1.1.Linux_x86_64.tar.gz -C src/
+ln -s `find $PWD/src/tophat-2.1.1.Linux_x86_64/ -type f -maxdepth 1 -executable` bin/
 
-wget http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.2.1.Linux_x86_64.tar.gz
-tar zxvf cufflinks-2.2.1.Linux_x86_64.tar.gz -C ~/.local/
-ln -s `find ~/.local/cufflinks-2.2.1.Linux_x86_64/ -executable -type f -maxdepth 1` ~/.local/bin
+wget -O src/cufflinks-2.2.1.Linux_x86_64.tar.gz http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.2.1.Linux_x86_64.tar.gz
+tar zxvf src/cufflinks-2.2.1.Linux_x86_64.tar.gz -C src/
+ln -s `find $PWD/src/cufflinks-2.2.1.Linux_x86_64/ -type f -maxdepth 1 -executable` bin/
 
 bundle
 
