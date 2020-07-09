@@ -5,7 +5,7 @@ STRTprep (https://github.com/shka/STRTprep) is an open-source software package f
 Edit two files to describe your experiment and study design, and run the pipeline as below, then you can finish from preprocess of raw reads until differential expression tests. Enjoy more further downstream analysis!
 
 ```bash
-git clone https://github.com/shka/STRTprep.git STRTprep3.test
+git clone -b v3dev https://github.com/shka/STRTprep.git STRTprep3.test
 cd STRTprep3.test
 bin/install.sh
 . bin/setup.sh
