@@ -17,9 +17,9 @@ brew install bedtools coreutils kent-tools parallel pigz r ruby samtools@0.1
 
 mkdir -p ~/.local/bin
 
-wget -O src/bowtie-1.2.3-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.2.3/bowtie-1.2.3-linux-x86_64.zip/download
-unzip src/bowtie-1.2.3-linux-x86_64.zip -d ~/.local/
-ln -s ~/.local/bowtie-1.2.3-linux-x86_64/bowtie* ~/.local/bin/
+wget -O src/bowtie-1.1.2-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.1.2/bowtie-1.1.2-linux-x86_64.zip/download
+unzip src/bowtie-1.1.2-linux-x86_64.zip -d ~/.local/
+ln -s ~/.local/bowtie-1.1.2-linux-x86_64/bowtie* ~/.local/bin/
 
 wget -O src/tophat-2.1.1.Linux_x86_64.tar.gz https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz
 tar zxvf src/tophat-2.1.1.Linux_x86_64.tar.gz -C ~/.local/
