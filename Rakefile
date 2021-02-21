@@ -51,7 +51,13 @@ end
 
 ### QC1: parallel by lanes
 
-qcTargets1 = Array.new
+task :pre1 do
+  sh "gcc -o bin/_step1b_fastq2oneLine bin/_step1b_fastq2oneLine.c"
+  sh "gcc -o bin/_step1b_fastqs2oneLine bin/_step1b_fastqs2oneLine.c"
+  sh "gcc -o bin/_step1b_trimWithQCFilter bin/_step1b_trimWithQCFilter.c"
+end
+
+qcTargets1 = [:pre1]
 
 LIBIDS.each do |libid|
   LIBRARIES[libid]['FASTQS'].each_index do |runid|
