@@ -13,7 +13,7 @@ fi
 . bin/setup.sh
 
 brew install coreutils
-HOMEBREW_MAKE_JOBS=`gnproc` brew install bedtools parallel pigz r ruby
+HOMEBREW_MAKE_JOBS=`gnproc` brew install bedtools parallel pigz r ruby@2.7
 
 rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/linux.x86_64/ $PWD/bin/kent-tools/
 
