@@ -42,7 +42,7 @@ rule /^out\/bam\/[^\/]+\.bam$/ => [->(path){ step2d_bam_sources(path) }] do |t|
     mkdir_p t.name.pathmap('%d')
   
     outfifo = mymkfifo('step2d-bam-')
-    pid0 = spawn "samtools view -S -@ `gnproc` -b #{outfifo} > #{t.name}"
+    pid0 = spawn "samtools view -S -b #{outfifo} > #{t.name}"
     
     tmpfifo1 = mymkfifo('step2d-bam-')
     pid1 = spawn "unpigz -c #{t.sources[1]} > #{tmpfifo1}"
