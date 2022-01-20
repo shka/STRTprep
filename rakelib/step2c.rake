@@ -29,7 +29,7 @@ EOF
     sh <<EOF
 (tophat\
    --transcriptome-index #{t.sources[2].pathmap('%X').pathmap('%X')}\
-   --library-type fr-secondstrand\
+   --library-type fr-secondstrand --no-coverage-search\
    --output-dir #{t.name.pathmap('%d')} --num-threads #{PROCS} --bowtie1\
    #{t.sources[1].pathmap('%X').pathmap('%X')} #{t.source})\
    > #{t.name}.log 2>&1
