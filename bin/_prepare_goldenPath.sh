@@ -5,8 +5,10 @@ set -e
 ver=$1
 tgz=src/${ver}_chromFa.tar.gz
 
-if [ $ver = 'hg38' ]; then
-    curl -o $tgz "http://hgdownload.cse.ucsc.edu/goldenPath/$ver/bigZips/${ver}.chromFa.tar.gz"
+if [ $ver = 'hg38as' ]; then
+    curl -o $tgz "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/analysisSet/hg38.analysisSet.chroms.tar.gz"
+elif [ $ver = 'hg38' ]; then
+    curl -o $tgz "http://hgdownload.cse.ucsc.edu/goldenPath/$ver/bigZips/hg38.chromFa.tar.gz"
 else
     curl -o $tgz "http://hgdownload.cse.ucsc.edu/goldenPath/$ver/bigZips/chromFa.tar.gz"
 fi

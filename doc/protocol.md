@@ -87,6 +87,7 @@ Script | Genome | Spike-ins | Ribosomal DNA unit | Created index location
 -------|--------|-----------|--------------------|---------
 `bin/index_hg19_ercc92_ynbA_u13369.sh` | hg19 (human) | ERCC92 & ynbA | U13369 | `src/ebwt/hg19_ercc92_ynbA_u13369/ref`
 `bin/index_hg38_ercc92_ynbA_u13369.sh` | hg38 (human) | ERCC92 & ynbA | U13369 | `src/ebwt/hg38_ercc92_ynbA_u13369/ref`
+`bin/index_hg38as_ercc92_ynbA_u13369.sh` | hg38 analysis set (human) | ERCC92 & ynbA | U13369 | `src/ebwt/hg38as_ercc92_ynbA_u13369/ref`
 `bin/index_mm9_ercc92_ynbA_bk000964.sh` | mm9 (mouse) | ERCC92 & ynbA | BK000964 | `src/ebwt/mm9_ercc92_ynbA_u13369/ref`
 `bin/index_canFam3_ercc92_ynbA.sh` | canFam3 (dog) | ERCC92 & ynbA | | `src/ebwt/canFam3_ercc92_ynbA/ref`
 `bin/index_susScr3_ercc92_ynbA.sh` | susScr3 (pig) | ERCC92 & ynbA | | `src/ebwt/susScr3_ercc92_ynbA/ref`
@@ -107,7 +108,7 @@ Script | Transcriptome | Created index location
 `bin/index_knownGene.sh` | UCSC known genes | `src/ebwt/ver_knownGene/ref`
 `bin/index_refGene.sh` | NCBI RefSeq | `src/ebwt/ver_refGene/ref`
 
-> Although update of the genome sequence is rarely, the reference transcriptome updates very frequently, twice a year as usual. Therefore, you should create new transcriptome index for each project, while you can copy genome index used in the previous project.
+> Although update of the genome sequence is rarely, the reference transcriptome updates very frequently, twice a year as usual. Therefore, you should create new transcriptome index for each project, while you can copy genome index used in the previous project. And temporary hg38 does not support ENSEMBL.
 
 #### Index of PhyX
 
